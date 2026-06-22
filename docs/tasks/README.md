@@ -1,7 +1,7 @@
 # 任务工单 —— 产品 → 开发 的接口
 
 产品角色（Claude）在此放工单；开发角色（Codex）扫这里找活干。
-工作流见根目录 [AGENTS.md](../../AGENTS.md)。
+工作流见根目录 [CLAUDE.md](../../CLAUDE.md)（唯一权威约定）。
 
 ## 状态约定（写在工单 frontmatter 的 `status`）
 
