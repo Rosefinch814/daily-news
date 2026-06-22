@@ -35,10 +35,12 @@ daily-news/
 
 ## 文档入口
 
-- [Spec](docs/spec/spec.md)
-- [MVP](docs/mvp/mvp.md)
-- [里程碑](docs/milestones/milestones.md)
-- [技术验证](docs/tech-validation/tech-validation.md)
+当期：**01·科技日报**（MVP 为源头，spec / 里程碑 / 技术验证基于它）
+
+- [MVP](docs/mvp/01-科技日报.md) ← 本期源头
+- [Spec](docs/spec/01-科技日报.md)
+- [里程碑](docs/milestones/01-科技日报.md)
+- [技术验证](docs/tech-validation/01-科技日报.md)
 
 ## 技术方向
 

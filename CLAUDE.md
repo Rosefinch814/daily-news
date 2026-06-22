@@ -6,7 +6,7 @@
 
 ## 项目一句话
 
-一份属于用户自己的个性化新闻报纸：板块由用户定义，每板块自配源与关注点，并通过反馈持续调教、越来越懂用户。详见 [README](README.md) 与 [docs/spec/spec.md](docs/spec/spec.md)。
+一份属于用户自己的个性化新闻报纸：板块由用户定义，每板块自配源与关注点，并通过反馈持续调教、越来越懂用户。详见 [README](README.md) 与 [docs/spec/01-科技日报.md](docs/spec/01-科技日报.md)。
 
 ## 角色总览
 
@@ -47,7 +47,7 @@
 - **抓取**：优先 **RSS/API，不爬付费墙**；爬虫仅在确无 API 时用，单独隔离。
 - **运行时 AI**（筛选/摘要/翻译/归类）：调 `claude -p`（Claude Code 无头模式），封装成**单一可替换函数**（如 `ai_engine`），返回结构化 JSON，便于将来换 API。
 - **配置/内容**（`sections.yaml`、口味档案 `profiles/`）与代码分离。
-- **产品行为唯一来源**：`docs/spec/spec.md`。有疑问回查或在工单「开放问题」里记，别擅自拍板。
+- **产品行为唯一来源**：当期 spec（如 `docs/spec/01-科技日报.md`）。有疑问回查或在工单「开放问题」里记，别擅自拍板。
 
 ## 提交规范
 
@@ -56,7 +56,8 @@
 
 ## 关键文件
 
-- [docs/spec/spec.md](docs/spec/spec.md) —— 产品 Spec（权威）
+- [docs/mvp/01-科技日报.md](docs/mvp/01-科技日报.md) —— 当期 MVP（本期源头）
+- [docs/spec/01-科技日报.md](docs/spec/01-科技日报.md) —— 当期 Spec（权威，基于 MVP）
+- [docs/milestones/01-科技日报.md](docs/milestones/01-科技日报.md) —— 当期里程碑（聚焦 M1）
 - [docs/tasks/](docs/tasks/) —— 工单（产品→开发接口）
-- [docs/milestones/milestones.md](docs/milestones/milestones.md) —— 当前聚焦 M1
 - [AGENTS.md](AGENTS.md) —— Codex 入口（仅重定向到本文件）

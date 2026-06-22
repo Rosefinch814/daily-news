@@ -20,4 +20,4 @@
 
 ## 当前里程碑
 
-见 [../milestones/milestones.md](../milestones/milestones.md)。当前聚焦 **M1：科技单板块，验证筛得准 + 能调教**。
+见 [../milestones/01-科技日报.md](../milestones/01-科技日报.md)。当前聚焦 **M1：科技单板块，验证筛得准 + 能调教**。
