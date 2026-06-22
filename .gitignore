@@ -17,6 +17,9 @@ env/
 .vscode/
 .idea/
 
+# Claude Code 本地设置
+.claude/settings.local.json
+
 # 生成的报刊归档（运行时产物，阶段1再决定是否纳入版本控制）
 web/issues/
 
