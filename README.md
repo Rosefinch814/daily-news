@@ -44,4 +44,4 @@ daily-news/
 
 ## 技术方向
 
-Python · 抓取优先 RSS/API · AI 引擎复用 Claude Code 无头模式（`claude -p`）· Jinja2 静态 HTML · MVP 手动运行。
+Python · 抓取优先 RSS/API · AI 引擎封装为单一可替换函数（**具体调用方式待定**，`claude -p` 无头模式为当前候选）· Jinja2 静态 HTML · MVP 手动运行。

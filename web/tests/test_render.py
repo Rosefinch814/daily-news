@@ -24,7 +24,8 @@ def test_render_issue_and_index(tmp_path: Path) -> None:
 
     assert issue_path == tmp_path / "issues" / "2026-06-23.html"
     assert index_path == tmp_path / "index.html"
-    assert "我的日报" in html
+    assert "Tourbillion" in html
+    assert "Technology" in html
     assert "英伟达发布新一代 AI 芯片 Rubin" in html
     assert "影响 · AI 分析（非原文事实）" in html
     assert "@media(max-width:520px)" in html

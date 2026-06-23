@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <!--
   ┌─────────────────────────────────────────────────────────────────────┐
-  │ 高保真原型（开发用） · v1 · 我的日报·科技                              │
+  │ 高保真原型（开发用） · v1 · Tourbillion News · 科技板块                │
   │                                                                       │
   │ 这是【给开发（Codex）照着落地的目标产物】，不是设计风格 demo。          │
   │ 它 = 一期电子报渲染后的最终长相，Codex 据此做成 Jinja2 模板落进 web/。  │
@@ -20,7 +20,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>我的日报·科技 · 第 07 期（高保真原型 v1）</title>
+<title>Tourbillion News · Technology（高保真原型 v1）</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,900;1,9..144,400;1,9..144,500&family=Noto+Serif+SC:wght@400;500;600;700;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -47,15 +47,12 @@
 
   /* ── 顶部朱红结构带 ── */
   .redband{height:6px;background:var(--seal);}
-  /* ── 报眉 topbar ── */
-  .topbar{display:flex;justify-content:space-between;font-family:"JetBrains Mono",monospace;font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);padding:11px 0 9px;}
   /* ── 报头 masthead ── */
   .masthead{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;padding-bottom:12px;border-bottom:2px solid var(--ink);}
   .masthead h1{font-family:"Fraunces","Noto Serif SC",serif;font-weight:900;font-size:clamp(40px,6.6vw,58px);line-height:.94;margin:0;letter-spacing:-.005em;}
-  .masthead h1 span{color:var(--seal);}
-  .masthead .sub{font-family:"Fraunces",serif;font-style:italic;font-size:14px;color:var(--ink-3);margin-top:10px;}
-  .masthead .dateline{flex:none;text-align:right;font-family:"Fraunces","Noto Serif SC",serif;font-size:15px;line-height:1.5;color:var(--ink-2);}
-  .masthead .dateline .mono{display:block;font-size:11px;letter-spacing:.1em;color:var(--muted);margin-top:3px;}
+  .masthead h1 .tb{color:var(--seal);}
+  .masthead .sub{font-family:"JetBrains Mono",monospace;font-weight:500;font-size:17px;letter-spacing:.2em;text-transform:uppercase;color:var(--seal);margin-top:14px;}
+  .masthead .dateline{flex:none;text-align:right;font-family:"Fraunces","Noto Serif SC",serif;font-size:16px;line-height:1.5;color:var(--ink-2);}
 
   /* ── sticky 跳转条（v1 只有 头条 / 速览 两项）── */
   .jump{position:sticky;top:0;z-index:30;background:rgba(244,239,227,.93);backdrop-filter:blur(8px);border-bottom:1px solid var(--rule);display:flex;gap:26px;padding:10px 2px;margin-bottom:6px;font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;}
@@ -125,13 +122,10 @@
 <div class="redband"></div>
 <div class="wrap">
 
-  <!-- 报眉：左=板块英文代号（固定），右=卷·期（模板字段 {{ vol }} / {{ issue_no }}） -->
-  <div class="topbar"><span>Technology · Daily Digest</span><span>Vol.1 · No.07</span></div>
-
-  <!-- 报头：刊名固定「我的日报·科技」；dateline 为模板字段 {{ date_cn }} / {{ issue_no }} -->
+  <!-- 报头：刊名固定「Tourbillion News」，板块名作英文副标题（{{ section_en }}）；dateline 为模板字段 {{ date_cn }} -->
   <header class="masthead">
-    <div><h1>我的日报<span>·</span>科技</h1><div class="sub">Curated &amp; self-tuned edition</div></div>
-    <div class="dateline">2026 年 6 月 23 日 · 周二<span class="mono">第 07 期 · 全程中文</span></div>
+    <div><h1>Tourbillion<span class="tb">.</span>News</h1><div class="sub">Technology</div></div>
+    <div class="dateline">2026 年 6 月 23 日 · 周二</div>
   </header>
 
   <nav class="jump"><a href="#headlines">头条</a><a href="#briefs">速览</a></nav>
