@@ -1,10 +1,9 @@
 (function(){
   var app = document.getElementById("app");
-  var issuePathRe = /\/issues\/(\d{4}-\d{2}-\d{2})\.html$/;
-  var isIssuePage = issuePathRe.test(window.location.pathname);
-  var assetPrefix = isIssuePage ? "../" : "";
+  var issuePathRe = /\/issues\/(\d{4}-\d{2}-\d{2})(?:\.html)?$/;
+  var appRoot = new URL("../", document.currentScript.src);
 
-  function dataUrl(path){ return assetPrefix + path; }
+  function dataUrl(path){ return new URL(path, appRoot).href; }
 
   function loadScript(src){
     return new Promise(function(resolve, reject){
@@ -156,7 +155,7 @@
       select.appendChild(option);
     });
     select.addEventListener("change", function(){
-      window.location.href = assetPrefix + "issues/" + select.value + ".html";
+      window.location.href = new URL("issues/" + select.value + ".html", appRoot).href;
     });
     label.appendChild(select);
     return label;
