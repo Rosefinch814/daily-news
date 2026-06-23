@@ -3,7 +3,7 @@ from pathlib import Path
 
 from daily_news.models import AIIssueOutput
 from daily_news.main import make_issue
-from daily_news.render import render_index, render_issue
+from daily_news.render import build_frontend_app
 
 
 def test_render_issue_and_index(tmp_path: Path) -> None:
@@ -18,15 +18,24 @@ def test_render_issue_and_index(tmp_path: Path) -> None:
         number=7,
     )
 
-    issue_path = render_issue(issue, dist_dir=tmp_path)
-    index_path = render_index(issue, dist_dir=tmp_path)
-    html = issue_path.read_text(encoding="utf-8")
+    outputs = build_frontend_app(issue, dist_dir=tmp_path)
+    issue_html = outputs["issue"].read_text(encoding="utf-8")
+    index_html = outputs["index"].read_text(encoding="utf-8")
+    issue_data = outputs["data"].read_text(encoding="utf-8")
+    app_css = (tmp_path / "assets" / "app.css").read_text(encoding="utf-8")
+    app_js = (tmp_path / "assets" / "app.js").read_text(encoding="utf-8")
+    manifest = (tmp_path / "data" / "manifest.json").read_text(encoding="utf-8")
 
-    assert issue_path == tmp_path / "issues" / "2026-06-23.html"
-    assert index_path == tmp_path / "index.html"
-    assert "Tourbillion" in html
-    assert "Technology" in html
-    assert "英伟达发布新一代 AI 芯片 Rubin" in html
-    assert "影响 · AI 分析（非原文事实）" in html
-    assert "@media(max-width:520px)" in html
-    assert 'name="viewport"' in html
+    assert outputs["issue"] == tmp_path / "issues" / "2026-06-23.html"
+    assert outputs["index"] == tmp_path / "index.html"
+    assert outputs["latest"] == tmp_path / "latest.html"
+    assert outputs["data"] == tmp_path / "data" / "issues" / "2026-06-23.json"
+    assert "Tourbillion" in issue_html
+    assert "Technology" in issue_html
+    assert 'name="viewport"' in issue_html
+    assert 'id="app"' in index_html
+    assert "英伟达发布新一代 AI 芯片 Rubin" in issue_data
+    assert "影响 · AI 分析（非原文事实）" in app_js
+    assert "renderIssuePicker" in app_js
+    assert "@media(max-width:520px)" in app_css
+    assert '"latest_issue_date": "2026-06-23"' in manifest

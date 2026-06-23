@@ -1,0 +1,1 @@
+window.DAILY_NEWS_MANIFEST = {"latest_issue_date": "2026-06-23", "issues": [{"date": "2026-06-23", "date_cn": "2026 年 6 月 23 日 · 周二", "section_slug": "tech", "title": "Tourbillion News · Technology", "path": "issues/2026-06-23.html", "data_path": "data/issues/2026-06-23.json"}]};

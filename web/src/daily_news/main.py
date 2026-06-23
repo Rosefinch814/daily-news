@@ -22,7 +22,7 @@ from daily_news.models import (
     RawItem,
 )
 from daily_news.paths import DIST_DIR, RUNS_DIR, WEB_DIR
-from daily_news.render import copy_issue_to_legacy_path, render_index, render_issue
+from daily_news.render import build_frontend_app
 from daily_news.scoring import rank_candidates
 from daily_news.storage.local import (
     load_issue,
@@ -333,23 +333,27 @@ def compose_codex(args: argparse.Namespace) -> int:
 def render_mvp(args: argparse.Namespace) -> int:
     issue = load_issue_from_run(args.run_id)
     validate_issue_content(issue)
-    issue_path = render_issue(issue)
-    index_path = render_index(issue)
-    copy_issue_to_legacy_path(issue_path)
-    html = issue_path.read_text(encoding="utf-8")
+    outputs = build_frontend_app(issue)
+    issue_html = outputs["issue"].read_text(encoding="utf-8")
+    issue_data = outputs["data"].read_text(encoding="utf-8")
+    css = (DIST_DIR / "assets" / "app.css").read_text(encoding="utf-8")
+    js = (DIST_DIR / "assets" / "app.js").read_text(encoding="utf-8")
     checks = {
-        "viewport": 'name="viewport"' in html,
-        "mobile_520": "@media(max-width:520px)" in html,
-        "headlines": 'id="headlines"' in html,
-        "briefs": 'id="briefs"' in html,
+        "viewport": 'name="viewport"' in issue_html,
+        "app_root": 'id="app"' in issue_html,
+        "mobile_520": "@media(max-width:520px)" in css,
+        "data_headlines": '"headlines"' in issue_data,
+        "data_briefs": '"briefs"' in issue_data,
+        "frontend_renderer": "renderIssuePicker" in js,
     }
-    print(f"Generated: {issue_path}")
-    print(f"Index: {index_path}")
-    print("HTML 检查：")
+    print(f"Generated app: {outputs['index']}")
+    print(f"Generated issue route: {outputs['issue']}")
+    print(f"Generated data: {outputs['data']}")
+    print("前端输出检查：")
     for name, ok in checks.items():
         print(f"- {name}: {'ok' if ok else 'missing'}")
     if not all(checks.values()):
-        raise ValueError("HTML structure check failed")
+        raise ValueError("Frontend output check failed")
     return 0
 
 
@@ -433,10 +437,9 @@ async def generate(args: argparse.Namespace) -> int:
         print(f"Dry-run complete. Private snapshot: {run_dir(run_id)}")
         return 0
 
-    rendered_issue_path = render_issue(issue)
-    render_index(issue)
-    copy_issue_to_legacy_path(rendered_issue_path)
-    log_step("5/6", f"HTML 生成完成：{rendered_issue_path}")
+    outputs = build_frontend_app(issue)
+    rendered_issue_path = outputs["issue"]
+    log_step("5/6", f"前端应用与数据生成完成：{rendered_issue_path}")
 
     if store.enabled and not args.no_supabase:
         log_step("6/6", "同步 Supabase")
@@ -466,10 +469,10 @@ def render_existing(args: argparse.Namespace) -> int:
         output_dir = Path(args.output_dir)
     else:
         output_dir = DIST_DIR
-    issue_path = render_issue(issue, dist_dir=output_dir)
-    render_index(issue, dist_dir=output_dir)
-    copy_issue_to_legacy_path(issue_path, dist_dir=output_dir)
-    print(f"Rendered {issue_path}")
+    outputs = build_frontend_app(issue, dist_dir=output_dir)
+    print(f"Rendered app {outputs['index']}")
+    print(f"Rendered issue route {outputs['issue']}")
+    print(f"Rendered data {outputs['data']}")
     return 0
 
 
@@ -543,7 +546,7 @@ def build_parser() -> argparse.ArgumentParser:
     compose_codex_parser.add_argument("--run-id", required=True)
     compose_codex_parser.set_defaults(func=compose_codex)
 
-    render_mvp_parser = subparsers.add_parser("render-mvp", help="Checkpoint 6: render checkpoint issue HTML")
+    render_mvp_parser = subparsers.add_parser("render-mvp", help="Checkpoint 6: render frontend app and issue data")
     render_mvp_parser.add_argument("--run-id", required=True)
     render_mvp_parser.set_defaults(func=render_mvp)
 
