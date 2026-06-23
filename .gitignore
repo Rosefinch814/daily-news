@@ -1,6 +1,7 @@
 # Python
 __pycache__/
 *.py[cod]
+.pytest_cache/
 .venv/
 venv/
 env/
@@ -9,6 +10,7 @@ env/
 # 环境变量 / 密钥
 .env
 .env.*
+!.env.example
 
 # macOS
 .DS_Store
@@ -22,6 +24,7 @@ env/
 
 # 生成的报刊归档（运行时产物，阶段1再决定是否纳入版本控制）
 web/issues/
+web/runs/
 
 # 临时文件
 *.log

@@ -1,0 +1,29 @@
+{
+  "headline_item_ids": ["item-1"],
+  "brief_item_ids": ["item-2"],
+  "headlines": [
+    {
+      "source_item_ids": ["item-1"],
+      "relevance_score": 95,
+      "importance_score": 96,
+      "reason": "命中英伟达和 AI 芯片，且事件重要度高。"
+    }
+  ],
+  "briefs": [
+    {
+      "source_item_ids": ["item-2"],
+      "relevance_score": 82,
+      "importance_score": 70,
+      "reason": "命中苹果和 AI 产品发布，适合速览。"
+    }
+  ],
+  "discarded": [
+    {
+      "source_item_ids": ["item-3"],
+      "reason": "命中不想看：小公司融资。",
+      "relevance_score": 10,
+      "importance_score": 20
+    }
+  ],
+  "merged_sources": []
+}

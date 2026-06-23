@@ -1,0 +1,37 @@
+{
+  "keep_item_ids": ["item-1"],
+  "maybe_item_ids": ["item-2"],
+  "drop_item_ids": ["item-3"],
+  "items": [
+    {
+      "source_item_id": "item-1",
+      "decision": "keep",
+      "category": "AI 芯片",
+      "relevance_score": 95,
+      "importance_score": 96,
+      "reason": "命中英伟达和 AI 芯片，适合进入正文补全。",
+      "is_aggregate": false,
+      "aggregate_highlights": []
+    },
+    {
+      "source_item_id": "item-2",
+      "decision": "maybe",
+      "category": "AI 产品",
+      "relevance_score": 82,
+      "importance_score": 70,
+      "reason": "主题相关，但信息量暂时不足，可作为备选。",
+      "is_aggregate": false,
+      "aggregate_highlights": []
+    },
+    {
+      "source_item_id": "item-3",
+      "decision": "drop",
+      "category": "弱相关",
+      "relevance_score": 10,
+      "importance_score": 20,
+      "reason": "命中不想看：小公司融资。",
+      "is_aggregate": false,
+      "aggregate_highlights": []
+    }
+  ]
+}

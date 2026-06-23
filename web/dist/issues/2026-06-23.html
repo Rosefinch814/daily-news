@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>我的日报·科技 · 第 01 期</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,900;1,9..144,400;1,9..144,500&family=Noto+Serif+SC:wght@400;500;600;700;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F4EFE3; --paper-2:#EBE3D1; --ink:#1A1714; --ink-2:#3D372F; --ink-3:#5A5247;
+    --muted:#8E836F; --rule:#D2C8B2; --rule-2:#B7AB90; --seal:#A6342B; --seal-deep:#8A2A22;
+    --seal-soft:#F0DCD5; --ai-bg:#ECE7DA; --maxw:1020px;
+  }
+  *{box-sizing:border-box;}
+  html{-webkit-text-size-adjust:100%;scroll-behavior:smooth;scroll-padding-top:60px;}
+  @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto;}*{animation:none!important;transition:none!important;}}
+  body{margin:0;background:var(--paper);color:var(--ink);
+    font-family:"Noto Serif SC",Georgia,serif;font-size:16px;line-height:1.72;
+    background-image:radial-gradient(rgba(0,0,0,.014) 1px,transparent 1px);background-size:3px 3px;
+    text-rendering:optimizeLegibility;-webkit-font-smoothing:antialiased;overflow-x:hidden;}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 34px 96px;}
+  ::selection{background:var(--seal-soft);}
+  .mono{font-family:"JetBrains Mono",monospace;font-feature-settings:"tnum" 1;}
+  .ul{color:var(--seal);text-decoration:none;background-image:linear-gradient(var(--seal),var(--seal));background-repeat:no-repeat;background-position:0 100%;background-size:0 1.5px;transition:background-size .3s cubic-bezier(.2,.7,.2,1);}
+  .ul:hover,.ul:focus-visible{background-size:100% 1.5px;}
+  .redband{height:6px;background:var(--seal);}
+  .topbar{display:flex;justify-content:space-between;gap:16px;font-family:"JetBrains Mono",monospace;font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);padding:11px 0 9px;}
+  .masthead{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;padding-bottom:12px;border-bottom:2px solid var(--ink);}
+  .masthead h1{font-family:"Fraunces","Noto Serif SC",serif;font-weight:900;font-size:clamp(40px,6.6vw,58px);line-height:.94;margin:0;letter-spacing:-.005em;}
+  .masthead h1 span{color:var(--seal);}
+  .masthead .sub{font-family:"Fraunces",serif;font-style:italic;font-size:14px;color:var(--ink-3);margin-top:10px;}
+  .masthead .dateline{flex:none;text-align:right;font-family:"Fraunces","Noto Serif SC",serif;font-size:15px;line-height:1.5;color:var(--ink-2);}
+  .masthead .dateline .mono{display:block;font-size:11px;letter-spacing:.1em;color:var(--muted);margin-top:3px;}
+  .jump{position:sticky;top:0;z-index:30;background:rgba(244,239,227,.93);backdrop-filter:blur(8px);border-bottom:1px solid var(--rule);display:flex;gap:26px;padding:10px 2px;margin-bottom:6px;font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;}
+  .jump a{color:var(--muted);transition:color .2s;text-decoration:none;padding:2px 0;} .jump a:hover,.jump a.active,.jump a:focus-visible{color:var(--seal);}
+  .section-label{display:flex;align-items:center;gap:12px;margin:46px 0 22px;}
+  .section-label .tab{display:inline-block;width:10px;height:10px;background:var(--seal);flex:none;}
+  .section-label .cn{font-weight:700;font-size:18px;letter-spacing:.06em;white-space:nowrap;}
+  .section-label .role{font-family:"JetBrains Mono",monospace;font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);white-space:nowrap;}
+  .section-label .line{flex:1;height:1px;background:var(--rule);}
+  .hero{padding:6px 0 28px;border-bottom:2px solid var(--ink);margin-bottom:26px;}
+  .kicker{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--seal);}
+  .kicker .no{color:var(--muted);letter-spacing:.1em;}
+  .hero h2{font-family:"Fraunces","Noto Serif SC",serif;font-weight:900;font-size:clamp(34px,5.6vw,52px);line-height:1.06;letter-spacing:-.01em;margin:12px 0 16px;max-width:18em;}
+  .hero .summary{font-size:17.5px;line-height:1.66;color:var(--ink-2);}
+  .tag-fact{font-family:"JetBrains Mono",monospace;font-size:9.5px;color:var(--muted);border:1px solid var(--rule-2);padding:1px 6px;letter-spacing:.08em;margin-right:8px;vertical-align:2px;text-transform:uppercase;}
+  details{margin:14px 0;}
+  summary{cursor:pointer;font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--seal);list-style:none;display:inline-flex;gap:7px;align-items:center;min-height:36px;}
+  summary::-webkit-details-marker{display:none;}
+  summary .tw{width:15px;height:1.5px;background:var(--seal);transition:transform .3s;}
+  details[open] summary .tw{transform:rotate(90deg);}
+  .read-body{margin-top:13px;color:var(--ink-2);font-size:16.5px;line-height:1.8;animation:rv .4s cubic-bezier(.2,.7,.2,1);}
+  @keyframes rv{from{opacity:0;transform:translateY(-6px);}to{opacity:1;transform:none;}}
+  .read-body p{margin:0 0 12px;}
+  .pullquote{font-family:"Fraunces","Noto Serif SC",serif;font-style:italic;font-weight:500;font-size:23px;line-height:1.38;color:var(--ink);border-left:3px solid var(--seal);padding:2px 0 2px 18px;margin:18px 0;}
+  .pullquote cite{display:block;font-style:normal;font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.1em;color:var(--muted);margin-top:8px;}
+  .judgement{margin:18px 0 12px;}
+  .ai-impact{background:var(--ai-bg);border-left:3px solid var(--seal);padding:13px 17px;font-size:14.5px;line-height:1.66;color:var(--ink-2);}
+  .ai-impact .mk{display:block;font-family:"JetBrains Mono",monospace;font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--seal);margin-bottom:7px;}
+  .source{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--muted);}
+  .secondary{display:grid;grid-template-columns:1fr 1fr;gap:0 36px;}
+  .sec{padding:4px 0 22px;}
+  .sec:nth-child(odd){border-right:1px solid var(--rule);padding-right:36px;}
+  .sec h3.t{font-family:"Fraunces","Noto Serif SC",serif;font-weight:700;font-size:22px;line-height:1.2;margin:9px 0 10px;}
+  .sec .summary{font-size:15px;color:var(--ink-2);margin:0 0 11px;}
+  .brief-list{column-count:2;column-gap:40px;column-rule:1px solid var(--rule);}
+  .brief{break-inside:avoid;padding:9px 0;border-top:1px solid var(--rule);}
+  .brief:first-child{border-top:none;padding-top:2px;}
+  .brief h3{font-weight:600;font-size:15px;line-height:1.4;margin:0;}
+  .brief .bno{font-family:"Fraunces",serif;font-weight:500;font-size:16px;color:var(--seal);margin-right:8px;}
+  .brief p{margin:6px 0 7px;font-size:13.5px;color:var(--ink-2);line-height:1.56;}
+  .brief .source{font-size:11px;}
+  @media(max-width:820px){
+    .wrap{padding-left:24px;padding-right:24px;}
+    .secondary{grid-template-columns:1fr;gap:22px;}
+    .sec:nth-child(odd){border-right:none;padding-right:0;border-bottom:1px solid var(--rule);}
+    .masthead{flex-direction:column;align-items:flex-start;gap:10px;}.masthead .dateline{text-align:left;}
+  }
+  @media(max-width:520px){
+    .wrap{padding-left:18px;padding-right:18px;}
+    .topbar{font-size:9.5px;letter-spacing:.12em;flex-direction:column;gap:2px;}
+    .jump{gap:18px;overflow-x:auto;}
+    .section-label{gap:9px;}
+    .section-label .role{display:none;}
+    .brief-list{column-count:1;}
+  }
+</style>
+</head>
+<body>
+<div class="redband"></div>
+<div class="wrap">
+  <div class="topbar"><span>Technology · Daily Digest</span><span>Vol.1 · No.01</span></div>
+  <header class="masthead">
+    <div><h1>我的日报<span>·</span>科技</h1><div class="sub">Curated &amp; self-tuned edition</div></div>
+    <div class="dateline">2026 年 6 月 23 日 · 周二<span class="mono">第 01 期 · 全程中文</span></div>
+  </header>
+
+  <nav class="jump"><a href="#headlines">头条</a><a href="#briefs">速览</a></nav>
+
+  <section id="headlines">
+    <div class="section-label"><span class="tab"></span><span class="cn">头条精读</span><span class="role">深读 · 5 条</span><span class="line"></span></div>
+    <article class="hero" id="hl1">
+      <div class="kicker">AI Compute　<span class="no">／ 头版头条</span></div>
+      <h2>Reflection AI 向 SpaceX 购买多年 Nvidia GB300 算力</h2>
+      <p class="summary"><span class="tag-fact">事实</span>Reflection AI 将从 2026 年 7 月 1 日起向 SpaceX 支付每月 1.5 亿美元，使用 SpaceX 位于田纳西州孟菲斯 Colossus 2 数据中心的 Nvidia GB300 芯片和配套硬件，合同延续到 2029 年，最高价值 63 亿美元。</p>
+      <details><summary><span class="tw"></span>展开精读</summary><div class="read-body">
+<p>TechCrunch 报道称，Reflection AI 与 SpaceX 达成算力采购协议。Reflection AI 从 2026 年 7 月 1 日开始获得 SpaceX Colossus 2 数据中心的 Nvidia GB300 AI 芯片和相关硬件访问权，月付 1.5 亿美元，合同期限到 2029 年。</p><p>报道同时提到，SpaceX 还与 Anthropic、Google 有更大规模的算力合同；Reflection AI 这笔交易规模较小，但这是该公司的第一笔算力协议。合同允许任一方在前三个月后提前 90 天通知终止。</p><p>Reflection AI 用这笔交易强调自己的开放权重 AI 路线。报道披露的事实是，开放模型公司同样需要长期、集中、昂贵的数据中心算力供给，且这些供给已经由少数拥有大规模 GPU 集群的公司掌握。</p>      </div></details>
+      <div class="judgement"><div class="ai-impact"><span class="mk">影响 · AI 分析（非原文事实）</span>这条新闻的关键不只是合同金额，而是算力市场的结构：前沿模型创业公司即便强调开放权重，也绕不开封闭的 GPU 数据中心资源。SpaceX、xAI、云厂商和芯片厂商之间的算力调度，正在变成 AI 公司竞争力的一部分。</div></div>
+      <p class="source">综合 TechCrunch · <a class="ul" href="https://techcrunch.com/2026/06/22/spacex-inks-compute-deal-with-reflection-ai-an-open-source-ai-lab">原文 ↗</a></p>
+    </article>
+
+    <div class="secondary">
+      <article class="sec" id="hl2">
+        <div class="kicker">AI Chips　<span class="no">／ 02</span></div>
+        <h3 class="t">AI 推理芯片继续融资：凌川量产视频芯片，Groq 转向 neocloud</h3>
+        <p class="summary"><span class="tag-fact">事实</span>36氪报道，快手系 AI 芯片公司凌川科技完成数亿元 A+ 轮融资，SL200 芯片已销售近十万颗；TechCrunch 报道，Groq 确认完成 6.5 亿美元融资，并在 Nvidia 授权和招揽核心团队后继续招聘、推进 neocloud 业务。</p>
+        <details><summary><span class="tw"></span>展开精读</summary><div class="read-body">
+<p>凌川科技由北京市人工智能基金与快手集团共同发起设立，前身是快手异构计算与芯片事业部。36氪报道，其 SL200 智能视频 SoC 已部署在快手、阿里云、百度云、B 站等互联网公司，覆盖快手 99.7% 的直播转码业务。</p><p>这家公司把重点放在视频生成、多模态大模型和视频处理场景。报道称，其芯片路线包括 DiPU 架构、RISC-V 生态、统一计算平台 LUCAS，以及面向下一代产品的 3D 近存架构。</p><p>美国方向上，Groq 确认完成 6.5 亿美元融资。TechCrunch 报道称，Groq 在 Nvidia 与其签署技术授权协议并招揽创始人 Jonathan Ross 等核心人员之后，继续融资、补充管理层，并把业务重心放在 neocloud。</p>        </div></details>
+        <div class="judgement"><div class="ai-impact"><span class="mk">影响 · AI 分析（非原文事实）</span>这两条放在一起看，AI 芯片公司的压力已经从“能不能做出芯片”转向“能不能找到稳定场景和商业闭环”。凌川依托视频业务验证成本和效率，Groq 则试图从芯片扩展到云服务。推理侧机会仍在，但纯芯片叙事会越来越难。</div></div>
+        <p class="source">综合 36氪、TechCrunch · <a class="ul" href="https://36kr.com/p/3865136165344516?f=rss">原文 ↗</a></p>
+      </article>
+      <article class="sec" id="hl3">
+        <div class="kicker">Data Centers　<span class="no">／ 03</span></div>
+        <h3 class="t">AI 数据中心进入资源约束期：Nvidia 谈节水，Microsoft 转向燃气供电</h3>
+        <p class="summary"><span class="tag-fact">事实</span>Nvidia 宣称 Rubin 代参考数据中心采用全液冷后，可在设施内部显著减少用水；TechCrunch 同时指出，这种口径不覆盖数据中心外部发电带来的水耗。另据报道，Microsoft 与 Chevron 计划在得州建设 2.67GW 天然气电厂，为 AI 和云数据中心供电。</p>
+        <details><summary><span class="tw"></span>展开精读</summary><div class="read-body">
+<p>The Verge 报道称，Nvidia 强调 Rubin 代参考设计会采用 100% 液冷，并在更高运行温度下减少数据中心内部水耗。Nvidia 的说法是，这类设计能在设施内接近消除用水需求。</p><p>TechCrunch 对同一主题补充了边界问题：Nvidia 的统计主要把范围限定在数据中心内部，而 AI 数据中心如果依赖化石燃料电力，发电环节仍可能带来水耗和碳排压力。</p><p>另一条 TechCrunch 报道显示，Microsoft 与 Chevron 计划在得州建设 2.67GW 天然气电厂，向 Microsoft 运营的数据中心供电，协议期限为 20 年。该项目使用 GE Vernova 燃机和 Solar Turbines 设备，被称为美国较大的燃气电力与数据中心共址项目之一。</p>        </div></details>
+        <div class="judgement"><div class="ai-impact"><span class="mk">影响 · AI 分析（非原文事实）</span>AI 基建正在从“买 GPU”扩展为“抢水、电、土地和电网接入”。液冷能降低设施内部水耗，但不等于解决 AI 的资源账。Microsoft 直接绑定长期燃气供电，说明算力增长已经开始重塑能源采购，而不是只消耗云预算。</div></div>
+        <p class="source">综合 The Verge、TechCrunch、TechCrunch · <a class="ul" href="https://www.theverge.com/tech/954139/nvidia-data-centers-rubin-liquid-cooling">原文 ↗</a></p>
+      </article>
+      <article class="sec" id="hl4">
+        <div class="kicker">Autopilot　<span class="no">／ 04</span></div>
+        <h3 class="t">Tesla Autopilot 事故再引调查：公司回应与监管核查并行</h3>
+        <p class="summary"><span class="tag-fact">事实</span>美国得州一辆 Tesla Model 3 撞入住宅并造成一名 76 岁女性死亡。司机向警方称事故时车辆使用了自动驾驶辅助系统。TechCrunch 报道 Tesla 高管在 X 上反驳外界叙事；Ars Technica 报道称警方和 NHTSA 正在调查 Autopilot 是否相关。</p>
+        <details><summary><span class="tw"></span>展开精读</summary><div class="read-body">
+<p>事故发生在得州 Katy，一辆 Tesla Model 3 离开道路并撞入住宅，屋内 76 岁女性 Martha Avila 后来死亡。TechCrunch 报道称，司机 Michael Butler 告诉警方，车辆当时处于 Autopilot 状态。</p><p>Tesla AI 软件副总裁 Ashok Elluswamy 随后在 X 上回应，试图反驳事故叙事。报道指出，在调查人员完成车辆数据日志分析之前，Autopilot 是否真正启用、是否被覆盖或是否故障仍无法确认。</p><p>Ars Technica 报道称，Harris County 警方确认司机说自己当时使用了自动驾驶辅助系统，警方和 NHTSA 都在调查该系统是否与事故有关。警方也称司机没有醉酒，并正在配合调查。</p>        </div></details>
+        <div class="judgement"><div class="ai-impact"><span class="mk">影响 · AI 分析（非原文事实）</span>自动驾驶辅助系统的核心风险是公众理解和产品边界之间的落差。即便最终调查认定系统不是直接原因，只要用户认为车辆在“自动驾驶”，事故就会继续转化为监管、品牌和法律压力。Tesla 的技术叙事会越来越依赖可审计的数据日志。</div></div>
+        <p class="source">综合 TechCrunch、Ars Technica · <a class="ul" href="https://techcrunch.com/2026/06/22/tesla-pushes-back-on-autopilot-narrative-after-fatal-texas-crash">原文 ↗</a></p>
+      </article>
+      <article class="sec" id="hl5">
+        <div class="kicker">AI Security　<span class="no">／ 05</span></div>
+        <h3 class="t">OpenAI 把模型能力推向漏洞修复：Patch the Planet 与 GPT-5.5-Cyber 同日出现</h3>
+        <p class="summary"><span class="tag-fact">事实</span>OpenAI 推出 Patch the Planet 计划，与 Trail of Bits 合作帮助开源维护者发现和修复安全问题；OpenAI Daybreak 页面同时披露 Codex Security 更新、GPT-5.5-Cyber 和网络防御合作计划。</p>
+        <details><summary><span class="tw"></span>展开精读</summary><div class="read-body">
+<p>TechCrunch 报道称，OpenAI 发布 Patch the Planet 计划，将与安全公司 Trail of Bits 合作，为开源维护者审查潜在代码问题，并使用 Codex Security 等工具辅助修复。</p><p>OpenAI 在 Daybreak 页面还提到，相关模型已经用于发现并生成关键漏洞补丁，覆盖浏览器、网络基础设施、FreeBSD 和 Linux kernel 等系统。页面列出的产品包括 Codex Security 更新和 GPT-5.5-Cyber。</p><p>OpenAI 表示，Patch the Planet 的目标是先由安全工程师审查模型发现的问题，再交给维护者，并与项目一起开发补丁和测试。事实层面，这意味着模型被放进了漏洞发现、补丁生成和维护者工作流。</p>        </div></details>
+        <div class="judgement"><div class="ai-impact"><span class="mk">影响 · AI 分析（非原文事实）</span>AI 安全工具从“帮开发者写代码”走向“主动找漏洞并生成补丁”，会改变开源项目的维护成本结构。但这类能力也需要可信审查链路，否则维护者可能被低质量报告淹没。OpenAI 选择和 Trail of Bits 合作，说明它也意识到纯模型输出还不能直接进入关键安全流程。</div></div>
+        <p class="source">综合 TechCrunch、OpenAI · <a class="ul" href="https://techcrunch.com/2026/06/22/openai-launches-new-initiative-to-help-find-and-patch-open-source-bugs">原文 ↗</a></p>
+      </article>
+    </div>
+  </section>
+
+  <section id="briefs">
+    <div class="section-label"><span class="tab"></span><span class="cn">速览</span><span class="role">快扫 · 12 条</span><span class="line"></span></div>
+    <div class="brief-list">
+      <div class="brief"><h3><span class="bno">06</span>Anthropic 的风险叙事被卷入 AI 出口管制争议</h3><p>Ars Technica 援引 FT 分析称，Anthropic 在 2026 年官方表述中更频繁谈到风险、监管和限制；在美国限制外国人访问其新模型后，部分批评者认为该公司的风险叙事加剧了监管后果。</p><p class="source">Ars Technica · <a class="ul" href="https://arstechnica.com/ai/2026/06/how-anthropic-may-have-talked-itself-into-an-ai-export-ban">原文↗</a></p></div>
+      <div class="brief"><h3><span class="bno">07</span>Claude 可能在部分场景要求用户上传身份证件</h3><p>TechCrunch 报道，Anthropic 新版隐私政策写明，Claude 在特定情况下可能要求用户通过护照或驾照等政府证件验证年龄或身份，政策预计 2026 年 7 月 8 日生效。</p><p class="source">TechCrunch · <a class="ul" href="https://techcrunch.com/2026/06/22/anthropic-says-claude-may-want-to-see-your-id">原文↗</a></p></div>
+      <div class="brief"><h3><span class="bno">08</span>工信部将编制智能网联新能源汽车“十五五”规划</h3><p>36氪援引证券时报消息，工信部装备工业一司负责人表示，将加快编制智能网联新能源汽车产业发展“十五五”规划，并推进新一代动力电池、车用芯片、操作系统、自动驾驶等技术攻关。</p><p class="source">36氪 · <a class="ul" href="https://36kr.com/newsflashes/3865488982578185?f=rss">原文↗</a></p></div>
+      <div class="brief"><h3><span class="bno">09</span>GLM-5.2 热度上升：本地运行与 Opus 对比同时出圈</h3><p>Unsloth 文档称 GLM-5.2 是 744B 参数、40B 激活参数、1M 上下文窗口的开放模型，并提供本地运行方案；另一篇对比文章用 WebGL 游戏生成测试 GLM-5.2 与 Claude Opus 4.8。</p><p class="source">Hacker News、Hacker News · <a class="ul" href="https://unsloth.ai/docs/models/glm-5.2">原文↗</a></p></div>
+      <div class="brief"><h3><span class="bno">10</span>瑞士 AI Initiative 发布 Apertus 开放基础模型</h3><p>Apertus 项目由 Swiss AI Initiative 推动，强调开放权重、开放数据、开放科学，并声称训练数据、代码、权重、方法和对齐原则均可文档化和复现。</p><p class="source">Hacker News · <a class="ul" href="https://apertvs.ai">原文↗</a></p></div>
+      <div class="brief"><h3><span class="bno">11</span>AMD 在用户抗议后恢复消费级 CPU 内存加密</h3><p>Ars Technica 报道，AMD 将恢复消费级 Ryzen 处理器的 TSME 内存加密能力。该功能可对内存内容加密，以降低冷启动等需要物理访问的攻击风险。</p><p class="source">Ars Technica · <a class="ul" href="https://arstechnica.com/security/2026/06/following-user-outcry-amd-reinstates-memory-encryption-in-consumer-cpus">原文↗</a></p></div>
+      <div class="brief"><h3><span class="bno">12</span>Apple 与 Tesla 供应商 Tata Electronics 确认数据泄露</h3><p>TechCrunch 报道，Tata Electronics 确认发生数据泄露。黑客论坛声称拥有超过 630GB 数据，样本中疑似包含 Apple 供应商规格和 Tesla 制造文档。</p><p class="source">TechCrunch · <a class="ul" href="https://techcrunch.com/2026/06/22/tata-electronics-a-major-tech-supplier-to-apple-and-tesla-confirms-data-breach">原文↗</a></p></div>
+      <div class="brief"><h3><span class="bno">13</span>安全公司公开 Apple 芯片不可修复漏洞细节</h3><p>TechCrunch 报道，欧洲攻击性安全公司 Paradigm Shift 公开名为 usbliter8 的 Apple 芯片漏洞和概念验证。该漏洞影响旧款 iPhone，需要物理接触目标设备。</p><p class="source">TechCrunch · <a class="ul" href="https://techcrunch.com/2026/06/22/a-new-unpatchable-flaw-in-apple-chips-opens-the-door-to-an-iphone-jailbreak">原文↗</a></p></div>
+      <div class="brief"><h3><span class="bno">14</span>AI 开发工作流开始讨论“agent loop”</h3><p>TechCrunch 报道，Claude Code 创建者 Boris Cherny 在 Meta @Scale 会议上谈到 loops：agent 不只写代码，还可以持续在后台检查架构、寻找重复抽象并提交 pull request。</p><p class="source">TechCrunch · <a class="ul" href="https://techcrunch.com/2026/06/22/the-ai-world-is-getting-loopy">原文↗</a></p></div>
+      <div class="brief"><h3><span class="bno">15</span>Google DeepMind 投资 A24，合作开发 AI 电影工具</h3><p>TechCrunch 报道，Google DeepMind 宣布向电影公司 A24 投资 7500 万美元，并将与其合作开发面向电影制作的 AI 工具，DeepMind 称会从艺术家获得反馈。</p><p class="source">TechCrunch · <a class="ul" href="https://techcrunch.com/2026/06/22/google-deepmind-bets-75m-on-ais-future-in-hollywood-with-a24-deal">原文↗</a></p></div>
+      <div class="brief"><h3><span class="bno">16</span>手机系统把自然语言生成组件当成 AI 入口</h3><p>爱范儿梳理称，Google、华为、苹果都在手机系统里推进自然语言生成小组件、快捷指令或浏览器扩展能力，让用户用描述生成系统级组件或工作流。</p><p class="source">爱范儿 · <a class="ul" href="https://www.ifanr.com/1669508">原文↗</a></p></div>
+      <div class="brief"><h3><span class="bno">17</span>北大团队用肌电腕带做 Physical AI 数据采集</h3><p>36氪报道，雪梦未来获得龚虹嘉、陆奇和海外机构投资。团队用表面肌电信号、第一视角采集设备和 AI 解码模型，为具身智能和世界模型训练提供人类操控数据。</p><p class="source">36氪 · <a class="ul" href="https://36kr.com/p/3865125383443463?f=rss">原文↗</a></p></div>
+    </div>
+  </section>
+</div>
+<script>
+(function(){var ids=['headlines','briefs'],ls=document.querySelectorAll('.jump a');
+if(!('IntersectionObserver'in window))return;
+var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){var i=ids.indexOf(e.target.id);ls.forEach(function(l){l.classList.remove('active');});if(ls[i])ls[i].classList.add('active');}});},{rootMargin:'-55px 0px -65% 0px'});
+ids.forEach(function(id){var s=document.getElementById(id);if(s)io.observe(s);});})();
+</script>
+</body>
+</html>

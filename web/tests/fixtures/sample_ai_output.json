@@ -1,0 +1,39 @@
+{
+  "headlines": [
+    {
+      "source_item_ids": ["item-1"],
+      "kicker": "芯片 · 发布",
+      "title_zh": "英伟达发布新一代 AI 芯片 Rubin",
+      "summary_zh": "英伟达发布新一代数据中心 GPU Rubin，官方称训练吞吐较上代提升明显，并计划明年量产。",
+      "read_body_zh": ["Rubin 采用新架构和高带宽显存，配套整机柜方案交付，目标是继续扩大 AI 训练市场优势。"],
+      "pullquote": null,
+      "ai_impact": "若量产顺利，将进一步巩固英伟达在 AI 训练市场的主导地位，并利好先进封装供应链。",
+      "sources": [
+        {"name": "The Verge", "url": "https://example.com/nvidia"}
+      ],
+      "relevance_score": 95,
+      "importance_score": 96
+    }
+  ],
+  "briefs": [
+    {
+      "source_item_ids": ["item-2"],
+      "title_zh": "苹果推进端侧大模型",
+      "summary_zh": "苹果继续把更多 AI 能力放到设备端运行，强调隐私和低延迟。",
+      "sources": [
+        {"name": "爱范儿", "url": "https://example.com/apple"}
+      ],
+      "relevance_score": 82,
+      "importance_score": 70
+    }
+  ],
+  "discarded": [
+    {
+      "source_item_ids": ["item-3"],
+      "reason": "命中不想看：小公司融资",
+      "relevance_score": 10,
+      "importance_score": 20
+    }
+  ],
+  "merged_sources": []
+}

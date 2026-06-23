@@ -1,0 +1,108 @@
+sections:
+  tech:
+    name: 科技
+    publication_name: 我的日报·科技
+    slug: tech
+    language: zh-CN
+    issue_volume: 1
+    target_headlines:
+      min: 3
+      max: 5
+    target_briefs:
+      min: 10
+      max: 15
+    interests:
+      want:
+        companies: [英伟达, 苹果, 台积电, 特斯拉, 微软, 谷歌, 英特尔]
+        themes: [AI芯片, 大模型进展, AI产品发布, 自动驾驶, 半导体]
+        people: [黄仁勋, 马斯克, 奥特曼, 库克]
+      avoid: [小公司融资, 纯营销稿, 加密货币炒作, 谍照外观爆料]
+    sources:
+      - id: the_verge
+        name: The Verge
+        type: rss
+        language: en
+        url: https://www.theverge.com/rss/index.xml
+        enabled: true
+        weight: 1.0
+        max_items: 10
+        lookback_hours: 36
+      - id: ars_technica_tech_lab
+        name: Ars Technica
+        type: rss
+        language: en
+        url: https://feeds.arstechnica.com/arstechnica/technology-lab
+        enabled: true
+        weight: 1.0
+        max_items: 20
+        lookback_hours: 48
+      - id: ars_technica_all
+        name: Ars Technica
+        type: rss
+        language: en
+        url: https://feeds.arstechnica.com/arstechnica/index
+        enabled: true
+        weight: 0.8
+        max_items: 20
+        lookback_hours: 48
+      - id: reuters_technology
+        name: Reuters Technology
+        type: rss
+        language: en
+        url: https://www.reutersagency.com/feed/?best-topics=tech&post_type=best
+        enabled: false
+        weight: 1.1
+      - id: techcrunch_ai
+        name: TechCrunch
+        type: rss
+        language: en
+        url: https://techcrunch.com/category/artificial-intelligence/feed/
+        enabled: true
+        weight: 1.0
+        max_items: 20
+        lookback_hours: 36
+      - id: techcrunch_all
+        name: TechCrunch
+        type: rss
+        language: en
+        url: https://techcrunch.com/feed/
+        enabled: true
+        weight: 0.9
+        max_items: 20
+        lookback_hours: 36
+      - id: hacker_news_best
+        name: Hacker News
+        type: rss
+        language: en
+        url: https://hnrss.org/best?points=100
+        enabled: true
+        weight: 0.8
+        max_items: 30
+        lookback_hours: 36
+      - id: hacker_news_frontpage
+        name: Hacker News
+        type: rss
+        language: en
+        url: https://hnrss.org/frontpage?points=50
+        enabled: true
+        weight: 0.7
+        max_items: 20
+        lookback_hours: 36
+      - id: _36kr
+        name: 36氪
+        type: rss
+        language: zh
+        url: https://36kr.com/feed
+        enabled: true
+        weight: 0.9
+        max_items: 30
+        lookback_hours: 36
+      - id: ifanr
+        name: 爱范儿
+        type: rss
+        language: zh
+        url: https://www.ifanr.com/feed
+        enabled: true
+        weight: 0.9
+        max_items: 20
+        lookback_hours: 36
