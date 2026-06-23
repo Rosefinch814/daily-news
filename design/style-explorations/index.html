@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>设计方向 · 我的日报·科技</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Noto+Sans+SC:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;}
+  body{margin:0;background:#0E0F12;color:#E8E8E8;font-family:"Inter","Noto Sans SC",sans-serif;line-height:1.6;padding:48px 24px 80px;}
+  .wrap{max-width:640px;margin:0 auto;}
+  h1{font-weight:800;font-size:30px;letter-spacing:-.02em;margin:0 0 6px;}
+  .sub{color:#9AA0AA;font-size:15px;margin:0 0 36px;}
+  .card{display:block;text-decoration:none;color:inherit;border:1px solid #2A2D34;border-radius:12px;padding:24px;background:#15171C;transition:border-color .2s,transform .2s;}
+  .card:hover{border-color:#A6342B;transform:translateY(-2px);}
+  .card .v{font-family:"JetBrains Mono",monospace;font-size:12px;color:#A6342B;letter-spacing:.08em;}
+  .card h2{font-size:21px;margin:8px 0 6px;}
+  .card p{font-size:14px;color:#9AA0AA;margin:0 0 14px;}
+  .swatch{display:flex;gap:6px;margin:14px 0 0;}
+  .swatch i{width:26px;height:26px;border-radius:6px;display:block;border:1px solid rgba(255,255,255,.12);}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px;}
+  .chip{font-family:"JetBrains Mono",monospace;font-size:11px;border:1px solid #2A2D34;border-radius:20px;padding:3px 10px;color:#C2C6CE;}
+  .note{margin-top:30px;font-size:13.5px;color:#7A808B;border-top:1px solid #2A2D34;padding-top:18px;}
+  .note b{color:#C2C6CE;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>设计方向 — 我的日报·科技</h1>
+  <p class="sub">经多轮探索，已选定 <b style="color:#E8E8E8">V1a · 头版 Hero</b> 作为设计基调。其余探索版本已清除。</p>
+
+  <a class="card" href="v1a-hero.html">
+    <div class="v">V1a · 当前方向</div>
+    <h2>报纸感 · 头版 Hero</h2>
+    <p>暖新闻纸 + Fraunces 展示衬线 + 头版 hero 强主次 + 朱红结构签名色。砍掉 emoji 改排版化标注，事实 / AI 分析视觉分区；几处点睛动效。</p>
+    <div class="swatch"><i style="background:#F4EFE3"></i><i style="background:#1A1714"></i><i style="background:#A6342B"></i><i style="background:#EBE3D1"></i></div>
+    <div class="chips"><span class="chip">强主次</span><span class="chip">结构朱红</span><span class="chip">Fraunces</span><span class="chip">耐读</span></div>
+  </a>
+
+  <p class="note">这是 <b>设计探索样张</b>（一次性原型），不是产品代码。下一步：把这版的信息架构 + 配色 token / 字体 / 间距 / 组件规范整理成正式 <b>design/ 设计文档</b>，交 Codex 落进 web/。<br>待办：头版斜体导语属"解读非事实"，需按铁律改为纯事实或标注成 AI 判断。</p>
+</div>
+</body>
+</html>

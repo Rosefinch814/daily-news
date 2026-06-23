@@ -48,6 +48,7 @@
 - **抓取**：优先 **RSS/API，不爬付费墙**；爬虫仅在确无 API 时用，单独隔离。
 - **运行时 AI**（筛选/摘要/翻译/归类）：调 `claude -p`（Claude Code 无头模式），封装成**单一可替换函数**（如 `ai_engine`），返回结构化 JSON，便于将来换 API。
 - **配置/内容**（`sections.yaml`、口味档案 `profiles/`）与代码分离。
+- **前端样式唯一来源**：[design/设计规范.md](design/设计规范.md)（视觉/字体/配色 token/组件/动效权威，基调 = V1a 报纸感）。落地 `web/` 模板与将来新增板块/期数均照此，保持一致；改样式先改其中的 token，不在组件里散写裸值。
 - **产品行为唯一来源**：当期 spec（如 `docs/spec/01-科技日报.md`）。有疑问回查或在工单「开放问题」里记，别擅自拍板。
 
 ## 提交规范
@@ -60,5 +61,6 @@
 - [docs/mvp/01-科技日报.md](docs/mvp/01-科技日报.md) —— 当期 MVP（本期源头）
 - [docs/spec/01-科技日报.md](docs/spec/01-科技日报.md) —— 当期 Spec（权威，基于 MVP）
 - [docs/milestones/01-科技日报.md](docs/milestones/01-科技日报.md) —— 当期里程碑（聚焦 M1）
+- [design/设计规范.md](design/设计规范.md) —— 前端样式权威（V1a 报纸感；含 token/字体/组件/动效）
 - [docs/tasks/](docs/tasks/) —— 工单（产品→开发接口）
 - [AGENTS.md](AGENTS.md) —— Codex 入口（仅重定向到本文件）
