@@ -1,5 +1,9 @@
 ai:
   default_provider: codex
+  stage_providers:
+    semantic_shortlist: codex
+    selection: codex
+    issue_compose: codex
   timeout_seconds: 300
   repair_attempts: 1
   codex:

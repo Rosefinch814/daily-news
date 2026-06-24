@@ -1,3 +1,4 @@
+import asyncio
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -9,11 +10,15 @@ from daily_news.main import (
     ai_shortlist,
     ai_file_read_test,
     build_parser,
+    clean_run,
     merge_enriched_candidates,
+    resolve_stage_provider,
+    run_pipeline,
     validate_selection_ids,
     validate_shortlist_ids,
 )
 from daily_news.ai_engine import ProviderRunResult
+from daily_news.config import PipelineConfig
 from daily_news.models import AIIssueOutput, CandidateItem, CodexSelectionOutput, CodexShortlistOutput, RawItem
 from daily_news.models import AIRunRecord
 from daily_news.storage import local as local_storage
@@ -83,6 +88,8 @@ def test_checkpoint_commands_are_registered() -> None:
         ["ai-file-read-test", "--provider", "codex"],
         ["render-mvp", "--run-id", "tech-2026-06-23-000000"],
         ["sync", "--run-id", "tech-2026-06-23-000000"],
+        ["run-pipeline", "--date", "2026-06-24", "--ai-compose-provider", "claude"],
+        ["clean-run", "--run-id", "tech-2026-06-23-000000", "--pack-logs"],
     ]
     for argv in commands:
         parsed = parser.parse_args(argv)
@@ -91,6 +98,7 @@ def test_checkpoint_commands_are_registered() -> None:
 
 def test_save_ai_task_run_writes_monitoring_logs(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(local_storage, "RUNS_DIR", tmp_path)
+    monkeypatch.setattr(local_storage, "LOGS_DIR", tmp_path / "logs")
     now = datetime.now(timezone.utc)
     record = AIRunRecord(
         task_type="semantic_shortlist",
@@ -113,12 +121,12 @@ def test_save_ai_task_run_writes_monitoring_logs(tmp_path: Path, monkeypatch: py
 
     local_storage.save_ai_task_run("run-1", "02_ai_shortlist", record)
 
-    run_dir = tmp_path / "run-1"
-    assert (run_dir / "02_ai_shortlist_run.json").exists()
-    assert (run_dir / "02_ai_shortlist_attempts.json").exists()
-    assert (run_dir / "02_ai_shortlist_provider_events.jsonl").exists()
-    assert (run_dir / "ai_metrics.jsonl").exists()
-    assert '"total_tokens": 42' in (run_dir / "ai_metrics.jsonl").read_text(encoding="utf-8")
+    ai_logs_dir = tmp_path / "logs" / "run-1" / "ai"
+    assert (ai_logs_dir / "02_ai_shortlist_run.json").exists()
+    assert (ai_logs_dir / "02_ai_shortlist_attempts.json").exists()
+    assert (ai_logs_dir / "02_ai_shortlist_provider_events.jsonl").exists()
+    assert (tmp_path / "logs" / "run-1" / "ai_metrics.jsonl").exists()
+    assert '"total_tokens": 42' in (tmp_path / "logs" / "run-1" / "ai_metrics.jsonl").read_text(encoding="utf-8")
 
 
 def test_ai_file_read_test_writes_debug_files(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -194,6 +202,7 @@ def test_ai_file_read_test_writes_debug_files(tmp_path: Path, monkeypatch: pytes
 
 def test_ai_shortlist_reads_candidate_file_path(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(local_storage, "RUNS_DIR", tmp_path)
+    monkeypatch.setattr(local_storage, "LOGS_DIR", tmp_path / "logs")
     run_id = "tech-2026-06-24-101218"
     candidates = [_candidate(f"item-{index}") for index in range(60)]
     local_storage.save_candidates(run_id, candidates)
@@ -220,7 +229,7 @@ def test_ai_shortlist_reads_candidate_file_path(tmp_path: Path, monkeypatch: pyt
 
     def fake_run_ai_task(*, prompt: str, use_output_schema: bool, **kwargs):  # noqa: ANN003
         assert use_output_schema is False
-        assert str((tmp_path / run_id / "02_candidates.json").resolve()) in prompt
+        assert str((tmp_path / run_id / "outputs" / "02_candidates.json").resolve()) in prompt
         assert "Title item-0" not in prompt
         now = datetime.now(timezone.utc)
         return shortlist, AIRunRecord(
@@ -244,10 +253,11 @@ def test_ai_shortlist_reads_candidate_file_path(tmp_path: Path, monkeypatch: pyt
 
     assert ai_shortlist(args) == 0
 
-    run_dir = tmp_path / run_id
-    assert (run_dir / "02_codex_shortlist.json").exists()
-    assert (run_dir / "02_ai_shortlist_prompt.md").exists()
-    saved = CodexShortlistOutput.model_validate_json((run_dir / "02_codex_shortlist.json").read_text(encoding="utf-8"))
+    output_dir = tmp_path / run_id / "outputs"
+    log_dir = tmp_path / "logs" / run_id / "ai"
+    assert (output_dir / "02_codex_shortlist.json").exists()
+    assert (log_dir / "02_ai_shortlist_prompt.md").exists()
+    saved = CodexShortlistOutput.model_validate_json((output_dir / "02_codex_shortlist.json").read_text(encoding="utf-8"))
     assert len(saved.items) == 60
 
 
@@ -256,6 +266,7 @@ def test_ai_shortlist_validation_failure_persists_debug(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.setattr(local_storage, "RUNS_DIR", tmp_path)
+    monkeypatch.setattr(local_storage, "LOGS_DIR", tmp_path / "logs")
     run_id = "tech-2026-06-24-101218"
     candidates = [_candidate("item-1"), _candidate("item-2")]
     local_storage.save_candidates(run_id, candidates)
@@ -303,17 +314,19 @@ def test_ai_shortlist_validation_failure_persists_debug(
     with pytest.raises(ValueError, match="missing from items: item-2"):
         ai_shortlist(args)
 
-    run_dir = tmp_path / run_id
-    assert not (run_dir / "02_codex_shortlist.json").exists()
-    assert (run_dir / "02_ai_shortlist_run.json").exists()
-    assert (run_dir / "02_ai_shortlist_raw.txt").exists()
-    run_payload = (run_dir / "02_ai_shortlist_run.json").read_text(encoding="utf-8")
+    output_dir = tmp_path / run_id / "outputs"
+    log_dir = tmp_path / "logs" / run_id / "ai"
+    assert not (output_dir / "02_codex_shortlist.json").exists()
+    assert (log_dir / "02_ai_shortlist_run.json").exists()
+    assert (log_dir / "02_ai_shortlist_raw.txt").exists()
+    run_payload = (log_dir / "02_ai_shortlist_run.json").read_text(encoding="utf-8")
     assert '"status": "failed"' in run_payload
     assert "missing from items: item-2" in run_payload
 
 
 def test_ai_select_reads_enriched_candidate_file_path(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(local_storage, "RUNS_DIR", tmp_path)
+    monkeypatch.setattr(local_storage, "LOGS_DIR", tmp_path / "logs")
     run_id = "tech-2026-06-24-101218-select-claude"
     candidates = [_candidate(f"item-{index}") for index in range(3)]
     local_storage.save_enriched_candidates(run_id, candidates)
@@ -349,7 +362,7 @@ def test_ai_select_reads_enriched_candidate_file_path(tmp_path: Path, monkeypatc
 
     def fake_run_ai_task(*, prompt: str, use_output_schema: bool, **kwargs):  # noqa: ANN003
         assert use_output_schema is False
-        assert str((tmp_path / run_id / "03_enriched_candidates.json").resolve()) in prompt
+        assert str((tmp_path / run_id / "outputs" / "03_enriched_candidates.json").resolve()) in prompt
         assert "Title item-0" not in prompt
         now = datetime.now(timezone.utc)
         return selection, AIRunRecord(
@@ -373,9 +386,8 @@ def test_ai_select_reads_enriched_candidate_file_path(tmp_path: Path, monkeypatc
 
     assert ai_select(args) == 0
 
-    run_dir = tmp_path / run_id
-    assert (run_dir / "04_selection.json").exists()
-    assert (run_dir / "04_ai_selection_prompt.md").exists()
+    assert (tmp_path / run_id / "outputs" / "04_selection.json").exists()
+    assert (tmp_path / "logs" / run_id / "ai" / "04_ai_selection_prompt.md").exists()
 
 
 def test_ai_compose_reads_selection_and_enriched_file_paths(
@@ -383,6 +395,7 @@ def test_ai_compose_reads_selection_and_enriched_file_paths(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.setattr(local_storage, "RUNS_DIR", tmp_path)
+    monkeypatch.setattr(local_storage, "LOGS_DIR", tmp_path / "logs")
     run_id = "tech-2026-06-24-101218"
     candidates = [_candidate("item-1"), _candidate("item-2")]
     local_storage.save_enriched_candidates(run_id, candidates)
@@ -442,8 +455,8 @@ def test_ai_compose_reads_selection_and_enriched_file_paths(
 
     def fake_run_ai_task(*, prompt: str, use_output_schema: bool, **kwargs):  # noqa: ANN003
         assert use_output_schema is False
-        assert str((tmp_path / run_id / "04_selection.json").resolve()) in prompt
-        assert str((tmp_path / run_id / "03_enriched_candidates.json").resolve()) in prompt
+        assert str((tmp_path / run_id / "outputs" / "04_selection.json").resolve()) in prompt
+        assert str((tmp_path / run_id / "outputs" / "03_enriched_candidates.json").resolve()) in prompt
         assert "Title item-1" not in prompt
         now = datetime.now(timezone.utc)
         return issue_output, AIRunRecord(
@@ -467,6 +480,122 @@ def test_ai_compose_reads_selection_and_enriched_file_paths(
 
     assert ai_compose(args) == 0
 
-    run_dir = tmp_path / run_id
-    assert (run_dir / "05_issue.json").exists()
-    assert (run_dir / "05_ai_issue_prompt.md").exists()
+    assert (tmp_path / run_id / "outputs" / "05_issue.json").exists()
+    assert (tmp_path / "logs" / run_id / "ai" / "05_ai_issue_prompt.md").exists()
+
+
+def test_stage_provider_priority() -> None:
+    config = PipelineConfig()
+    config.ai.default_provider = "claude"
+    config.ai.stage_providers["selection"] = "codex"
+
+    assert resolve_stage_provider(config, "semantic_shortlist") == "claude"
+    assert resolve_stage_provider(config, "selection") == "codex"
+    assert resolve_stage_provider(config, "selection", "claude") == "claude"
+
+
+def test_run_pipeline_stops_after_ai_shortlist(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(local_storage, "RUNS_DIR", tmp_path / "runs")
+    monkeypatch.setattr(local_storage, "LOGS_DIR", tmp_path / "logs")
+    run_id = "tech-2026-06-24-101218"
+
+    async def fake_fetch_section_items(*args, **kwargs):  # noqa: ANN002, ANN003
+        return [
+            RawItem(
+                id=f"item-{index}",
+                source_id="the_verge",
+                source_name="The Verge",
+                source_language="en",
+                title=f"Nvidia AI chip news {index}",
+                url=f"https://example.com/{index}",
+                summary="Nvidia releases AI chip for data centers.",
+                fetched_at=datetime.now(timezone.utc),
+            )
+            for index in range(3)
+        ]
+
+    def fake_run_ai_shortlist_stage(*, run_id: str, provider: str, **kwargs):  # noqa: ANN003
+        candidates = local_storage.load_shortlist(run_id)
+        output = CodexShortlistOutput(
+            keep_item_ids=[candidates[0].raw_item.id],
+            maybe_item_ids=[candidates[1].raw_item.id],
+            drop_item_ids=[candidates[2].raw_item.id],
+            items=[
+                {
+                    "source_item_id": candidate.raw_item.id,
+                    "decision": "keep" if index == 0 else "maybe" if index == 1 else "drop",
+                    "category": "AI 芯片",
+                    "relevance_score": 80,
+                    "importance_score": 70,
+                    "reason": "测试",
+                    "is_aggregate": False,
+                    "aggregate_highlights": [],
+                }
+                for index, candidate in enumerate(candidates)
+            ],
+        )
+        saved_output = local_storage.save_codex_shortlist(run_id, output)
+        debug_path = local_storage.ai_logs_dir(run_id) / "02_ai_shortlist_run.json"
+        debug_path.parent.mkdir(parents=True, exist_ok=True)
+        debug_path.write_text("{}", encoding="utf-8")
+        assert provider == "codex"
+        return output, saved_output, debug_path
+
+    monkeypatch.setattr("daily_news.main.fetch_section_items", fake_fetch_section_items)
+    monkeypatch.setattr("daily_news.main.run_ai_shortlist_stage", fake_run_ai_shortlist_stage)
+
+    args = build_parser().parse_args(
+        [
+            "run-pipeline",
+            "--section",
+            "tech",
+            "--date",
+            "2026-06-24",
+            "--run-id",
+            run_id,
+            "--stop-after",
+            "ai_shortlist",
+            "--ai-shortlist-provider",
+            "codex",
+        ]
+    )
+
+    assert asyncio.run(run_pipeline(args)) == 0
+
+    outputs_dir = tmp_path / "runs" / run_id / "outputs"
+    logs_dir = tmp_path / "logs" / run_id
+    assert (outputs_dir / "01_raw_items.json").exists()
+    assert (outputs_dir / "02_candidates.json").exists()
+    assert (outputs_dir / "02_codex_shortlist.json").exists()
+    assert not (outputs_dir / "03_enriched_candidates.json").exists()
+    pipeline_payload = (logs_dir / "pipeline.json").read_text(encoding="utf-8")
+    assert '"status": "stopped"' in pipeline_payload
+    assert (logs_dir / "stages" / "ai_shortlist.json").exists()
+
+
+def test_clean_run_packs_logs_without_deleting_outputs(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(local_storage, "RUNS_DIR", tmp_path / "runs")
+    monkeypatch.setattr(local_storage, "LOGS_DIR", tmp_path / "logs")
+    run_id = "tech-2026-06-24-101218"
+    run_dir = tmp_path / "runs" / run_id
+    run_dir.mkdir(parents=True)
+    outputs_dir = run_dir / "outputs"
+    (run_dir / "05_issue.json").write_text("{}", encoding="utf-8")
+    (run_dir / "05_ai_issue_raw.txt").write_text("legacy raw", encoding="utf-8")
+    (tmp_path / "logs" / run_id).mkdir(parents=True)
+    (tmp_path / "logs" / run_id / "pipeline.log").write_text("ok", encoding="utf-8")
+
+    args = build_parser().parse_args(["clean-run", "--run-id", run_id, "--pack-logs"])
+
+    assert clean_run(args) == 0
+    assert (outputs_dir / "05_issue.json").exists()
+    assert not (run_dir / "05_issue.json").exists()
+    assert not (run_dir / "05_ai_issue_raw.txt").exists()
+    assert (tmp_path / "logs" / run_id / "legacy" / "05_ai_issue_raw.txt").exists()
+    assert (tmp_path / "logs" / run_id / "archive" / f"{run_id}-logs.tar.gz").exists()

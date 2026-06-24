@@ -12,7 +12,7 @@ from daily_news.models import (
     Issue,
     RawItem,
 )
-from daily_news.paths import RUNS_DIR
+from daily_news.paths import LOGS_DIR, RUNS_DIR
 
 
 def _write_json(path: Path, payload: Any) -> None:
@@ -35,32 +35,58 @@ def run_dir(run_id: str) -> Path:
     return RUNS_DIR / run_id
 
 
+def output_dir(run_id: str) -> Path:
+    return run_dir(run_id) / "outputs"
+
+
+def logs_dir(run_id: str) -> Path:
+    return LOGS_DIR / run_id
+
+
+def ai_logs_dir(run_id: str) -> Path:
+    return logs_dir(run_id) / "ai"
+
+
+def output_path(run_id: str, filename: str) -> Path:
+    return output_dir(run_id) / filename
+
+
+def artifact_path(run_id: str, filename: str) -> Path:
+    current_path = output_path(run_id, filename)
+    if current_path.exists():
+        return current_path
+    legacy_path = run_dir(run_id) / filename
+    if legacy_path.exists():
+        return legacy_path
+    return current_path
+
+
 def save_raw_items(run_id: str, raw_items: list[RawItem]) -> Path:
-    path = run_dir(run_id) / "01_raw_items.json"
+    path = output_path(run_id, "01_raw_items.json")
     _write_json(path, [item.model_dump(mode="json") for item in raw_items])
     return path
 
 
 def save_candidates(run_id: str, candidates: list[CandidateItem]) -> Path:
-    path = run_dir(run_id) / "02_candidates.json"
+    path = output_path(run_id, "02_candidates.json")
     _write_json(path, [item.model_dump(mode="json") for item in candidates])
     return path
 
 
 def save_enriched_candidates(run_id: str, candidates: list[CandidateItem]) -> Path:
-    path = run_dir(run_id) / "03_enriched_candidates.json"
+    path = output_path(run_id, "03_enriched_candidates.json")
     _write_json(path, [item.model_dump(mode="json") for item in candidates])
     return path
 
 
 def save_codex_shortlist(run_id: str, shortlist: CodexShortlistOutput) -> Path:
-    path = run_dir(run_id) / "02_codex_shortlist.json"
+    path = output_path(run_id, "02_codex_shortlist.json")
     _write_json(path, shortlist.model_dump(mode="json"))
     return path
 
 
 def save_selection(run_id: str, selection: CodexSelectionOutput) -> Path:
-    path = run_dir(run_id) / "04_selection.json"
+    path = output_path(run_id, "04_selection.json")
     _write_json(path, selection.model_dump(mode="json"))
     return path
 
@@ -89,7 +115,7 @@ def save_ai_task_run(
     save_provider_events: bool = True,
     append_metrics_jsonl: bool = True,
 ) -> Path:
-    base_dir = run_dir(run_id)
+    base_dir = ai_logs_dir(run_id)
     _write_text(base_dir / f"{stage}_prompt.md", ai_run.prompt)
     _write_text(base_dir / f"{stage}_raw.txt", ai_run.raw_output)
     if ai_run.parsed_output is not None:
@@ -128,12 +154,12 @@ def save_ai_task_run(
             "finished_at": persisted.finished_at.isoformat(),
             "provider_event_log": persisted.provider_event_log,
         }
-        _append_jsonl(base_dir / "ai_metrics.jsonl", metrics)
+        _append_jsonl(logs_dir(run_id) / "ai_metrics.jsonl", metrics)
     return base_dir / f"{stage}_run.json"
 
 
 def save_issue(run_id: str, issue: Issue) -> Path:
-    path = run_dir(run_id) / "05_issue.json"
+    path = output_path(run_id, "05_issue.json")
     _write_json(path, issue.model_dump(mode="json"))
     issues_dir = RUNS_DIR / "issues"
     issues_dir.mkdir(parents=True, exist_ok=True)
@@ -142,7 +168,7 @@ def save_issue(run_id: str, issue: Issue) -> Path:
 
 
 def load_raw_items(run_id: str) -> list[RawItem]:
-    path = run_dir(run_id) / "01_raw_items.json"
+    path = artifact_path(run_id, "01_raw_items.json")
     if not path.exists():
         raise FileNotFoundError(f"Raw items not found: {path}")
     payload = json.loads(path.read_text(encoding="utf-8"))
@@ -150,7 +176,7 @@ def load_raw_items(run_id: str) -> list[RawItem]:
 
 
 def load_shortlist(run_id: str) -> list[CandidateItem]:
-    path = run_dir(run_id) / "02_candidates.json"
+    path = artifact_path(run_id, "02_candidates.json")
     if not path.exists():
         raise FileNotFoundError(f"Local prefilter not found: {path}")
     payload = json.loads(path.read_text(encoding="utf-8"))
@@ -158,14 +184,14 @@ def load_shortlist(run_id: str) -> list[CandidateItem]:
 
 
 def load_codex_shortlist(run_id: str) -> CodexShortlistOutput:
-    path = run_dir(run_id) / "02_codex_shortlist.json"
+    path = artifact_path(run_id, "02_codex_shortlist.json")
     if not path.exists():
         raise FileNotFoundError(f"Codex shortlist not found: {path}")
     return CodexShortlistOutput.model_validate_json(path.read_text(encoding="utf-8"))
 
 
 def load_enriched_candidates(run_id: str) -> list[CandidateItem]:
-    path = run_dir(run_id) / "03_enriched_candidates.json"
+    path = artifact_path(run_id, "03_enriched_candidates.json")
     if not path.exists():
         raise FileNotFoundError(f"Enriched candidates not found: {path}")
     payload = json.loads(path.read_text(encoding="utf-8"))
@@ -173,14 +199,14 @@ def load_enriched_candidates(run_id: str) -> list[CandidateItem]:
 
 
 def load_selection(run_id: str) -> CodexSelectionOutput:
-    path = run_dir(run_id) / "04_selection.json"
+    path = artifact_path(run_id, "04_selection.json")
     if not path.exists():
         raise FileNotFoundError(f"Codex selection not found: {path}")
     return CodexSelectionOutput.model_validate_json(path.read_text(encoding="utf-8"))
 
 
 def load_issue_from_run(run_id: str) -> Issue:
-    path = run_dir(run_id) / "05_issue.json"
+    path = artifact_path(run_id, "05_issue.json")
     if not path.exists():
         raise FileNotFoundError(f"Issue snapshot not found: {path}")
     return Issue.model_validate_json(path.read_text(encoding="utf-8"))

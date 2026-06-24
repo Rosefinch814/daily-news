@@ -7,8 +7,11 @@ import os
 import re
 import shutil
 import sys
+import tarfile
+import traceback
 from datetime import date, datetime, timezone
 from pathlib import Path
+from typing import Any, Literal
 
 from dotenv import load_dotenv
 
@@ -38,10 +41,13 @@ from daily_news.models import (
     Issue,
     RawItem,
 )
-from daily_news.paths import DIST_DIR, RUNS_DIR, WEB_DIR
+from daily_news.paths import DIST_DIR, WEB_DIR
 from daily_news.render import build_frontend_app
 from daily_news.scoring import rank_candidates
 from daily_news.storage.local import (
+    ai_logs_dir,
+    artifact_path,
+    logs_dir,
     load_issue,
     load_codex_shortlist,
     load_enriched_candidates,
@@ -59,11 +65,37 @@ from daily_news.storage.local import (
     save_selection,
     save_prompt,
     save_raw_items,
+    output_dir,
 )
 from daily_news.storage.supabase import SupabaseStore
 
 
 WEEKDAYS_CN = ["周一", "周二", "周三", "周四", "周五", "周六", "周日"]
+PipelineStage = Literal[
+    "fetch",
+    "local_shortlist",
+    "ai_shortlist",
+    "enrich",
+    "ai_select",
+    "ai_compose",
+    "publish_frontend",
+]
+AIStage = Literal["ai_shortlist", "ai_select", "ai_compose"]
+AITaskType = Literal["semantic_shortlist", "selection", "issue_compose"]
+AI_STAGE_TASKS: dict[AIStage, AITaskType] = {
+    "ai_shortlist": "semantic_shortlist",
+    "ai_select": "selection",
+    "ai_compose": "issue_compose",
+}
+PIPELINE_STAGES: list[PipelineStage] = [
+    "fetch",
+    "local_shortlist",
+    "ai_shortlist",
+    "enrich",
+    "ai_select",
+    "ai_compose",
+    "publish_frontend",
+]
 
 
 def date_cn(value: date) -> str:
@@ -120,6 +152,14 @@ def log_step(step: str, message: str) -> None:
 
 def new_run_id(section_slug: str, issue_date: date) -> str:
     return f"{section_slug}-{issue_date.isoformat()}-{datetime.now().strftime('%H%M%S')}"
+
+
+def resolve_stage_provider(
+    config: PipelineConfig,
+    task_type: AITaskType,
+    cli_provider: ProviderName | None = None,
+) -> ProviderName:
+    return cli_provider or config.ai.stage_providers.get(task_type) or config.ai.default_provider
 
 
 def date_from_run_id(run_id: str, section_slug: str) -> date:
@@ -345,7 +385,7 @@ def shortlist_codex(args: argparse.Namespace) -> int:
     codex_shortlist = load_codex_shortlist(args.run_id)
     validate_shortlist_ids(codex_shortlist, local_prefilter)
     summarize_codex_shortlist(codex_shortlist)
-    print(f"Validated: {run_dir(args.run_id) / '02_codex_shortlist.json'}")
+    print(f"Validated: {artifact_path(args.run_id, '02_codex_shortlist.json')}")
     return 0
 
 
@@ -371,7 +411,7 @@ def select_codex(args: argparse.Namespace) -> int:
     selection = load_selection(args.run_id)
     validate_selection_ids(selection, candidates)
     summarize_selection(selection)
-    print(f"Validated: {run_dir(args.run_id) / '04_selection.json'}")
+    print(f"Validated: {artifact_path(args.run_id, '04_selection.json')}")
     return 0
 
 
@@ -381,17 +421,19 @@ def compose_codex(args: argparse.Namespace) -> int:
     validate_selection_ids(selection, load_enriched_candidates(args.run_id))
     validate_issue_content(issue)
     summarize_issue(issue)
-    print(f"Validated: {run_dir(args.run_id) / '05_issue.json'}")
+    print(f"Validated: {artifact_path(args.run_id, '05_issue.json')}")
     return 0
 
 
-def ai_shortlist(args: argparse.Namespace) -> int:
-    load_dotenv(WEB_DIR / ".env")
-    section = load_section(args.section)
-    config = load_pipeline_config(Path(args.config) if args.config else None)
-    provider = args.provider or config.ai.default_provider
-    candidates = load_shortlist(args.run_id)
-    candidates_path = (run_dir(args.run_id) / "02_candidates.json").resolve()
+def run_ai_shortlist_stage(
+    *,
+    run_id: str,
+    section: Any,
+    config: PipelineConfig,
+    provider: ProviderName,
+) -> tuple[CodexShortlistOutput, Path, Path]:
+    candidates = load_shortlist(run_id)
+    candidates_path = artifact_path(run_id, "02_candidates.json").resolve()
     prompt = build_shortlist_file_prompt(section, candidates_path)
     try:
         shortlist, ai_run = run_ai_task(
@@ -404,32 +446,48 @@ def ai_shortlist(args: argparse.Namespace) -> int:
         )
     except AIEngineError as exc:
         if exc.record:
-            debug_path = save_ai_debug(args.run_id, "02_ai_shortlist", exc.record, config)
+            debug_path = save_ai_debug(run_id, "02_ai_shortlist", exc.record, config)
             print(f"Debug: {debug_path}")
         raise
     try:
         validate_shortlist_ids(shortlist, candidates)
     except Exception as exc:
         failed_run = mark_ai_run_failed(ai_run, exc)
-        debug_path = save_ai_debug(args.run_id, "02_ai_shortlist", failed_run, config)
+        debug_path = save_ai_debug(run_id, "02_ai_shortlist", failed_run, config)
         print(f"Debug: {debug_path}")
         raise
-    output_path = save_codex_shortlist(args.run_id, shortlist)
-    debug_path = save_ai_debug(args.run_id, "02_ai_shortlist", ai_run, config)
+    saved_output_path = save_codex_shortlist(run_id, shortlist)
+    debug_path = save_ai_debug(run_id, "02_ai_shortlist", ai_run, config)
+    return shortlist, saved_output_path, debug_path
+
+
+def ai_shortlist(args: argparse.Namespace) -> int:
+    load_dotenv(WEB_DIR / ".env")
+    section = load_section(args.section)
+    config = load_pipeline_config(Path(args.config) if args.config else None)
+    provider = args.provider or config.ai.default_provider
+    shortlist, saved_output_path, debug_path = run_ai_shortlist_stage(
+        run_id=args.run_id,
+        section=section,
+        config=config,
+        provider=provider,
+    )
     print(f"Provider: {provider}")
-    print(f"Saved: {output_path}")
+    print(f"Saved: {saved_output_path}")
     print(f"Debug: {debug_path}")
     summarize_codex_shortlist(shortlist)
     return 0
 
 
-def ai_select(args: argparse.Namespace) -> int:
-    load_dotenv(WEB_DIR / ".env")
-    section = load_section(args.section)
-    config = load_pipeline_config(Path(args.config) if args.config else None)
-    provider = args.provider or config.ai.default_provider
-    candidates = load_enriched_candidates(args.run_id)
-    enriched_candidates_path = (run_dir(args.run_id) / "03_enriched_candidates.json").resolve()
+def run_ai_select_stage(
+    *,
+    run_id: str,
+    section: Any,
+    config: PipelineConfig,
+    provider: ProviderName,
+) -> tuple[CodexSelectionOutput, Path, Path]:
+    candidates = load_enriched_candidates(run_id)
+    enriched_candidates_path = artifact_path(run_id, "03_enriched_candidates.json").resolve()
     prompt = build_selection_file_prompt(section, enriched_candidates_path)
     try:
         selection, ai_run = run_ai_task(
@@ -442,36 +500,53 @@ def ai_select(args: argparse.Namespace) -> int:
         )
     except AIEngineError as exc:
         if exc.record:
-            debug_path = save_ai_debug(args.run_id, "04_ai_selection", exc.record, config)
+            debug_path = save_ai_debug(run_id, "04_ai_selection", exc.record, config)
             print(f"Debug: {debug_path}")
         raise
     try:
         validate_selection_ids(selection, candidates)
     except Exception as exc:
         failed_run = mark_ai_run_failed(ai_run, exc)
-        debug_path = save_ai_debug(args.run_id, "04_ai_selection", failed_run, config)
+        debug_path = save_ai_debug(run_id, "04_ai_selection", failed_run, config)
         print(f"Debug: {debug_path}")
         raise
-    output_path = save_selection(args.run_id, selection)
-    debug_path = save_ai_debug(args.run_id, "04_ai_selection", ai_run, config)
+    saved_output_path = save_selection(run_id, selection)
+    debug_path = save_ai_debug(run_id, "04_ai_selection", ai_run, config)
+    return selection, saved_output_path, debug_path
+
+
+def ai_select(args: argparse.Namespace) -> int:
+    load_dotenv(WEB_DIR / ".env")
+    section = load_section(args.section)
+    config = load_pipeline_config(Path(args.config) if args.config else None)
+    provider = args.provider or config.ai.default_provider
+    selection, saved_output_path, debug_path = run_ai_select_stage(
+        run_id=args.run_id,
+        section=section,
+        config=config,
+        provider=provider,
+    )
     print(f"Provider: {provider}")
-    print(f"Saved: {output_path}")
+    print(f"Saved: {saved_output_path}")
     print(f"Debug: {debug_path}")
     summarize_selection(selection)
     return 0
 
 
-def ai_compose(args: argparse.Namespace) -> int:
-    load_dotenv(WEB_DIR / ".env")
-    section = load_section(args.section)
-    issue_date = parse_date(args.date) if args.date else date_from_run_id(args.run_id, section.slug)
-    config = load_pipeline_config(Path(args.config) if args.config else None)
-    provider = args.provider or config.ai.default_provider
-    candidates = load_enriched_candidates(args.run_id)
-    selection = load_selection(args.run_id)
+def run_ai_compose_stage(
+    *,
+    run_id: str,
+    section: Any,
+    issue_date: date,
+    issue_number: int | None,
+    config: PipelineConfig,
+    provider: ProviderName,
+) -> tuple[Issue, Path, Path]:
+    candidates = load_enriched_candidates(run_id)
+    selection = load_selection(run_id)
     validate_selection_ids(selection, candidates)
-    selection_path = (run_dir(args.run_id) / "04_selection.json").resolve()
-    enriched_candidates_path = (run_dir(args.run_id) / "03_enriched_candidates.json").resolve()
+    selection_path = artifact_path(run_id, "04_selection.json").resolve()
+    enriched_candidates_path = artifact_path(run_id, "03_enriched_candidates.json").resolve()
     prompt = build_issue_file_prompt(section, selection_path, enriched_candidates_path)
     try:
         ai_output, ai_run = run_ai_task(
@@ -484,7 +559,7 @@ def ai_compose(args: argparse.Namespace) -> int:
         )
     except AIEngineError as exc:
         if exc.record:
-            debug_path = save_ai_debug(args.run_id, "05_ai_issue", exc.record, config)
+            debug_path = save_ai_debug(run_id, "05_ai_issue", exc.record, config)
             print(f"Debug: {debug_path}")
         raise
     issue = make_issue(
@@ -493,19 +568,36 @@ def ai_compose(args: argparse.Namespace) -> int:
         publication_name=section.publication_name,
         issue_date=issue_date,
         volume=section.issue_volume,
-        number=args.issue_number or next_issue_number(section.slug),
+        number=issue_number or next_issue_number(section.slug),
     )
     try:
         validate_issue_content(issue)
     except Exception as exc:
         failed_run = mark_ai_run_failed(ai_run, exc)
-        debug_path = save_ai_debug(args.run_id, "05_ai_issue", failed_run, config)
+        debug_path = save_ai_debug(run_id, "05_ai_issue", failed_run, config)
         print(f"Debug: {debug_path}")
         raise
-    output_path = save_issue(args.run_id, issue)
-    debug_path = save_ai_debug(args.run_id, "05_ai_issue", ai_run, config)
+    saved_output_path = save_issue(run_id, issue)
+    debug_path = save_ai_debug(run_id, "05_ai_issue", ai_run, config)
+    return issue, saved_output_path, debug_path
+
+
+def ai_compose(args: argparse.Namespace) -> int:
+    load_dotenv(WEB_DIR / ".env")
+    section = load_section(args.section)
+    issue_date = parse_date(args.date) if args.date else date_from_run_id(args.run_id, section.slug)
+    config = load_pipeline_config(Path(args.config) if args.config else None)
+    provider = args.provider or config.ai.default_provider
+    issue, saved_output_path, debug_path = run_ai_compose_stage(
+        run_id=args.run_id,
+        section=section,
+        issue_date=issue_date,
+        issue_number=args.issue_number,
+        config=config,
+        provider=provider,
+    )
     print(f"Provider: {provider}")
-    print(f"Saved: {output_path}")
+    print(f"Saved: {saved_output_path}")
     print(f"Debug: {debug_path}")
     summarize_issue(issue)
     return 0
@@ -741,6 +833,333 @@ def ai_file_read_test(args: argparse.Namespace) -> int:
         raise
 
 
+def _json_default(value: object) -> str:
+    if isinstance(value, (datetime, date)):
+        return value.isoformat()
+    if isinstance(value, Path):
+        return str(value)
+    return str(value)
+
+
+def _write_json_file(path: Path, payload: Any) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2, default=_json_default), encoding="utf-8")
+
+
+class PipelineLogger:
+    def __init__(self, *, run_id: str, section_slug: str, issue_date: date) -> None:
+        self.run_id = run_id
+        self.section_slug = section_slug
+        self.issue_date = issue_date
+        self.started_at = datetime.now(timezone.utc)
+        self.finished_at: datetime | None = None
+        self.stage_records: list[dict[str, Any]] = []
+        self.base_dir = logs_dir(run_id)
+        self.stages_dir = self.base_dir / "stages"
+        self.pipeline_log_path = self.base_dir / "pipeline.log"
+        self.pipeline_json_path = self.base_dir / "pipeline.json"
+        self.base_dir.mkdir(parents=True, exist_ok=True)
+
+    def log(self, message: str) -> None:
+        timestamp = datetime.now(timezone.utc).isoformat()
+        line = f"{timestamp} {message}"
+        print(message, flush=True)
+        self.pipeline_log_path.parent.mkdir(parents=True, exist_ok=True)
+        with self.pipeline_log_path.open("a", encoding="utf-8") as handle:
+            handle.write(line + "\n")
+
+    def start_stage(self, stage: PipelineStage) -> datetime:
+        self.log(f"[{stage}] start")
+        return datetime.now(timezone.utc)
+
+    def finish_stage(
+        self,
+        *,
+        stage: PipelineStage,
+        started_at: datetime,
+        status: Literal["success", "skipped", "failed"],
+        inputs: list[Path] | None = None,
+        outputs: list[Path] | None = None,
+        metadata: dict[str, Any] | None = None,
+        error: str | None = None,
+    ) -> dict[str, Any]:
+        finished_at = datetime.now(timezone.utc)
+        record = {
+            "stage": stage,
+            "status": status,
+            "started_at": started_at,
+            "finished_at": finished_at,
+            "duration_ms": int((finished_at - started_at).total_seconds() * 1000),
+            "inputs": [str(path) for path in inputs or []],
+            "outputs": [str(path) for path in outputs or []],
+            "metadata": metadata or {},
+            "error": error,
+        }
+        self.stage_records.append(record)
+        _write_json_file(self.stages_dir / f"{stage}.json", record)
+        self.log(f"[{stage}] {status}")
+        self.write_summary(status="running")
+        return record
+
+    def write_summary(
+        self,
+        *,
+        status: Literal["running", "success", "failed", "stopped"],
+        error: str | None = None,
+    ) -> None:
+        finished_at = None if status == "running" else datetime.now(timezone.utc)
+        if finished_at:
+            self.finished_at = finished_at
+        payload = {
+            "run_id": self.run_id,
+            "section": self.section_slug,
+            "issue_date": self.issue_date.isoformat(),
+            "status": status,
+            "error": error,
+            "started_at": self.started_at,
+            "finished_at": self.finished_at,
+            "duration_ms": (
+                int((self.finished_at - self.started_at).total_seconds() * 1000)
+                if self.finished_at
+                else None
+            ),
+            "outputs_dir": output_dir(self.run_id),
+            "logs_dir": self.base_dir,
+            "stages": self.stage_records,
+        }
+        _write_json_file(self.pipeline_json_path, payload)
+
+
+class PipelineRunner:
+    def __init__(self, args: argparse.Namespace) -> None:
+        load_dotenv(WEB_DIR / ".env")
+        self.args = args
+        self.section = load_section(args.section)
+        self.issue_date = parse_date(args.date)
+        self.run_id = args.run_id or new_run_id(self.section.slug, self.issue_date)
+        self.config = load_pipeline_config(Path(args.config) if args.config else None)
+        self.timeout_seconds = float(os.getenv("DAILY_NEWS_FETCH_TIMEOUT_SECONDS", "20"))
+        self.logger = PipelineLogger(
+            run_id=self.run_id,
+            section_slug=self.section.slug,
+            issue_date=self.issue_date,
+        )
+
+    async def run(self) -> int:
+        self.logger.write_summary(status="running")
+        self.logger.log(f"Run ID: {self.run_id}")
+        self.logger.log(f"Outputs: {output_dir(self.run_id)}")
+        self.logger.log(f"Logs: {logs_dir(self.run_id)}")
+        try:
+            for stage in PIPELINE_STAGES:
+                await self._run_stage(stage)
+                if stage == self.args.stop_after:
+                    self.logger.write_summary(status="stopped")
+                    self.logger.log(f"Stopped after stage: {stage}")
+                    return 0
+        except Exception as exc:  # noqa: BLE001 - pipeline failures must be persisted.
+            self.logger.write_summary(status="failed", error=str(exc))
+            self.logger.log(f"Pipeline failed: {exc}")
+            raise
+        self.logger.write_summary(status="success")
+        self.logger.log("Pipeline success")
+        return 0
+
+    async def _run_stage(self, stage: PipelineStage) -> None:
+        started_at = self.logger.start_stage(stage)
+        try:
+            if self.args.resume:
+                try:
+                    if self._can_skip_stage(stage):
+                        self.logger.finish_stage(stage=stage, started_at=started_at, status="skipped")
+                        return
+                except FileNotFoundError:
+                    pass
+            result = await self._execute_stage(stage)
+            self.logger.finish_stage(
+                stage=stage,
+                started_at=started_at,
+                status="success",
+                inputs=result.get("inputs", []),
+                outputs=result.get("outputs", []),
+                metadata=result.get("metadata", {}),
+            )
+        except Exception as exc:  # noqa: BLE001 - stage details are part of observability.
+            self.logger.finish_stage(
+                stage=stage,
+                started_at=started_at,
+                status="failed",
+                error=f"{exc}\n{traceback.format_exc()}",
+            )
+            raise
+
+    async def _execute_stage(self, stage: PipelineStage) -> dict[str, Any]:
+        if stage == "fetch":
+            raw_items = await fetch_section_items(
+                self.section,
+                per_source_limit=self.args.per_source_limit,
+                timeout_seconds=self.timeout_seconds,
+            )
+            path = save_raw_items(self.run_id, raw_items)
+            successful = [item for item in raw_items if item.fetch_status != "failed"]
+            summarize_raw_items(raw_items)
+            return {
+                "outputs": [path],
+                "metadata": {"raw_items": len(raw_items), "successful_raw_items": len(successful)},
+            }
+
+        if stage == "local_shortlist":
+            raw_items = load_raw_items(self.run_id)
+            candidates = rank_candidates(
+                raw_items,
+                self.section,
+                max_candidates=self.args.max_candidates,
+                per_source_limit=self.args.per_source_limit,
+                require_interest_match_when_over_capacity=False,
+            )
+            path = save_candidates(self.run_id, candidates)
+            summarize_candidates(candidates)
+            return {
+                "inputs": [artifact_path(self.run_id, "01_raw_items.json")],
+                "outputs": [path],
+                "metadata": {"candidates": len(candidates)},
+            }
+
+        if stage == "ai_shortlist":
+            provider = self._provider_for_stage(stage, self.args.ai_shortlist_provider)
+            shortlist, saved_output_path, debug_path = run_ai_shortlist_stage(
+                run_id=self.run_id,
+                section=self.section,
+                config=self.config,
+                provider=provider,
+            )
+            summarize_codex_shortlist(shortlist)
+            return {
+                "inputs": [artifact_path(self.run_id, "02_candidates.json")],
+                "outputs": [saved_output_path, debug_path],
+                "metadata": {
+                    "provider": provider,
+                    "keep": len(shortlist.keep_item_ids),
+                    "maybe": len(shortlist.maybe_item_ids),
+                },
+            }
+
+        if stage == "enrich":
+            local_prefilter = load_shortlist(self.run_id)
+            shortlist = candidates_for_enrichment(self.run_id, local_prefilter)
+            body_candidates = self.args.body_candidates or len(shortlist)
+            enriched_items = await enrich_candidate_content(
+                [candidate.raw_item for candidate in shortlist],
+                limit=body_candidates,
+                timeout_seconds=self.timeout_seconds,
+            )
+            enriched_candidates = merge_enriched_candidates(shortlist, enriched_items)
+            path = save_enriched_candidates(self.run_id, enriched_candidates)
+            summarize_enriched(enriched_candidates)
+            return {
+                "inputs": [
+                    artifact_path(self.run_id, "02_candidates.json"),
+                    artifact_path(self.run_id, "02_codex_shortlist.json"),
+                ],
+                "outputs": [path],
+                "metadata": {
+                    "enriched_candidates": len(enriched_candidates),
+                    "body_candidates": body_candidates,
+                },
+            }
+
+        if stage == "ai_select":
+            provider = self._provider_for_stage(stage, self.args.ai_select_provider)
+            selection, saved_output_path, debug_path = run_ai_select_stage(
+                run_id=self.run_id,
+                section=self.section,
+                config=self.config,
+                provider=provider,
+            )
+            summarize_selection(selection)
+            return {
+                "inputs": [artifact_path(self.run_id, "03_enriched_candidates.json")],
+                "outputs": [saved_output_path, debug_path],
+                "metadata": {
+                    "provider": provider,
+                    "headlines": len(selection.headlines),
+                    "briefs": len(selection.briefs),
+                    "discarded": len(selection.discarded),
+                },
+            }
+
+        if stage == "ai_compose":
+            provider = self._provider_for_stage(stage, self.args.ai_compose_provider)
+            issue, saved_output_path, debug_path = run_ai_compose_stage(
+                run_id=self.run_id,
+                section=self.section,
+                issue_date=self.issue_date,
+                issue_number=self.args.issue_number,
+                config=self.config,
+                provider=provider,
+            )
+            summarize_issue(issue)
+            return {
+                "inputs": [
+                    artifact_path(self.run_id, "04_selection.json"),
+                    artifact_path(self.run_id, "03_enriched_candidates.json"),
+                ],
+                "outputs": [saved_output_path, debug_path],
+                "metadata": {
+                    "provider": provider,
+                    "headlines": len(issue.headlines),
+                    "briefs": len(issue.briefs),
+                },
+            }
+
+        if stage == "publish_frontend":
+            issue = load_issue_from_run(self.run_id)
+            validate_issue_content(issue)
+            outputs = build_frontend_app(issue)
+            return {
+                "inputs": [artifact_path(self.run_id, "05_issue.json")],
+                "outputs": list(outputs.values()),
+                "metadata": {"issue_id": issue.id, "issue_date": issue.issue_date.isoformat()},
+            }
+
+        raise ValueError(f"Unknown pipeline stage: {stage}")
+
+    def _provider_for_stage(self, stage: AIStage, cli_provider: ProviderName | None) -> ProviderName:
+        task_type = AI_STAGE_TASKS[stage]
+        return resolve_stage_provider(self.config, task_type, cli_provider)
+
+    def _can_skip_stage(self, stage: PipelineStage) -> bool:
+        if stage == "fetch":
+            return bool(load_raw_items(self.run_id))
+        if stage == "local_shortlist":
+            return bool(load_shortlist(self.run_id))
+        if stage == "ai_shortlist":
+            shortlist = load_codex_shortlist(self.run_id)
+            validate_shortlist_ids(shortlist, load_shortlist(self.run_id))
+            return True
+        if stage == "enrich":
+            return bool(load_enriched_candidates(self.run_id))
+        if stage == "ai_select":
+            selection = load_selection(self.run_id)
+            validate_selection_ids(selection, load_enriched_candidates(self.run_id))
+            return True
+        if stage == "ai_compose":
+            issue = load_issue_from_run(self.run_id)
+            validate_issue_content(issue)
+            return True
+        if stage == "publish_frontend":
+            issue = load_issue_from_run(self.run_id)
+            data_path = DIST_DIR / "data" / "issues" / f"{issue.issue_date.isoformat()}.json"
+            route_path = DIST_DIR / "issues" / f"{issue.issue_date.isoformat()}.html"
+            return data_path.exists() and route_path.exists()
+        raise ValueError(f"Unknown pipeline stage: {stage}")
+
+
+async def run_pipeline(args: argparse.Namespace) -> int:
+    runner = PipelineRunner(args)
+    return await runner.run()
+
+
 def render_mvp(args: argparse.Namespace) -> int:
     issue = load_issue_from_run(args.run_id)
     validate_issue_content(issue)
@@ -905,6 +1324,94 @@ def clean_dist(_: argparse.Namespace) -> int:
     return 0
 
 
+LEGACY_LOG_PATTERNS = [
+    "*_prompt.md",
+    "*_raw.txt",
+    "*_run.json",
+    "*_attempts.json",
+    "*_provider_events.jsonl",
+    "*_output.json",
+    "ai_metrics.jsonl",
+    "03_prompt.md",
+    "04_ai_raw.txt",
+    "04_ai_output.json",
+    "04_ai_run.json",
+]
+OUTPUT_ARTIFACT_FILENAMES = [
+    "01_raw_items.json",
+    "02_candidates.json",
+    "02_codex_shortlist.json",
+    "03_enriched_candidates.json",
+    "04_selection.json",
+    "05_issue.json",
+]
+
+
+def _move_legacy_log_file(path: Path, target_dir: Path) -> Path:
+    target_dir.mkdir(parents=True, exist_ok=True)
+    target = target_dir / path.name
+    if target.exists():
+        stem = target.stem
+        suffix = target.suffix
+        index = 1
+        while True:
+            candidate = target_dir / f"{stem}-{index}{suffix}"
+            if not candidate.exists():
+                target = candidate
+                break
+            index += 1
+    shutil.move(str(path), str(target))
+    return target
+
+
+def pack_logs(run_id: str) -> Path:
+    base_dir = logs_dir(run_id)
+    archive_dir = base_dir / "archive"
+    archive_dir.mkdir(parents=True, exist_ok=True)
+    archive_path = archive_dir / f"{run_id}-logs.tar.gz"
+    with tarfile.open(archive_path, "w:gz") as archive:
+        for item in base_dir.iterdir():
+            if item == archive_dir:
+                continue
+            archive.add(item, arcname=item.relative_to(base_dir))
+    return archive_path
+
+
+def clean_run(args: argparse.Namespace) -> int:
+    base_run_dir = run_dir(args.run_id)
+    if not base_run_dir.exists():
+        raise FileNotFoundError(f"Run not found: {base_run_dir}")
+    legacy_dir = logs_dir(args.run_id) / "legacy"
+    moved: list[Path] = []
+    for pattern in LEGACY_LOG_PATTERNS:
+        for path in base_run_dir.glob(pattern):
+            if path.is_file():
+                moved.append(_move_legacy_log_file(path, legacy_dir))
+
+    migrated_outputs: list[Path] = []
+    target_output_dir = output_dir(args.run_id)
+    target_output_dir.mkdir(parents=True, exist_ok=True)
+    for filename in OUTPUT_ARTIFACT_FILENAMES:
+        source = base_run_dir / filename
+        target = target_output_dir / filename
+        if source.exists() and source.is_file() and not target.exists():
+            shutil.move(str(source), str(target))
+            migrated_outputs.append(target)
+
+    archive_path: Path | None = None
+    if args.pack_logs:
+        archive_path = pack_logs(args.run_id)
+
+    print(f"Cleaned run: {args.run_id}")
+    print(f"- moved legacy logs: {len(moved)}")
+    print(f"- migrated outputs: {len(migrated_outputs)}")
+    print(f"- outputs kept: {output_dir(args.run_id)}")
+    print(f"- logs: {logs_dir(args.run_id)}")
+    if archive_path:
+        print(f"- archive: {archive_path}")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="daily-news")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -920,6 +1427,26 @@ def build_parser() -> argparse.ArgumentParser:
     generate_parser.add_argument("--issue-number", type=int)
     generate_parser.add_argument("--from-ai-json", help="Use a saved AI JSON response instead of calling Claude")
     generate_parser.set_defaults(func=lambda args: asyncio.run(generate(args)))
+
+    run_pipeline_parser = subparsers.add_parser("run-pipeline", help="Run the checkpoint pipeline end to end")
+    run_pipeline_parser.add_argument("--section", default="tech")
+    run_pipeline_parser.add_argument("--date")
+    run_pipeline_parser.add_argument("--run-id")
+    run_pipeline_parser.add_argument("--resume", action="store_true")
+    run_pipeline_parser.add_argument("--stop-after", choices=PIPELINE_STAGES)
+    run_pipeline_parser.add_argument("--per-source-limit", type=int, default=25)
+    run_pipeline_parser.add_argument("--max-candidates", type=int, default=60)
+    run_pipeline_parser.add_argument(
+        "--body-candidates",
+        type=int,
+        help="Limit body extraction count; default extracts every AI-selected keep/maybe candidate",
+    )
+    run_pipeline_parser.add_argument("--issue-number", type=int)
+    run_pipeline_parser.add_argument("--config", help="Pipeline config path; defaults to web/config/pipeline.yaml")
+    run_pipeline_parser.add_argument("--ai-shortlist-provider", choices=["claude", "codex"])
+    run_pipeline_parser.add_argument("--ai-select-provider", choices=["claude", "codex"])
+    run_pipeline_parser.add_argument("--ai-compose-provider", choices=["claude", "codex"])
+    run_pipeline_parser.set_defaults(func=lambda args: asyncio.run(run_pipeline(args)))
 
     fetch_parser = subparsers.add_parser("fetch-mvp", help="Checkpoint 1: fetch RSS items")
     fetch_parser.add_argument("--section", default="tech")
@@ -1004,6 +1531,11 @@ def build_parser() -> argparse.ArgumentParser:
 
     clean_parser = subparsers.add_parser("clean-dist", help="Remove public dist output")
     clean_parser.set_defaults(func=clean_dist)
+
+    clean_run_parser = subparsers.add_parser("clean-run", help="Clean and optionally pack private run logs")
+    clean_run_parser.add_argument("--run-id", required=True)
+    clean_run_parser.add_argument("--pack-logs", action="store_true")
+    clean_run_parser.set_defaults(func=clean_run)
     return parser
 
 
