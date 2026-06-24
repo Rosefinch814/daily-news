@@ -2,19 +2,36 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import json
 import os
+import re
 import shutil
 import sys
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from pathlib import Path
 
 from dotenv import load_dotenv
 
-from daily_news.ai_engine import build_issue_prompt, generate_issue_output
-from daily_news.config import load_config, load_section
+from daily_news.ai_engine import (
+    AIEngineError,
+    ProviderName,
+    build_issue_file_prompt,
+    build_issue_from_selection_prompt,
+    build_issue_prompt,
+    build_selection_file_prompt,
+    build_selection_prompt,
+    build_shortlist_file_prompt,
+    build_shortlist_prompt,
+    extract_json_object,
+    generate_issue_output,
+    run_provider,
+    run_ai_task,
+)
+from daily_news.config import PipelineConfig, load_config, load_pipeline_config, load_section
 from daily_news.fetch.rss import enrich_candidate_content, fetch_section_items
 from daily_news.models import (
     AIIssueOutput,
+    AIRunRecord,
     CandidateItem,
     CodexSelectionOutput,
     CodexShortlistOutput,
@@ -34,9 +51,12 @@ from daily_news.storage.local import (
     load_shortlist,
     run_dir,
     save_ai_run,
+    save_ai_task_run,
     save_candidates,
+    save_codex_shortlist,
     save_enriched_candidates,
     save_issue,
+    save_selection,
     save_prompt,
     save_raw_items,
 )
@@ -100,6 +120,13 @@ def log_step(step: str, message: str) -> None:
 
 def new_run_id(section_slug: str, issue_date: date) -> str:
     return f"{section_slug}-{issue_date.isoformat()}-{datetime.now().strftime('%H%M%S')}"
+
+
+def date_from_run_id(run_id: str, section_slug: str) -> date:
+    match = re.match(rf"^{re.escape(section_slug)}-(\d{{4}}-\d{{2}}-\d{{2}})-", run_id)
+    if not match:
+        raise ValueError("Cannot infer date from run_id; pass --date YYYY-MM-DD")
+    return date.fromisoformat(match.group(1))
 
 
 def summarize_raw_items(raw_items: list[RawItem]) -> None:
@@ -251,6 +278,34 @@ def validate_issue_content(issue: Issue) -> None:
     # BriefArticle has no read_body_zh field by model, which enforces the v1 rule.
 
 
+def save_ai_debug(run_id: str, stage: str, ai_run: AIRunRecord, config: PipelineConfig) -> Path:
+    return save_ai_task_run(
+        run_id,
+        stage,
+        ai_run,
+        save_attempts=config.logging.save_attempts,
+        save_provider_events=config.logging.save_provider_events,
+        append_metrics_jsonl=config.logging.append_metrics_jsonl,
+    )
+
+
+def mark_ai_run_failed(ai_run: AIRunRecord, error: Exception) -> AIRunRecord:
+    finished_at = datetime.now(timezone.utc)
+    return ai_run.model_copy(
+        update={
+            "status": "failed",
+            "error": str(error),
+            "finished_at": finished_at,
+            "duration_ms": int((finished_at - ai_run.started_at).total_seconds() * 1000),
+        }
+    )
+
+
+def resolve_provider(args: argparse.Namespace) -> ProviderName:
+    pipeline_config = load_pipeline_config(Path(args.config) if args.config else None)
+    return args.provider or pipeline_config.ai.default_provider
+
+
 async def fetch_mvp(args: argparse.Namespace) -> int:
     load_dotenv(WEB_DIR / ".env")
     section = load_section(args.section)
@@ -328,6 +383,362 @@ def compose_codex(args: argparse.Namespace) -> int:
     summarize_issue(issue)
     print(f"Validated: {run_dir(args.run_id) / '05_issue.json'}")
     return 0
+
+
+def ai_shortlist(args: argparse.Namespace) -> int:
+    load_dotenv(WEB_DIR / ".env")
+    section = load_section(args.section)
+    config = load_pipeline_config(Path(args.config) if args.config else None)
+    provider = args.provider or config.ai.default_provider
+    candidates = load_shortlist(args.run_id)
+    candidates_path = (run_dir(args.run_id) / "02_candidates.json").resolve()
+    prompt = build_shortlist_file_prompt(section, candidates_path)
+    try:
+        shortlist, ai_run = run_ai_task(
+            task_type="semantic_shortlist",
+            prompt=prompt,
+            output_model=CodexShortlistOutput,
+            provider=provider,
+            config=config,
+            use_output_schema=False,
+        )
+    except AIEngineError as exc:
+        if exc.record:
+            debug_path = save_ai_debug(args.run_id, "02_ai_shortlist", exc.record, config)
+            print(f"Debug: {debug_path}")
+        raise
+    try:
+        validate_shortlist_ids(shortlist, candidates)
+    except Exception as exc:
+        failed_run = mark_ai_run_failed(ai_run, exc)
+        debug_path = save_ai_debug(args.run_id, "02_ai_shortlist", failed_run, config)
+        print(f"Debug: {debug_path}")
+        raise
+    output_path = save_codex_shortlist(args.run_id, shortlist)
+    debug_path = save_ai_debug(args.run_id, "02_ai_shortlist", ai_run, config)
+    print(f"Provider: {provider}")
+    print(f"Saved: {output_path}")
+    print(f"Debug: {debug_path}")
+    summarize_codex_shortlist(shortlist)
+    return 0
+
+
+def ai_select(args: argparse.Namespace) -> int:
+    load_dotenv(WEB_DIR / ".env")
+    section = load_section(args.section)
+    config = load_pipeline_config(Path(args.config) if args.config else None)
+    provider = args.provider or config.ai.default_provider
+    candidates = load_enriched_candidates(args.run_id)
+    enriched_candidates_path = (run_dir(args.run_id) / "03_enriched_candidates.json").resolve()
+    prompt = build_selection_file_prompt(section, enriched_candidates_path)
+    try:
+        selection, ai_run = run_ai_task(
+            task_type="selection",
+            prompt=prompt,
+            output_model=CodexSelectionOutput,
+            provider=provider,
+            config=config,
+            use_output_schema=False,
+        )
+    except AIEngineError as exc:
+        if exc.record:
+            debug_path = save_ai_debug(args.run_id, "04_ai_selection", exc.record, config)
+            print(f"Debug: {debug_path}")
+        raise
+    try:
+        validate_selection_ids(selection, candidates)
+    except Exception as exc:
+        failed_run = mark_ai_run_failed(ai_run, exc)
+        debug_path = save_ai_debug(args.run_id, "04_ai_selection", failed_run, config)
+        print(f"Debug: {debug_path}")
+        raise
+    output_path = save_selection(args.run_id, selection)
+    debug_path = save_ai_debug(args.run_id, "04_ai_selection", ai_run, config)
+    print(f"Provider: {provider}")
+    print(f"Saved: {output_path}")
+    print(f"Debug: {debug_path}")
+    summarize_selection(selection)
+    return 0
+
+
+def ai_compose(args: argparse.Namespace) -> int:
+    load_dotenv(WEB_DIR / ".env")
+    section = load_section(args.section)
+    issue_date = parse_date(args.date) if args.date else date_from_run_id(args.run_id, section.slug)
+    config = load_pipeline_config(Path(args.config) if args.config else None)
+    provider = args.provider or config.ai.default_provider
+    candidates = load_enriched_candidates(args.run_id)
+    selection = load_selection(args.run_id)
+    validate_selection_ids(selection, candidates)
+    selection_path = (run_dir(args.run_id) / "04_selection.json").resolve()
+    enriched_candidates_path = (run_dir(args.run_id) / "03_enriched_candidates.json").resolve()
+    prompt = build_issue_file_prompt(section, selection_path, enriched_candidates_path)
+    try:
+        ai_output, ai_run = run_ai_task(
+            task_type="issue_compose",
+            prompt=prompt,
+            output_model=AIIssueOutput,
+            provider=provider,
+            config=config,
+            use_output_schema=False,
+        )
+    except AIEngineError as exc:
+        if exc.record:
+            debug_path = save_ai_debug(args.run_id, "05_ai_issue", exc.record, config)
+            print(f"Debug: {debug_path}")
+        raise
+    issue = make_issue(
+        ai_output,
+        section_slug=section.slug,
+        publication_name=section.publication_name,
+        issue_date=issue_date,
+        volume=section.issue_volume,
+        number=args.issue_number or next_issue_number(section.slug),
+    )
+    try:
+        validate_issue_content(issue)
+    except Exception as exc:
+        failed_run = mark_ai_run_failed(ai_run, exc)
+        debug_path = save_ai_debug(args.run_id, "05_ai_issue", failed_run, config)
+        print(f"Debug: {debug_path}")
+        raise
+    output_path = save_issue(args.run_id, issue)
+    debug_path = save_ai_debug(args.run_id, "05_ai_issue", ai_run, config)
+    print(f"Provider: {provider}")
+    print(f"Saved: {output_path}")
+    print(f"Debug: {debug_path}")
+    summarize_issue(issue)
+    return 0
+
+
+def debug_file_read_candidates() -> list[CandidateItem]:
+    fetched_at = datetime.now(timezone.utc)
+    samples = [
+        RawItem(
+            id="debug-keep",
+            source_id="techcrunch",
+            source_name="TechCrunch",
+            source_language="en",
+            title="Nvidia unveils new AI chip for data center training",
+            url="https://example.com/nvidia-ai-chip",
+            summary="Nvidia announced a new AI chip for data center model training, with higher throughput and support from major cloud providers.",
+            fetched_at=fetched_at,
+        ),
+        RawItem(
+            id="debug-maybe",
+            source_id="the_verge",
+            source_name="The Verge",
+            source_language="en",
+            title="Apple tests a small AI assistant feature in Messages",
+            url="https://example.com/apple-ai-assistant",
+            summary="Apple is testing a limited AI assistant feature that can summarize messages and suggest replies, but release timing remains unclear.",
+            fetched_at=fetched_at,
+        ),
+        RawItem(
+            id="debug-drop",
+            source_id="ifanr",
+            source_name="爱范儿",
+            source_language="zh",
+            title="一款耳机新配色上市，主打夏季穿搭",
+            url="https://example.com/headphones-color",
+            summary="某消费电子品牌发布耳机新配色，主要强调外观、穿搭和促销信息，没有新的 AI 或半导体进展。",
+            fetched_at=fetched_at,
+        ),
+    ]
+    return [
+        CandidateItem(
+            raw_item=samples[0],
+            score=95,
+            matched_terms=["英伟达", "AI芯片", "半导体"],
+            reason="命中英伟达和 AI 芯片，事件重要度高。",
+        ),
+        CandidateItem(
+            raw_item=samples[1],
+            score=62,
+            matched_terms=["苹果", "AI产品发布"],
+            reason="命中苹果和 AI 产品，但信息量有限。",
+        ),
+        CandidateItem(
+            raw_item=samples[2],
+            score=5,
+            matched_terms=[],
+            reason="消费电子外观促销，弱相关。",
+        ),
+    ]
+
+
+def build_file_read_test_prompt(input_path: Path) -> str:
+    return f"""
+你是《我的日报·科技》的第一轮新闻编辑。请读取本地 JSON 文件，并基于文件中的 candidates 字段做语义粗筛。
+
+输入文件：
+{input_path}
+
+任务目标：
+1. 用中文理解英文标题和摘要，不需要先翻译全文。
+2. 每个输入 candidate 都必须给出 keep / maybe / drop 三选一。
+3. keep 表示值得抓正文并大概率进入最终选题；maybe 表示值得抓正文但不确定；drop 表示不进入正文补全。
+4. 命中“不想看”应明显降权，但如果事件重大，可以保留并说明理由。
+5. 聚合类新闻需要判断其中是否包含真正命中关注清单的内容。
+
+输出要求：
+- 只输出一个 JSON 对象，不要 Markdown，不要解释。
+- keep_item_ids、maybe_item_ids、drop_item_ids 三组加起来必须覆盖所有输入 id。
+- items 必须包含所有输入 id，且 decision 与顶层列表一致。
+- relevance_score 和 importance_score 都是 0-100 整数。
+- 本次输入只有 3 条，输出必须同时包含 keep、maybe、drop 三类。
+
+JSON schema 形状：
+{{
+  "keep_item_ids": ["..."],
+  "maybe_item_ids": ["..."],
+  "drop_item_ids": ["..."],
+  "items": [
+    {{
+      "source_item_id": "...",
+      "decision": "keep",
+      "category": "AI 芯片",
+      "relevance_score": 90,
+      "importance_score": 88,
+      "reason": "中文理由",
+      "is_aggregate": false,
+      "aggregate_highlights": []
+    }}
+  ]
+}}
+""".strip()
+
+
+def ai_file_read_test(args: argparse.Namespace) -> int:
+    load_dotenv(WEB_DIR / ".env")
+    config = load_pipeline_config(Path(args.config) if args.config else None)
+    provider = args.provider or config.ai.default_provider
+    debug_run_id = "_debug_ai_file_read"
+    debug_dir = run_dir(debug_run_id)
+    candidates = debug_file_read_candidates()
+    input_path = debug_dir / "input.json"
+    input_payload = {
+        "task": "semantic_shortlist_file_read_test",
+        "candidates": [
+            {
+                "id": candidate.raw_item.id,
+                "source": candidate.raw_item.source_name,
+                "source_language": candidate.raw_item.source_language,
+                "title": candidate.raw_item.title,
+                "url": candidate.raw_item.url,
+                "published_at": candidate.raw_item.published_at.isoformat() if candidate.raw_item.published_at else None,
+                "rss_summary": candidate.raw_item.summary,
+                "coarse_score": candidate.score,
+                "coarse_reason": candidate.reason,
+                "matched_terms": candidate.matched_terms,
+                "avoided_terms": candidate.avoided_terms,
+            }
+            for candidate in candidates
+        ],
+    }
+    debug_dir.mkdir(parents=True, exist_ok=True)
+    input_path.write_text(json.dumps(input_payload, ensure_ascii=False, indent=2), encoding="utf-8")
+
+    prompt = build_file_read_test_prompt(input_path.resolve())
+    started_at = datetime.now(timezone.utc)
+    provider_result = None
+    try:
+        provider_result = run_provider(
+            provider,
+            prompt,
+            CodexShortlistOutput,
+            config,
+            use_output_schema=False,
+        )
+        raw_output = provider_result.output_text
+        if provider_result.return_code != 0:
+            raise AIEngineError(f"AI command failed with code {provider_result.return_code}: {provider_result.stderr.strip()}")
+        parsed = extract_json_object(raw_output)
+        output = CodexShortlistOutput.model_validate(parsed)
+        validate_shortlist_ids(output, candidates)
+        decisions = {item.decision for item in output.items}
+        if decisions != {"keep", "maybe", "drop"}:
+            raise ValueError(f"Expected keep/maybe/drop decisions, got: {', '.join(sorted(decisions))}")
+        finished_at = datetime.now(timezone.utc)
+        output_path = debug_dir / "output.json"
+        raw_path = debug_dir / "raw.txt"
+        run_path = debug_dir / "run.json"
+        events_path = debug_dir / "provider_events.jsonl"
+        output_path.write_text(json.dumps(output.model_dump(mode="json"), ensure_ascii=False, indent=2), encoding="utf-8")
+        raw_path.write_text(raw_output, encoding="utf-8")
+        if provider_result.provider_events:
+            events_path.write_text(provider_result.provider_events, encoding="utf-8")
+        run_payload = AIRunRecord(
+            task_type="file_read_test",
+            prompt_version="debug",
+            prompt=prompt,
+            raw_output=raw_output,
+            parsed_output=output.model_dump(mode="json"),
+            status="success",
+            started_at=started_at,
+            finished_at=finished_at,
+            provider=provider,
+            model=provider_result.model,
+            duration_ms=int((finished_at - started_at).total_seconds() * 1000),
+            command=provider_result.command,
+            return_code=provider_result.return_code,
+            prompt_chars=len(prompt),
+            raw_output_chars=len(raw_output),
+            parsed_output_chars=len(json.dumps(output.model_dump(mode="json"), ensure_ascii=False)),
+            input_tokens=provider_result.input_tokens,
+            output_tokens=provider_result.output_tokens,
+            cache_read_tokens=provider_result.cache_read_tokens,
+            cache_write_tokens=provider_result.cache_write_tokens,
+            total_tokens=provider_result.total_tokens,
+            cost_usd=provider_result.cost_usd,
+            provider_event_log=events_path.name if provider_result.provider_events else None,
+        )
+        run_path.write_text(run_payload.model_dump_json(indent=2), encoding="utf-8")
+        print(f"Provider: {provider}")
+        print(f"Input: {input_path}")
+        print(f"Output: {output_path}")
+        print(f"Run: {run_path}")
+        summarize_codex_shortlist(output)
+        return 0
+    except Exception as exc:  # noqa: BLE001 - debug command should persist failure.
+        finished_at = datetime.now(timezone.utc)
+        raw_output = provider_result.output_text if provider_result else ""
+        raw_path = debug_dir / "raw.txt"
+        run_path = debug_dir / "run.json"
+        events_path = debug_dir / "provider_events.jsonl"
+        raw_path.write_text(raw_output, encoding="utf-8")
+        if provider_result and provider_result.provider_events:
+            events_path.write_text(provider_result.provider_events, encoding="utf-8")
+        run_payload = AIRunRecord(
+            task_type="file_read_test",
+            prompt_version="debug",
+            prompt=prompt,
+            raw_output=raw_output,
+            parsed_output=None,
+            status="failed",
+            error=str(exc),
+            started_at=started_at,
+            finished_at=finished_at,
+            provider=provider,
+            model=provider_result.model if provider_result else None,
+            duration_ms=int((finished_at - started_at).total_seconds() * 1000),
+            command=provider_result.command if provider_result else [],
+            return_code=provider_result.return_code if provider_result else None,
+            prompt_chars=len(prompt),
+            raw_output_chars=len(raw_output),
+            input_tokens=provider_result.input_tokens if provider_result else None,
+            output_tokens=provider_result.output_tokens if provider_result else None,
+            cache_read_tokens=provider_result.cache_read_tokens if provider_result else None,
+            cache_write_tokens=provider_result.cache_write_tokens if provider_result else None,
+            total_tokens=provider_result.total_tokens if provider_result else None,
+            cost_usd=provider_result.cost_usd if provider_result else None,
+            provider_event_log=events_path.name if provider_result and provider_result.provider_events else None,
+        )
+        run_path.write_text(run_payload.model_dump_json(indent=2), encoding="utf-8")
+        print(f"Input: {input_path}")
+        print(f"Raw: {raw_path}")
+        print(f"Run: {run_path}")
+        raise
 
 
 def render_mvp(args: argparse.Namespace) -> int:
@@ -528,6 +939,13 @@ def build_parser() -> argparse.ArgumentParser:
     shortlist_codex_parser.add_argument("--run-id", required=True)
     shortlist_codex_parser.set_defaults(func=shortlist_codex)
 
+    ai_shortlist_parser = subparsers.add_parser("ai-shortlist", help="Generate 02_codex_shortlist.json with AI")
+    ai_shortlist_parser.add_argument("--section", default="tech")
+    ai_shortlist_parser.add_argument("--run-id", required=True)
+    ai_shortlist_parser.add_argument("--provider", choices=["claude", "codex"])
+    ai_shortlist_parser.add_argument("--config", help="Pipeline config path; defaults to web/config/pipeline.yaml")
+    ai_shortlist_parser.set_defaults(func=ai_shortlist)
+
     enrich_parser = subparsers.add_parser("enrich-mvp", help="Checkpoint 3: enrich Codex-selected article bodies")
     enrich_parser.add_argument("--section", default="tech")
     enrich_parser.add_argument("--run-id", required=True)
@@ -542,9 +960,30 @@ def build_parser() -> argparse.ArgumentParser:
     select_codex_parser.add_argument("--run-id", required=True)
     select_codex_parser.set_defaults(func=select_codex)
 
+    ai_select_parser = subparsers.add_parser("ai-select", help="Generate 04_selection.json with AI")
+    ai_select_parser.add_argument("--section", default="tech")
+    ai_select_parser.add_argument("--run-id", required=True)
+    ai_select_parser.add_argument("--provider", choices=["claude", "codex"])
+    ai_select_parser.add_argument("--config", help="Pipeline config path; defaults to web/config/pipeline.yaml")
+    ai_select_parser.set_defaults(func=ai_select)
+
     compose_codex_parser = subparsers.add_parser("compose-codex", help="Checkpoint 5: validate Codex issue JSON")
     compose_codex_parser.add_argument("--run-id", required=True)
     compose_codex_parser.set_defaults(func=compose_codex)
+
+    ai_compose_parser = subparsers.add_parser("ai-compose", help="Generate 05_issue.json with AI")
+    ai_compose_parser.add_argument("--section", default="tech")
+    ai_compose_parser.add_argument("--run-id", required=True)
+    ai_compose_parser.add_argument("--date", help="Issue date; inferred from run-id when omitted")
+    ai_compose_parser.add_argument("--provider", choices=["claude", "codex"])
+    ai_compose_parser.add_argument("--config", help="Pipeline config path; defaults to web/config/pipeline.yaml")
+    ai_compose_parser.add_argument("--issue-number", type=int)
+    ai_compose_parser.set_defaults(func=ai_compose)
+
+    ai_file_read_parser = subparsers.add_parser("ai-file-read-test", help="Debug AI local JSON file reading")
+    ai_file_read_parser.add_argument("--provider", choices=["claude", "codex"])
+    ai_file_read_parser.add_argument("--config", help="Pipeline config path; defaults to web/config/pipeline.yaml")
+    ai_file_read_parser.set_defaults(func=ai_file_read_test)
 
     render_mvp_parser = subparsers.add_parser("render-mvp", help="Checkpoint 6: render frontend app and issue data")
     render_mvp_parser.add_argument("--run-id", required=True)

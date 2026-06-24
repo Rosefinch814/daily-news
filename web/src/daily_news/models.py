@@ -233,3 +233,22 @@ class AIRunRecord(BaseModel):
     error: str | None = None
     started_at: datetime
     finished_at: datetime
+    provider: str | None = None
+    model: str | None = None
+    attempt_count: int = 1
+    repair_used: bool = False
+    duration_ms: int | None = None
+    command: list[str] = Field(default_factory=list)
+    return_code: int | None = None
+    prompt_chars: int = 0
+    raw_output_chars: int = 0
+    parsed_output_chars: int | None = None
+    input_tokens: int | None = None
+    output_tokens: int | None = None
+    cache_read_tokens: int | None = None
+    cache_write_tokens: int | None = None
+    total_tokens: int | None = None
+    cost_usd: float | None = None
+    attempts: list[dict[str, Any]] = Field(default_factory=list)
+    provider_event_log: str | None = None
+    provider_events: str | None = None

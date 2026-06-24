@@ -44,4 +44,4 @@ daily-news/
 
 ## 技术方向
 
-Python · 抓取优先 RSS/API · AI 引擎封装为单一可替换函数（**具体调用方式待定**，`claude -p` 无头模式为当前候选）· Jinja2 静态 HTML · MVP 手动运行。
+Python · 抓取优先 RSS/API · AI 引擎封装为单一可替换函数（**具体调用方式待定**，`claude -p` 无头模式为当前候选）· 前后端分离的纯静态站（管道产数据 JSON + 客户端渲染）· MVP 手动运行。

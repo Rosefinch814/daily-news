@@ -25,6 +25,12 @@ def _write_text(path: Path, payload: str) -> None:
     path.write_text(payload, encoding="utf-8")
 
 
+def _append_jsonl(path: Path, payload: Any) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("a", encoding="utf-8") as handle:
+        handle.write(json.dumps(payload, ensure_ascii=False) + "\n")
+
+
 def run_dir(run_id: str) -> Path:
     return RUNS_DIR / run_id
 
@@ -53,6 +59,12 @@ def save_codex_shortlist(run_id: str, shortlist: CodexShortlistOutput) -> Path:
     return path
 
 
+def save_selection(run_id: str, selection: CodexSelectionOutput) -> Path:
+    path = run_dir(run_id) / "04_selection.json"
+    _write_json(path, selection.model_dump(mode="json"))
+    return path
+
+
 def save_prompt(run_id: str, prompt: str) -> Path:
     path = run_dir(run_id) / "03_prompt.md"
     _write_text(path, prompt)
@@ -66,6 +78,58 @@ def save_ai_run(run_id: str, ai_run: AIRunRecord) -> Path:
         _write_json(base_dir / "04_ai_output.json", ai_run.parsed_output)
     _write_json(base_dir / "04_ai_run.json", ai_run.model_dump(mode="json"))
     return base_dir / "04_ai_run.json"
+
+
+def save_ai_task_run(
+    run_id: str,
+    stage: str,
+    ai_run: AIRunRecord,
+    *,
+    save_attempts: bool = True,
+    save_provider_events: bool = True,
+    append_metrics_jsonl: bool = True,
+) -> Path:
+    base_dir = run_dir(run_id)
+    _write_text(base_dir / f"{stage}_prompt.md", ai_run.prompt)
+    _write_text(base_dir / f"{stage}_raw.txt", ai_run.raw_output)
+    if ai_run.parsed_output is not None:
+        _write_json(base_dir / f"{stage}_output.json", ai_run.parsed_output)
+    provider_events = ai_run.provider_events
+    event_log_path: str | None = None
+    if save_provider_events and provider_events:
+        event_log = base_dir / f"{stage}_provider_events.jsonl"
+        _write_text(event_log, provider_events)
+        event_log_path = event_log.name
+    persisted = ai_run.model_copy(update={"provider_events": None, "provider_event_log": event_log_path})
+    if save_attempts:
+        _write_json(base_dir / f"{stage}_attempts.json", persisted.attempts)
+    _write_json(base_dir / f"{stage}_run.json", persisted.model_dump(mode="json"))
+    if append_metrics_jsonl:
+        metrics = {
+            "stage": stage,
+            "task_type": persisted.task_type,
+            "status": persisted.status,
+            "provider": persisted.provider,
+            "model": persisted.model,
+            "attempt_count": persisted.attempt_count,
+            "repair_used": persisted.repair_used,
+            "duration_ms": persisted.duration_ms,
+            "prompt_chars": persisted.prompt_chars,
+            "raw_output_chars": persisted.raw_output_chars,
+            "parsed_output_chars": persisted.parsed_output_chars,
+            "input_tokens": persisted.input_tokens,
+            "output_tokens": persisted.output_tokens,
+            "cache_read_tokens": persisted.cache_read_tokens,
+            "cache_write_tokens": persisted.cache_write_tokens,
+            "total_tokens": persisted.total_tokens,
+            "cost_usd": persisted.cost_usd,
+            "error": persisted.error,
+            "started_at": persisted.started_at.isoformat(),
+            "finished_at": persisted.finished_at.isoformat(),
+            "provider_event_log": persisted.provider_event_log,
+        }
+        _append_jsonl(base_dir / "ai_metrics.jsonl", metrics)
+    return base_dir / f"{stage}_run.json"
 
 
 def save_issue(run_id: str, issue: Issue) -> Path:
