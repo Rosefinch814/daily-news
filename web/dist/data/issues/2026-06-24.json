@@ -4,134 +4,88 @@
   "publication_name": "我的日报·科技",
   "issue_date": "2026-06-24",
   "volume": 1,
-  "number": 2,
+  "number": 3,
   "date_cn": "2026 年 6 月 24 日 · 周三",
   "output_path": "issues/2026-06-24.html",
   "headlines": [
     {
       "source_item_ids": [
-        "0392339b5aa7d411",
-        "de88e8c806e017dd",
-        "db2164583fa02d98"
+        "ae15b112b9f6bdcc",
+        "3a985468823590e8"
       ],
-      "kicker": "大模型 · 发布",
-      "title_zh": "火山引擎发布豆包2.1 Pro，豆包专业版同步上线",
-      "summary_zh": "火山引擎在6月23日Force大会发布豆包大模型2.1 Pro，并带来Seedance、Seedream、语音生成等模型更新。36氪报道称，火山引擎总裁谭待称豆包2.1 Pro在Coding和Agent能力上达到可用门槛；豆包专业版已上线，办公任务模式接入豆包2.1系列模型，连续包月价格分为68元、200元、500元三档。",
+      "kicker": "自动驾驶 · 监管",
+      "title_zh": "美国监管机构调查一起被指涉及特斯拉 Autopilot 的致死事故",
+      "summary_zh": "一辆特斯拉 Model 3 在得州 Katy 冲入住宅，造成 76 岁居民 Martha Avila 死亡；驾驶员告诉警方，事故发生时车辆使用了自动驾驶辅助系统。美国国家公路交通安全管理局已介入调查，特斯拉则反驳外界把事故直接归因于 Autopilot 的叙事。",
       "read_body_zh": [
-        "36氪专访称，豆包大模型2.1 Pro在Coding和Agent能力方面被火山引擎定义为达到可用门槛，相关报道提到其在Terminal Bench等编程评测上的表现已接近Claude Opus 4.7。火山引擎还公布了Seedance 2.0 4K版、Seedream 5.0、豆包语音生成模型1.0等更新，并将Seedance 2.5列入本轮模型更新报道范围。",
-        "豆包专业版已正式上线。36氪快讯称，豆包办公任务模式接入可执行Agent任务的豆包2.1系列模型，支持操作本地电脑、使用浏览器、调用Skills技能和定时任务，内置Office办公套件，并支持图片视频设计和生成分享应用网站。专业版采用三级阶梯定价：标准套餐连续包月68元，加强套餐连续包月200元，高级套餐连续包月500元。"
+        "事故发生在上周五晚间，驾驶员 Michael Butler 驾驶的特斯拉 Model 3 偏离道路并撞入住宅。Harris County 警方称，Butler 表示事故发生时车辆启用了自动驾驶辅助系统；警方同时表示，驾驶员没有醉酒，并正在配合调查。",
+        "Ars Technica 报道称，警方仍在调查 Autopilot 是否以任何方式导致事故，车速和车辆日志等细节尚未最终确认。TechCrunch 则报道，特斯拉随后公开反击相关叙事，强调需要等待车辆数据和调查结果，而不是仅依据驾驶员说法认定系统责任。",
+        "这起事故发生后，围绕 Autopilot 和 Full Self-Driving（Supervised）的长期争议再次升温。特斯拉一方面继续宣传其驾驶辅助系统的安全价值，另一方面也面临监管机构、媒体和公众对系统边界、驾驶员责任与产品命名的持续审视。"
       ],
       "pullquote": null,
-      "ai_impact": "这次发布把字节的模型叙事从视频生成扩展到Coding、Agent和办公任务执行，直接进入用户关注的大模型进展与AI产品发布主线。更重要的是，豆包专业版把模型能力、桌面操作和订阅定价捆在一起，说明国内大模型厂商正在从低价API竞争转向面向生产场景的产品化收费；后续关键在于第三方评测、稳定性和企业真实留存能否支撑这一价格体系。",
-      "sources": [
-        {
-          "name": "36氪",
-          "url": "https://36kr.com/p/3865912900588548?f=rss"
-        },
-        {
-          "name": "爱范儿",
-          "url": "https://www.ifanr.com/1669752"
-        },
-        {
-          "name": "36氪",
-          "url": "https://36kr.com/newsflashes/3866487937651968?f=rss"
-        }
-      ],
-      "relevance_score": 94,
-      "importance_score": 88
-    },
-    {
-      "source_item_ids": [
-        "f81dcd58a1bb3db8"
-      ],
-      "kicker": "算力 · 芯片",
-      "title_zh": "Reflection AI与SpaceX签下英伟达GB300算力协议",
-      "summary_zh": "TechCrunch报道称，开源AI实验室Reflection AI将从2026年7月1日起至2029年，每月向SpaceX支付1.5亿美元，以立即使用英伟达最新GB300 AI芯片及配套硬件；相关算力位于SpaceX在田纳西州孟菲斯附近的Colossus 2数据中心。",
-      "read_body_zh": [
-        "报道显示，这是一笔围绕AI训练与推理基础设施的长期算力协议。Reflection AI获得的资源包括英伟达GB300 AI芯片和支持硬件，部署地点指向SpaceX在孟菲斯附近的Colossus 2数据中心。",
-        "协议金额为每月1.5亿美元，起始时间为2026年7月1日，持续到2029年。候选原文没有披露更多关于Reflection AI模型计划、实际芯片数量或合同附加条件的细节。"
-      ],
-      "pullquote": null,
-      "ai_impact": "这笔交易凸显顶级AI芯片和大型数据中心容量仍是模型公司的核心瓶颈。对英伟达GB300的长期锁定，说明算力获取正在成为AI实验室竞争力的一部分；SpaceX也从航天与通信基础设施进一步进入AI算力供给链。",
+      "ai_impact": "这条新闻的关键不只是单起事故，而是自动驾驶辅助系统的责任边界正在被监管和司法反复测试。对特斯拉来说，任何涉及 Autopilot 的致死事故都会放大其 Robotaxi 和 FSD 叙事的执行风险，也会影响行业对高阶辅助驾驶宣传口径的容忍度。",
       "sources": [
         {
           "name": "TechCrunch",
-          "url": "https://techcrunch.com/2026/06/22/spacex-inks-compute-deal-with-reflection-ai-an-open-source-ai-lab"
+          "url": "https://techcrunch.com/2026/06/22/tesla-pushes-back-on-autopilot-narrative-after-fatal-texas-crash"
+        },
+        {
+          "name": "Ars Technica",
+          "url": "https://arstechnica.com/tech-policy/2026/06/woman-killed-when-tesla-driver-using-autopilot-crashed-into-her-home"
         }
       ],
-      "relevance_score": 91,
+      "relevance_score": 96,
       "importance_score": 89
     },
     {
       "source_item_ids": [
-        "3a985468823590e8",
-        "ae15b112b9f6bdcc"
+        "0392339b5aa7d411"
       ],
-      "kicker": "自动驾驶 · 监管",
-      "title_zh": "美国监管机构调查一起被指涉及特斯拉Autopilot的致死事故",
-      "summary_zh": "Ars Technica报道称，美国国家公路交通安全管理局正在调查一起被指涉及特斯拉Autopilot的致死事故，一名女性在家中遇难。TechCrunch报道称，特斯拉对围绕Autopilot的事故叙事提出异议，系统是否真正启用、被覆盖或出现故障，要等调查人员分析车辆数据日志后才能确定。",
+      "kicker": "大模型 · MaaS",
+      "title_zh": "火山引擎称豆包 2.1 Pro 在 Coding 和 Agent 能力上“上桌”",
+      "summary_zh": "火山引擎总裁谭待在接受 36 氪采访时表示，顶尖模型能力是 MaaS 服务当下最核心的增长引擎。火山引擎在 Force 大会上发布豆包大模型 2.1 Pro，并强调其 Coding 和 Agent 能力已达到可进入主流竞争的水平。",
       "read_body_zh": [
-        "Ars Technica的标题信息显示，NHTSA正在调查一宗所谓特斯拉Autopilot相关事故，事故导致一名在家中的女性死亡。该报道还提到，事故发生后一天，特斯拉仍在宣传Autopilot的安全价值。",
-        "TechCrunch报道称，特斯拉反驳了关于Autopilot的既定叙事。报道指出，Autopilot在事故中是否真实处于启用状态、是否被驾驶员覆盖，或是否出现故障，仍需等待调查人员检查车辆数据日志后才能解决。"
+        "36 氪报道称，火山引擎过去三年的 MaaS 营收目标多次在年中完成并上调，2026 年初字节的视频模型 Seedance 2.0 也推动火山引擎在 AI 云服务上取得增长。谭待认为，模型能力边界仍在变化，顶尖模型本身是 MaaS 增长的核心。",
+        "在 6 月 23 日的火山引擎 Force 大会上，字节发布新一代旗舰模型豆包大模型 2.1 Pro。报道提到，谭待把它在 Coding 和 Agent 能力上的进展描述为“终于可以上桌了”，并称其在 Terminal Bench 等编程评测上已接近 Claude Opus 4.7。",
+        "除旗舰模型外，火山引擎还更新了 Seedance 2.0 4K 版、Seedream 5.0、豆包语音生成模型 1.0 等产品线。报道把这些更新放在 MaaS 商业化背景下讨论，重点是模型能力如何进入企业和个人的核心生产环节。"
       ],
       "pullquote": null,
-      "ai_impact": "这起事件再次把高级辅助驾驶的宣传边界、驾驶员责任和监管取证拉到同一张桌上。对特斯拉而言，关键风险不只是单起事故责任，而是Autopilot叙事与实际系统能力之间的落差会持续影响监管态度、用户信任和自动驾驶商业化节奏。",
-      "sources": [
-        {
-          "name": "Ars Technica",
-          "url": "https://arstechnica.com/tech-policy/2026/06/woman-killed-when-tesla-driver-using-autopilot-crashed-into-her-home"
-        },
-        {
-          "name": "TechCrunch",
-          "url": "https://techcrunch.com/2026/06/22/tesla-pushes-back-on-autopilot-narrative-after-fatal-texas-crash"
-        }
-      ],
-      "relevance_score": 90,
-      "importance_score": 87
-    },
-    {
-      "source_item_ids": [
-        "ea6e7480d2c39c22"
-      ],
-      "kicker": "半导体 · 代工",
-      "title_zh": "消息称台积电先进制程代工将全线涨价",
-      "summary_zh": "36氪援引财联社报道称，科技分析师Tim Culpan指出，台积电已陆续向客户通知调涨晶圆代工价格，涨价范围不仅包括3nm制程，还扩及7nm及以下所有先进制程，整体涨幅约5%至10%，影响范围涵盖约75%的晶圆营收来源。",
-      "read_body_zh": [
-        "报道中的涨价范围覆盖台积电先进制程线，包括市场此前传言的3nm，以及7nm及以下所有先进制程。候选原文称，整体涨幅约为5%至10%。",
-        "该消息的来源为科技分析师Tim Culpan，36氪快讯援引财联社发布。报道还称，受影响范围涵盖约75%的晶圆营收来源，但没有列出具体客户名单或各制程的分别报价。"
-      ],
-      "pullquote": null,
-      "ai_impact": "如果涨价落实，AI芯片、先进手机芯片和高性能计算芯片的成本曲线都会被重新定价。台积电先进制程供给紧张叠加AI需求上行，会增强头部代工厂议价能力，也可能把成本压力传导给英伟达、苹果、AMD等先进制程客户及其终端产品。",
+      "ai_impact": "这说明国内大模型竞争正在从“有没有通用聊天入口”转向“能不能驱动生产工作流”。如果 Coding、Agent 和视频模型继续成为付费场景，MaaS 厂商的竞争核心会更依赖模型质量、算力调度和企业集成能力，而不是单纯流量入口。",
       "sources": [
         {
           "name": "36氪",
-          "url": "https://36kr.com/newsflashes/3866472254411779?f=rss"
+          "url": "https://36kr.com/p/3865912900588548?f=rss"
         }
       ],
-      "relevance_score": 92,
-      "importance_score": 84
+      "relevance_score": 88,
+      "importance_score": 85
     },
     {
       "source_item_ids": [
-        "ba246d627f29e600"
+        "ae885aa197b6dda4",
+        "ab68eff22d6b5548"
       ],
-      "kicker": "云计算 · 能源",
-      "title_zh": "微软与雪佛龙规划美国大型燃气供电数据中心项目",
-      "summary_zh": "TechCrunch报道称，微软与雪佛龙规划美国大型燃气供电数据中心项目。微软与雪佛龙签署20年购电协议，相关安排将把一家新天然气发电厂的电力用于数据中心，并带来长期碳排放。",
+      "kicker": "AI 产品 · 微信",
+      "title_zh": "微信原生 AI 助手“小微”灰度内测，一级入口接近首屏",
+      "summary_zh": "微信 AI 助手“小微”正在灰度内测，入口出现在微信首页左上角。36 氪和爱范儿的体验显示，小微基于微信自研模型 WeLM，部分回答可能调用 DeepSeek，并尝试打通聊天、朋友圈、公众号、视频号、小程序和微信小店等生态能力。",
       "read_body_zh": [
-        "报道将该项目描述为美国规模较大的燃气供电数据中心项目之一。微软与雪佛龙达成的是一份20年购电协议，供电来源与新建天然气发电厂相关。",
-        "候选原文强调，这项安排会锁定数十年的碳排放。报道没有在摘要中提供项目地点、数据中心容量、发电厂装机规模或微软云服务客户用途等更多细节。"
+        "36 氪报道称，小微默认交互方式是语音转文字，也可手动输入；它会默认开启记忆能力、个性化服务和授权帮助模型改进效果，用户可在隐私设置中关闭。该助手可读取部分微信生态内容，但很多动作仍需要用户手动确认。",
+        "在能力边界上，小微可以读取朋友圈内容但不能直接代发朋友圈，可以读取微信聊天内容但一次只能读一条消息；涉及支付的场景也无法自动完成付款，需要用户手动输入支付密码。报道认为，这体现了微信在信任和安全场景中的谨慎设计。",
+        "爱范儿体验称，小微位于微信首页首屏，接管了原本右滑页面的重要位置，入口层级接近新的一级入口。文章认为，微信希望把 AI 助手放进自身“数据、服务、社交”闭环中，而不是把 AI 做成割裂的独立应用。"
       ],
       "pullquote": null,
-      "ai_impact": "微软云和AI基础设施扩张正在直接牵引电力资产建设。大型科技公司一边推进AI算力，一边用长期化石能源协议保障供电稳定，这会让AI数据中心的能源成本、碳排放和地方电网承压成为更核心的产业变量。",
+      "ai_impact": "微信的价值在于入口和生态密度。小微如果稳定铺开，AI 助手会从独立 App 竞争进入超级 App 内部竞争，真正考验的不只是模型问答能力，而是权限、隐私、交易确认和社交关系链之间的产品取舍。",
       "sources": [
         {
-          "name": "TechCrunch",
-          "url": "https://techcrunch.com/2026/06/22/microsoft-and-chevron-plan-one-of-the-largest-gas-powered-data-center-projects-in-us"
+          "name": "36氪",
+          "url": "https://36kr.com/p/3865425714795525?f=rss"
+        },
+        {
+          "name": "爱范儿",
+          "url": "https://www.ifanr.com/1669694"
         }
       ],
-      "relevance_score": 78,
-      "importance_score": 86
+      "relevance_score": 84,
+      "importance_score": 82
     }
   ],
   "briefs": [
@@ -139,57 +93,57 @@
       "source_item_ids": [
         "416004de0dc49352"
       ],
-      "title_zh": "OpenAI推出开源漏洞发现与修复计划",
-      "summary_zh": "TechCrunch报道称，OpenAI启动新计划，使用AI帮助开源社区发现并修补漏洞，以提升开源软件安全防护。",
+      "title_zh": "OpenAI 推出开源漏洞发现与修复计划",
+      "summary_zh": "OpenAI 宣布“Patch the Planet”计划，将与安全公司 Trail of Bits 合作，帮助开源维护者发现并修复项目中的安全漏洞。该计划的重点是用 AI 帮助开源社区提升防护能力。",
       "sources": [
         {
           "name": "TechCrunch",
           "url": "https://techcrunch.com/2026/06/22/openai-launches-new-initiative-to-help-find-and-patch-open-source-bugs"
         }
       ],
-      "relevance_score": 76,
-      "importance_score": 69
+      "relevance_score": 74,
+      "importance_score": 72
     },
     {
       "source_item_ids": [
         "b7eb1300023df5b1"
       ],
-      "title_zh": "Anthropic在Slack中推出Claude Tag",
-      "summary_zh": "TechCrunch报道称，Anthropic的新功能Claude Tag把一个持续在线的AI队友带入Slack，并试图捕捉组织上下文、机构知识和企业工作流。",
+      "title_zh": "Anthropic 将 Claude Tag 放进 Slack 企业协作流",
+      "summary_zh": "Anthropic 推出 Claude Tag，让 Claude 常驻 Slack，用户可以在频道中 @Claude 获取洞察或分派任务。该功能面向 Claude Enterprise 和 Team 客户开放 beta，核心价值是捕捉组织上下文和工作流。",
       "sources": [
         {
           "name": "TechCrunch",
           "url": "https://techcrunch.com/2026/06/23/anthropics-claude-tag-is-learning-your-company-one-slack-message-at-a-time"
         }
       ],
-      "relevance_score": 74,
-      "importance_score": 68
+      "relevance_score": 76,
+      "importance_score": 74
     },
     {
       "source_item_ids": [
-        "c3ceb31aa44a934d"
+        "c2fff93f7e8e64ac"
       ],
-      "title_zh": "三星与SK海力士新半导体集群规划进入收尾阶段",
-      "summary_zh": "36氪援引界面报道称，韩国总统办公室政策室长金容范表示，三星电子和SK海力士建立新半导体集群的计划已进入最后讨论阶段。金容范称，受AI行业芯片需求爆发式增长影响，两家公司现有龙仁半导体集群建设进程将大幅提前；SK海力士正讨论将龙仁第四座晶圆厂完工时间从2044年提前至2034年。",
-      "sources": [
-        {
-          "name": "36氪",
-          "url": "https://36kr.com/newsflashes/3866532521825286?f=rss"
-        }
-      ],
-      "relevance_score": 77,
-      "importance_score": 73
-    },
-    {
-      "source_item_ids": [
-        "470f56fcb6653050"
-      ],
-      "title_zh": "蔚来讨论世界模型如何适配多芯片、多平台和多车型",
-      "summary_zh": "爱范儿发布对蔚来高级副总裁任少卿的对话，主题是一个世界模型如何适配两套芯片、四个平台和十几款车型。候选原文摘要未提供更多技术细节。",
+      "title_zh": "豆包专业版把办公任务模式作为付费重点",
+      "summary_zh": "爱范儿体验称，豆包专业版基于豆包 2.1 系列模型，新增办公任务模式，并提高功能使用额度。文章认为，豆包正在从大众 AI 入口转向更偏软件开发、数据分析、设计和流程自动化的生产力工具。",
       "sources": [
         {
           "name": "爱范儿",
-          "url": "https://www.ifanr.com/1669670"
+          "url": "https://www.ifanr.com/1669687"
+        }
+      ],
+      "relevance_score": 78,
+      "importance_score": 69
+    },
+    {
+      "source_item_ids": [
+        "2d1ab8d865ad790e"
+      ],
+      "title_zh": "GLM-5.2 本地运行文档在开发者社区获得关注",
+      "summary_zh": "Unsloth 文档介绍了如何在本地运行 Z.ai 的 GLM-5.2 模型。文档称该模型有 744B 参数、40B 激活参数和 1M 上下文窗口，面向长程编码、推理和智能体任务。",
+      "sources": [
+        {
+          "name": "Hacker News",
+          "url": "https://unsloth.ai/docs/models/glm-5.2"
         }
       ],
       "relevance_score": 72,
@@ -197,109 +151,29 @@
     },
     {
       "source_item_ids": [
-        "ab68eff22d6b5548",
-        "ae885aa197b6dda4"
+        "f752ebf962a6428e"
       ],
-      "title_zh": "微信AI助手“小微”灰度内测，能力覆盖社交、内容与效率入口",
-      "summary_zh": "36氪报道称，微信AI助手“小微”正在灰度内测，主要基于微信自研模型WeLM，部分回答可能调用DeepSeek。小微入口位于微信首页左上角，已打通小程序、聊天、朋友圈、公众号、视频号、微信小店等基础功能，但不能直接付款、发布朋友圈或视频号、定时发送消息；它可以看图、看文件、总结公众号和视频号内容，并可查看近期支出并分类。",
+      "title_zh": "Qwen-AgentWorld 论文探索语言世界模型驱动通用智能体",
+      "summary_zh": "一篇新论文提出 Qwen-AgentWorld，研究如何用语言模型构建世界模型，以支持智能体对环境动态进行预测、推理和规划。该方向仍偏研究阶段，但指向通用 Agent 的长期能力建设。",
       "sources": [
         {
-          "name": "爱范儿",
-          "url": "https://www.ifanr.com/1669694"
-        },
-        {
-          "name": "36氪",
-          "url": "https://36kr.com/p/3865425714795525?f=rss"
-        }
-      ],
-      "relevance_score": 73,
-      "importance_score": 72
-    },
-    {
-      "source_item_ids": [
-        "e3a98cbb5c7c4389"
-      ],
-      "title_zh": "英伟达发布数据中心节水冷却方案",
-      "summary_zh": "TechCrunch报道称，英伟达发布一套新冷却系统，可减少数据中心内部用水；但报道指出，该方案并未解决AI更大的用水来源，即化石燃料发电厂的用水问题。",
-      "sources": [
-        {
-          "name": "TechCrunch",
-          "url": "https://techcrunch.com/2026/06/22/nvidia-wants-to-cut-data-center-water-use-but-thats-not-the-same-as-fixing-ais-water-problem"
-        }
-      ],
-      "relevance_score": 70,
-      "importance_score": 68
-    },
-    {
-      "source_item_ids": [
-        "f023c33d5f8e8225"
-      ],
-      "title_zh": "Google DeepMind与A24合作开发AI影视工具",
-      "summary_zh": "TechCrunch报道称，Google DeepMind与影视公司A24合作开发AI电影制作工具，报道标题称Google DeepMind为AI进入好莱坞投入7500万美元。",
-      "sources": [
-        {
-          "name": "TechCrunch",
-          "url": "https://techcrunch.com/2026/06/22/google-deepmind-bets-75m-on-ais-future-in-hollywood-with-a24-deal"
+          "name": "Hacker News",
+          "url": "https://arxiv.org/abs/2606.24597"
         }
       ],
       "relevance_score": 68,
-      "importance_score": 67
-    },
-    {
-      "source_item_ids": [
-        "b45d2ed97baf6903"
-      ],
-      "title_zh": "AMD在用户反弹后恢复消费级CPU内存加密功能",
-      "summary_zh": "Ars Technica报道称，AMD在用户抗议后恢复消费级CPU的内存加密功能。报道摘要称，批评者认为此前调整是在引导用户购买更昂贵的芯片。",
-      "sources": [
-        {
-          "name": "Ars Technica",
-          "url": "https://arstechnica.com/security/2026/06/following-user-outcry-amd-reinstates-memory-encryption-in-consumer-cpus"
-        }
-      ],
-      "relevance_score": 64,
-      "importance_score": 63
-    },
-    {
-      "source_item_ids": [
-        "964451d4f92d3852"
-      ],
-      "title_zh": "AI Agent产品开始走向持续循环工作流",
-      "summary_zh": "TechCrunch报道称，AI领域正在出现“循环”式工作流：在用户授权后，一组Agent可在后台持续工作，不断执行任务。",
-      "sources": [
-        {
-          "name": "TechCrunch",
-          "url": "https://techcrunch.com/2026/06/22/the-ai-world-is-getting-loopy"
-        }
-      ],
-      "relevance_score": 69,
-      "importance_score": 62
-    },
-    {
-      "source_item_ids": [
-        "2d1ab8d865ad790e"
-      ],
-      "title_zh": "GLM-5.2本地运行指南在开发者社区获得关注",
-      "summary_zh": "Hacker News条目指向Unsloth的GLM-5.2本地运行文档。候选原文显示，该条目获得580点和280条评论。",
-      "sources": [
-        {
-          "name": "Unsloth（via Hacker News）",
-          "url": "https://unsloth.ai/docs/models/glm-5.2"
-        }
-      ],
-      "relevance_score": 72,
       "importance_score": 66
     },
     {
       "source_item_ids": [
-        "c31bf91cb04cc115"
+        "3242f62ea4615cff"
       ],
-      "title_zh": "VibeThinker-3B论文称小参数模型在推理任务上取得进展",
-      "summary_zh": "Hacker News条目指向一篇arXiv论文，标题称VibeThinker是一个30亿参数模型，使用SFT+GRPO方法在推理上超过Opus 4.5。候选原文显示，该条目获得376点和198条评论。",
+      "title_zh": "Google Home 将用非生物识别信号改善家庭成员识别",
+      "summary_zh": "Google Home 将扩展 Familiar Faces 功能，在人脸不清晰时使用体型、衣服颜色等额外非生物识别信号继续识别已标记人物。该更新旨在降低家庭摄像头把背对镜头的人误判为陌生人的概率。",
       "sources": [
         {
-          "name": "arXiv（via Hacker News）",
-          "url": "https://arxiv.org/abs/2606.16140"
+          "name": "The Verge",
+          "url": "https://www.theverge.com/tech/955385/google-home-familiar-faces-clothing"
         }
       ],
       "relevance_score": 70,
@@ -307,138 +181,217 @@
     },
     {
       "source_item_ids": [
-        "e4868ef6c3245d20"
+        "b45d2ed97baf6903"
       ],
-      "title_zh": "Swift Package Index加入苹果",
-      "summary_zh": "Hacker News条目指向Swift Package Index官方博客，标题显示Swift Package Index已加入苹果。候选原文显示，该条目获得173点和52条评论。",
+      "title_zh": "AMD 在用户反弹后恢复消费级 CPU 内存加密功能",
+      "summary_zh": "Ars Technica 报道称，AMD 在用户批评后恢复消费级 Ryzen 处理器的 TSME 内存加密保护。该功能用于防御冷启动等物理攻击，此前被移除引发用户认为 AMD 在引导消费者购买更昂贵芯片。",
       "sources": [
         {
-          "name": "Swift Package Index（via Hacker News）",
-          "url": "https://swiftpackageindex.com/blog/swift-package-index-joins-apple"
+          "name": "Ars Technica",
+          "url": "https://arstechnica.com/security/2026/06/following-user-outcry-amd-reinstates-memory-encryption-in-consumer-cpus"
         }
       ],
-      "relevance_score": 65,
-      "importance_score": 61
+      "relevance_score": 66,
+      "importance_score": 68
     },
     {
       "source_item_ids": [
-        "a7c72d0716b608e2"
+        "a7c72d0716b608e2",
+        "8ba24478b8a70753"
       ],
-      "title_zh": "甲骨文裁员与债务融资支撑AI基础设施投入",
-      "summary_zh": "Ars Technica报道称，甲骨文裁员21000人帮助推动其以债务融资支撑的AI投资。报道摘要称，甲骨文正在投入数十亿美元建设数据中心基础设施，以支持AI。",
+      "title_zh": "甲骨文披露一年减少 2.1 万名员工，AI 投入继续推高资本开支",
+      "summary_zh": "甲骨文在年度监管文件中披露，截至 5 月 31 日全职员工为 14.1 万人，较上一年减少 2.1 万人。公司称 AI 技术在运营中的采用和部署已经并可能继续导致裁员，同时其仍在为 AI 数据中心基础设施投入大量资金。",
       "sources": [
         {
           "name": "Ars Technica",
           "url": "https://arstechnica.com/ai/2026/06/oracles-21000-layoffs-help-drive-its-debt-fueled-ai-investments"
+        },
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/06/22/the-running-list-major-tech-layoffs-in-2026-where-employers-cited-ai"
         }
       ],
-      "relevance_score": 61,
-      "importance_score": 70
+      "relevance_score": 55,
+      "importance_score": 74
     },
     {
       "source_item_ids": [
         "fab4f492db536733"
       ],
-      "title_zh": "白宫大幅缩短淘汰量子脆弱加密的期限",
-      "summary_zh": "Ars Technica报道称，白宫行政令大幅提前停止使用易受量子计算攻击加密方式的期限，并警告若不能及时采用后量子密码学，将带来国家安全风险。",
+      "title_zh": "白宫缩短淘汰量子脆弱加密的时间表",
+      "summary_zh": "美国白宫发布行政令，要求政府机构和相关组织更快迁移到抗量子加密系统。该命令强调，如果未及时采用后量子密码，军事、银行、政府和个人数据都可能面临长期安全风险。",
       "sources": [
         {
           "name": "Ars Technica",
           "url": "https://arstechnica.com/information-technology/2026/06/executive-order-bumps-up-deadline-to-move-off-quantum-vulnerable-crypto"
         }
       ],
-      "relevance_score": 55,
+      "relevance_score": 45,
       "importance_score": 72
+    },
+    {
+      "source_item_ids": [
+        "e4868ef6c3245d20"
+      ],
+      "title_zh": "Swift Package Index 加入苹果",
+      "summary_zh": "Swift Package Index 团队宣布加入苹果。该项目长期服务 Swift 包生态，在 Hacker News 上获得较高讨论度；由于正文抓取失败，本条仅依据 RSS 摘要和来源元数据保留为开发者生态速览。",
+      "sources": [
+        {
+          "name": "Hacker News",
+          "url": "https://swiftpackageindex.com/blog/swift-package-index-joins-apple"
+        }
+      ],
+      "relevance_score": 61,
+      "importance_score": 55
+    },
+    {
+      "source_item_ids": [
+        "cacaa2250c4adfe8"
+      ],
+      "title_zh": "消息称苹果首款可折叠 iPhone 将于 7 月下旬量产",
+      "summary_zh": "36 氪援引供应链消息称，苹果已最终确定首款可折叠 iPhone 的显示屏、外壳和机械部件等关键规格，并准备于 7 月下旬开始量产。该消息仍属供应链传闻，确定性有限。",
+      "sources": [
+        {
+          "name": "36氪",
+          "url": "https://36kr.com/newsflashes/3866914774308105?f=rss"
+        }
+      ],
+      "relevance_score": 58,
+      "importance_score": 60
+    },
+    {
+      "source_item_ids": [
+        "e43169e7317892e2"
+      ],
+      "title_zh": "SK 海力士称 ADR 将于 7 月在美国上市",
+      "summary_zh": "36 氪援引财联社消息称，SK 海力士表示美国存托凭证将于 7 月上市，并计划通过 ADR 上市筹集最高 45 万亿韩元资金。该事件与存储和 AI 算力供应链的资本市场融资有关。",
+      "sources": [
+        {
+          "name": "36氪",
+          "url": "https://36kr.com/newsflashes/3866880001398018?f=rss"
+        }
+      ],
+      "relevance_score": 55,
+      "importance_score": 64
+    },
+    {
+      "source_item_ids": [
+        "964451d4f92d3852"
+      ],
+      "title_zh": "AI Agent 产品开始走向持续循环工作流",
+      "summary_zh": "TechCrunch 报道称，AI 开发工具和 Agent 产品正在从单次任务执行走向循环式后台工作流。Claude Code 创建者 Boris Cherny 在 Meta @Scale 会议上表示，循环工作流是真实趋势，代表 Agent 开始持续接管更多代码和任务流程。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/06/22/the-ai-world-is-getting-loopy"
+        }
+      ],
+      "relevance_score": 62,
+      "importance_score": 60
+    },
+    {
+      "source_item_ids": [
+        "79c159aa86ee638a"
+      ],
+      "title_zh": "Meta 推出自有品牌智能眼镜，起售价 299 美元",
+      "summary_zh": "Meta 发布自有品牌 Meta Glasses，起售价 299 美元，由 EssilorLuxottica 合作制造，但不使用 Ray-Ban 或 Oakley 品牌。该产品显示 Meta 继续推进智能眼镜和可穿戴设备布局。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/06/23/meta-debuts-new-cheaper-smart-glasses-under-its-own-brand"
+        }
+      ],
+      "relevance_score": 42,
+      "importance_score": 58
     }
   ],
   "discarded": [
     {
       "source_item_ids": [
-        "c0bfc8ee5e9ad564"
+        "0b96cb6ed2b1aef5"
       ],
-      "reason": "主体是Groq融资与人员调整，虽涉及AI芯片和英伟达，但更接近用户明确要求规避的小公司融资类新闻。",
-      "relevance_score": 58,
-      "importance_score": 55
+      "reason": "聚合早报，多事件混杂，核心事件已有更聚焦来源覆盖，不作为单独选题。",
+      "relevance_score": 45,
+      "importance_score": 50
     },
     {
       "source_item_ids": [
-        "1c158e8e05d4b558"
+        "80c2d405ddd42dd8"
       ],
-      "reason": "WAVES圆桌实录偏观点和会议内容，信息密度分散，缺少明确单一新闻事件。",
-      "relevance_score": 48,
+      "reason": "会议圆桌整理稿，观点分散且新闻增量不足，关键词命中较多但不适合作为最终选题。",
+      "relevance_score": 38,
+      "importance_score": 36
+    },
+    {
+      "source_item_ids": [
+        "3026254b61a0302f"
+      ],
+      "reason": "会议讨论内容较宽泛，缺少明确单一事件和可验证新闻增量，低于入选门槛。",
+      "relevance_score": 42,
+      "importance_score": 38
+    },
+    {
+      "source_item_ids": [
+        "374558756b72cc6e"
+      ],
+      "reason": "偏创业方法和会议讨论，虽涉及 AI 工具，但与重点公司和重大技术事件关联较弱。",
+      "relevance_score": 36,
+      "importance_score": 34
+    },
+    {
+      "source_item_ids": [
+        "b5533f718d5b37ab"
+      ],
+      "reason": "AI 检测创业公司并购事件影响面有限，且不匹配重点公司与核心主题优先级。",
+      "relevance_score": 38,
       "importance_score": 42
     },
     {
       "source_item_ids": [
-        "9e815db3443b1926"
+        "c31bf91cb04cc115"
       ],
-      "reason": "8点1氪为多主题聚合早报，包含若干已被更高质量来源覆盖的事件，作为独立选题不够聚焦。",
-      "relevance_score": 52,
-      "importance_score": 45
+      "reason": "小模型论文宣称较强但仍偏社区和研究早期，影响待验证，优先级低于其他大模型进展。",
+      "relevance_score": 40,
+      "importance_score": 35
     },
     {
       "source_item_ids": [
-        "fb63f6b0bf657960"
+        "11ddf5c7a7fc182e"
       ],
-      "reason": "AI创投圆桌偏投资观点和会议纪要，含融资叙事较多，新闻增量弱。",
-      "relevance_score": 45,
-      "importance_score": 40
+      "reason": "员工追踪项目暂停更偏企业治理和隐私争议，未命中本期重点公司与主题。",
+      "relevance_score": 30,
+      "importance_score": 50
     },
     {
       "source_item_ids": [
-        "b8c0d7e48f3b40c8"
+        "da273e68da481c0d"
       ],
-      "reason": "消费硬件圆桌偏行业讨论和投资观点，虽提及AI硬件但不属于明确重大事件。",
-      "relevance_score": 42,
-      "importance_score": 39
-    },
-    {
-      "source_item_ids": [
-        "3242f62ea4615cff"
-      ],
-      "reason": "Google Home识别能力更新属于单一消费产品功能改进，重要度低于本期其他AI和半导体事件。",
-      "relevance_score": 50,
-      "importance_score": 43
-    },
-    {
-      "source_item_ids": [
-        "0b96cb6ed2b1aef5"
-      ],
-      "reason": "爱范儿早报为多事件聚合，核心信息与已入选的微信AI、豆包和OpenAI等条目重复。",
-      "relevance_score": 51,
-      "importance_score": 44
-    },
-    {
-      "source_item_ids": [
-        "e2746b512402ee90"
-      ],
-      "reason": "文章更偏AI成本问题评论与汇总，不是当天清晰新闻事件，且未命中指定公司或主题优先级。",
-      "relevance_score": 43,
-      "importance_score": 46
+      "reason": "公司注册信息增量有限，接近常规工商动态，不符合重要科技新闻选题标准。",
+      "relevance_score": 20,
+      "importance_score": 22
     }
   ],
   "merged_sources": [
     {
       "source_item_ids": [
-        "0392339b5aa7d411",
-        "de88e8c806e017dd",
-        "db2164583fa02d98"
+        "ae15b112b9f6bdcc",
+        "3a985468823590e8"
       ],
-      "reason": "同属火山引擎/豆包在Force大会前后发布豆包2.1 Pro、Seedance 2.5和专业版的产品与模型更新"
+      "reason": "同一特斯拉致死事故及监管调查。"
     },
     {
       "source_item_ids": [
-        "3a985468823590e8",
-        "ae15b112b9f6bdcc"
+        "ae885aa197b6dda4",
+        "ab68eff22d6b5548"
       ],
-      "reason": "同一特斯拉Autopilot致死事故及后续监管调查和公司回应"
+      "reason": "同一微信 AI 助手小微灰度测试事件。"
     },
     {
       "source_item_ids": [
-        "ab68eff22d6b5548",
-        "ae885aa197b6dda4"
+        "a7c72d0716b608e2",
+        "8ba24478b8a70753"
       ],
-      "reason": "同一微信原生AI助手小微灰度内测与产品体验事件"
+      "reason": "同一甲骨文裁员与 AI 投入背景。"
     }
   ]
 }
