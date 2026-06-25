@@ -26,5 +26,8 @@
       "data_path": "data/issues/2026-06-23.json"
     }
   ],
-  "public_config": {}
+  "public_config": {
+    "supabase_url": "https://hwsrxtasvylvbhqzgfny.supabase.co",
+    "supabase_anon_key": "sb_publishable_f0-KQUWGpjQLGQxUOXMfZQ_osD5cuzP"
+  }
 }
