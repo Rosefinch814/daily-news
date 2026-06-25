@@ -1,7 +1,7 @@
 ---
 id: T01
 title: 清理迁移到客户端渲染后遗留的旧 SSR 死代码
-status: todo
+status: done
 依赖: []
 里程碑: M1
 ---
@@ -44,3 +44,5 @@ status: todo
 （无）
 
 ## 完成说明（开发填）
+
+2026-06-24：已删除旧 Jinja SSR 渲染函数、旧模板与 `TEMPLATES_DIR`，客户端渲染路径保持不变。

@@ -19,7 +19,6 @@ from daily_news.models import (
     AIRunRecord,
     AIIssueOutput,
     CandidateItem,
-    CodexSelectionOutput,
     CodexShortlistOutput,
     SectionConfig,
 )
@@ -333,38 +332,6 @@ JSON schema 形状：
   ]
 }}
 """.strip()
-
-
-def build_issue_prompt(
-    section: SectionConfig,
-    candidates: list[CandidateItem],
-    config: PipelineConfig | None = None,
-) -> str:
-    config = config or PipelineConfig()
-    payload = {
-        **_section_payload(section),
-        "candidates": _candidate_payload(config, candidates),
-    }
-    return _issue_prompt_from_payload(payload)
-
-
-def build_issue_from_selection_prompt(
-    section: SectionConfig,
-    selection: CodexSelectionOutput,
-    candidates: list[CandidateItem],
-    config: PipelineConfig,
-) -> str:
-    candidate_by_id = {candidate.raw_item.id: candidate for candidate in candidates}
-    selected_ids: list[str] = []
-    for item in selection.headlines + selection.briefs:
-        selected_ids.extend(item.source_item_ids)
-    selected_candidates = [candidate_by_id[item_id] for item_id in selected_ids if item_id in candidate_by_id]
-    payload = {
-        **_section_payload(section),
-        "selection": selection.model_dump(mode="json"),
-        "selected_candidates": _candidate_payload(config, selected_candidates),
-    }
-    return _issue_prompt_from_payload(payload)
 
 
 def build_issue_file_prompt(
@@ -971,22 +938,3 @@ def run_claude(prompt: str, *, timeout_seconds: int | None = None) -> str:
     config = PipelineConfig()
     config.ai.timeout_seconds = timeout_seconds or int(os.getenv("DAILY_NEWS_AI_TIMEOUT_SECONDS", "300"))
     return run_provider("claude", prompt, AIIssueOutput, config).output_text
-
-
-def generate_issue_output(
-    section: SectionConfig,
-    candidates: list[CandidateItem],
-    *,
-    allow_repair: bool = True,
-    prompt: str | None = None,
-) -> tuple[AIIssueOutput, AIRunRecord]:
-    config = PipelineConfig()
-    config.ai.repair_attempts = 1 if allow_repair else 0
-    prompt = prompt or build_issue_prompt(section, candidates, config)
-    return run_ai_task(
-        task_type="issue_generate",
-        prompt=prompt,
-        output_model=AIIssueOutput,
-        provider="claude",
-        config=config,
-    )

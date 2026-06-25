@@ -1,0 +1,457 @@
+{
+  "id": "tech-2026-06-25",
+  "section_slug": "tech",
+  "publication_name": "我的日报·科技",
+  "issue_date": "2026-06-25",
+  "volume": 1,
+  "number": 3,
+  "date_cn": "2026 年 6 月 25 日 · 周四",
+  "output_path": "issues/2026-06-25.html",
+  "headlines": [
+    {
+      "source_item_ids": [
+        "53c0335ea7ff8aa3",
+        "cdd77d01d10b9acd",
+        "be29c46137231e82"
+      ],
+      "kicker": "芯片 · 发布",
+      "title_zh": "OpenAI 与博通发布首款自研推理芯片 Jalapeño",
+      "summary_zh": "OpenAI 与 Broadcom 发布首款定制推理处理器 Jalapeño，面向数据中心的大语言模型推理任务。OpenAI 称芯片仍在测试中，早期结果显示其每瓦性能高于当前先进替代方案，完整技术报告将在未来数月公布。",
+      "read_body_zh": [
+        "Jalapeño 是 OpenAI 与 Broadcom 合作的第一代定制 AI 加速器，定位于大语言模型推理，而不是模型预训练。Broadcom 称该 ASIC 基于与 OpenAI 研究人员的详细沟通从头设计，开发过程参考了 OpenAI 的未来模型和产品路线图。",
+        "OpenAI 表示，公司自有模型也参与了芯片开发。爱范儿援引官方信息称，工程样片已在实验室以生产目标频率和功耗运行机器学习任务，平台计划于 2026 年底开始部署，并在后续年份扩展到多代产品。",
+        "OpenAI 在发布中强调，Jalapeño 面向实时编码模型等推理场景的低运行成本。TechCrunch 报道称，OpenAI 此前已在构建 Codex 等智能体产品及其模型和数据中心，定制芯片意味着其基础设施范围进一步下探到芯片架构、内核、内存系统、网络和调度等层面。"
+      ],
+      "pullquote": null,
+      "ai_impact": "这条新闻的关键不只是 OpenAI 做芯片，而是头部模型公司开始把模型、产品、数据中心和推理芯片放进同一套成本优化系统。若 Jalapeño 的能效优势被后续技术报告验证，OpenAI 对英伟达 GPU 的边际依赖可能下降，但预训练等高强度任务短期仍很可能继续依赖通用高端 GPU。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/06/24/openai-unveils-its-first-custom-chip-built-by-broadcom"
+        },
+        {
+          "name": "Ars Technica",
+          "url": "https://arstechnica.com/gadgets/2026/06/openai-and-broadcom-announce-chip-designed-for-llm-inference-at-scale"
+        },
+        {
+          "name": "爱范儿",
+          "url": "https://www.ifanr.com/1669906"
+        }
+      ],
+      "relevance_score": 96,
+      "importance_score": 92
+    },
+    {
+      "source_item_ids": [
+        "0f9a7c37ec17aeca",
+        "1549a52a95e7a9e4"
+      ],
+      "kicker": "自动驾驶 · 监管",
+      "title_zh": "得州致命事故后，NTSB 与 NHTSA 调查特斯拉辅助驾驶是否涉事",
+      "summary_zh": "美国国家运输安全委员会已就得州 Katy 一起特斯拉撞入住宅并致一名 76 岁居民死亡的事故展开调查，国家公路交通安全管理局也在同步调查。遇难者家属已起诉司机和特斯拉，称 Model 3 的自动辅助驾驶模式存在缺陷；特斯拉和马斯克否认 FSD 是事故原因。",
+      "read_body_zh": [
+        "事故发生后，司机 Michael Butler 据称告诉当地警方，事故前车辆正在使用特斯拉 Autopilot 功能。Ars Technica 报道称，警方仍在调查该功能当时是否启用，并确认司机未醉酒且配合调查。",
+        "特斯拉方面称，公司数据显示司机将加速踏板踩到底，手动覆盖了更可能处于运行中的 Full Self-Driving 软件，使车辆在撞上房屋前达到 73 英里/小时。TechCrunch 报道称，特斯拉目前除相关声明外尚未提供更多证据。",
+        "马斯克在 X 上称，FSD 在社区街道会低速行驶，而该事故是高速撞击。特斯拉 AI 软件副总裁 Ashok Elluswamy 也称司机手动覆盖了自动驾驶。NTSB 与 NHTSA 的调查预计会要求特斯拉提交车辆车载电脑日志，以确认事故过程。"
+      ],
+      "pullquote": null,
+      "ai_impact": "这起事故把特斯拉 FSD 的技术责任、驾驶员接管边界和监管取证再次放到同一张桌面上。真正影响不在公开口水战，而在车辆日志最终如何呈现系统状态、司机操作和软件控制权切换，这会直接影响 FSD 安全叙事和后续监管风险。",
+      "sources": [
+        {
+          "name": "Ars Technica",
+          "url": "https://arstechnica.com/tech-policy/2026/06/elon-musk-denies-teslas-autopilot-caused-crash-that-killed-grandmother"
+        },
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/06/24/ntsb-launches-probe-into-fatal-texas-tesla-crash"
+        }
+      ],
+      "relevance_score": 91,
+      "importance_score": 84
+    },
+    {
+      "source_item_ids": [
+        "df1a4dbc9a73eb71"
+      ],
+      "kicker": "半导体 · 政策",
+      "title_zh": "荷兰赴美反对 MATCH Act，ASML 对华设备销售成焦点",
+      "summary_zh": "荷兰贸易部长 Sjoerd Sjoerdsma 本周访问华盛顿，会见美国商务部长 Howard Lutnick 和国会议员，反对可能限制中国芯片制造商购买西方半导体设备的 MATCH Act。该法案若通过，将进一步限制 ASML 深紫外浸没式光刻机对华销售。",
+      "read_body_zh": [
+        "TechCrunch 报道称，MATCH Act 将在现有出口管制基础上继续加码。ASML 最先进的 EUV 光刻机长期被禁止销往中国，而该法案会把限制扩大到更老一代的 DUV 浸没式设备。",
+        "ASML 总部位于荷兰，是欧洲市值最高的公司，也是全球先进光刻机关键供应商。报道称，中国占 ASML 净系统销售额的 19%，因此该法案会对 ASML 和荷兰半导体产业产生直接影响。",
+        "该法案于 4 月提出，目前尚未在美国众议院或参议院进行完整表决。Bloomberg 认为，它很可能需要被纳入更大的立法包才有机会通过。"
+      ],
+      "pullquote": null,
+      "ai_impact": "这不是单一设备禁令，而是美国芯片管制边界继续外扩与盟友产业利益之间的冲突。若 DUV 设备也被纳入更强限制，中国成熟制程和部分 AI 芯片供应链会受到更大压力，同时 ASML 与欧洲政府也会更明确地参与美国对华半导体政策博弈。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/06/24/europe-is-pushing-back-on-washingtons-chip-war"
+        }
+      ],
+      "relevance_score": 80,
+      "importance_score": 88
+    },
+    {
+      "source_item_ids": [
+        "537add6fcf11de02"
+      ],
+      "kicker": "大模型 · 智能体",
+      "title_zh": "谷歌把电脑操作能力内置进 Gemini 3.5 Flash",
+      "summary_zh": "Google 宣布 Gemini 3.5 Flash 原生支持 computer use 工具，开发者可用它构建能在浏览器、移动端和桌面环境中观察、推理并执行操作的智能体。该能力此前只在独立的 Gemini 2.5 computer use 模型中提供。",
+      "read_body_zh": [
+        "Google 称，Gemini 3.5 Flash 已经支持函数调用以及 Search、Maps grounding 等内置工具；加入 computer use 后，可用于连续软件测试、企业自动化和跨专业应用的知识工作。",
+        "开发者和企业可通过 Gemini API 与 Gemini Enterprise Agent Platform 使用该功能。Google 给出的示例包括让 3.5 Flash 分析 Gemini 应用并返回分类后的功能列表，以及审计自身文档中的无障碍问题。",
+        "安全方面，Google 称其对 Gemini 3.5 Flash 的电脑操作能力进行了定向对抗训练，并提供两个可选企业防护系统：对敏感或不可逆操作要求用户确认，以及在识别间接提示注入时自动停止任务。"
+      ],
+      "pullquote": null,
+      "ai_impact": "Gemini 3.5 Flash 把电脑操作从独立模型并入主模型，说明通用大模型正在把“能看、能点、能执行”变成基础能力而不是附加演示。对企业场景而言，真正门槛会从模型会不会操作电脑，转向权限控制、沙箱、审计和人类确认机制是否足够可靠。",
+      "sources": [
+        {
+          "name": "Google Blog",
+          "url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-computer-use-gemini-3-5-flash"
+        }
+      ],
+      "relevance_score": 87,
+      "importance_score": 80
+    },
+    {
+      "source_item_ids": [
+        "c4626df098d8777f"
+      ],
+      "kicker": "大模型 · 人才",
+      "title_zh": "Gemini 关键研究人员继续流向 Anthropic",
+      "summary_zh": "TechCrunch 援引 Bloomberg 报道称，Google 顶级 AI 研究员 Jonas Adler 和 Alexander Pritzel 将离开 Google 加入 Anthropic，两人曾在 Gemini 模型开发中发挥关键作用。此前，Noam Shazeer 已宣布离开 Google 加入 OpenAI，Google DeepMind 主管 John Jumper 也宣布转投 Anthropic。",
+      "read_body_zh": [
+        "报道称，Adler 和 Pritzel 的离职延续了 Google 近期 AI 人才外流趋势。TechCrunch 已就此向 Google 寻求置评。",
+        "Noam Shazeer 自 2000 年起长期在 Google 工作，中间曾离开三年创办 Character.AI，后又通过 Google 对 Character.AI 的交易回归 Gemini 团队。近期他宣布离开 Google 加入 OpenAI。",
+        "John Jumper 曾与 Google DeepMind CEO Demis Hassabis 因 AlphaFold 工作获得 2024 年诺贝尔化学奖。TechCrunch 报道称，随着 OpenAI 和 Anthropic 准备上市，股权激励可能继续成为顶级 AI 人才流动的重要因素。"
+      ],
+      "pullquote": null,
+      "ai_impact": "大模型竞争正在从参数、算力和产品扩展到核心研究人员争夺。Google 仍有深厚研究资产，但 Gemini 相关人才连续流向 OpenAI 和 Anthropic，会削弱外界对其模型迭代稳定性的预期，也会提高头部模型公司的薪酬和股权竞争成本。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/06/24/ai-researchers-continue-to-leave-google-for-its-rivals"
+        }
+      ],
+      "relevance_score": 82,
+      "importance_score": 77
+    }
+  ],
+  "briefs": [
+    {
+      "source_item_ids": [
+        "d74aff67b2720761"
+      ],
+      "title_zh": "Cerebras 上市后首份财报后股价跌近 20%",
+      "summary_zh": "Cerebras Systems 在上市后首份财报中给出全年核心业务毛利率 38% 至 41% 的指引，低于一季度 47% 的水平，股价周三下跌近 20%。公司一季度营收 1.93 亿美元，同比增长 94%，净亏损从上年同期 2390 万美元收窄至 1400 万美元。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/06/24/cerebras-stock-plunges-after-earnings-as-ceo-says-margin-outlook-was-misunderstood"
+        }
+      ],
+      "relevance_score": 78,
+      "importance_score": 68
+    },
+    {
+      "source_item_ids": [
+        "c2a4f86b7288fccd"
+      ],
+      "title_zh": "Nature 论文质疑微软 Majorana 1 量子芯片表述",
+      "summary_zh": "The Verge 报道称，圣安德鲁斯大学物理学家 Henry Legg 在 Nature 发表同行评议文章，认为微软未能确凿证明 Majorana 1 芯片实现了可工作的拓扑量子比特。微软团队在 Nature 发表回应，称该批评没有对其发现构成实质性科学挑战，并表示坚持既有路线图。",
+      "sources": [
+        {
+          "name": "The Verge",
+          "url": "https://www.theverge.com/tech/956450/nature-microsoft-quantum-computing-majorana-1-claims"
+        }
+      ],
+      "relevance_score": 72,
+      "importance_score": 73
+    },
+    {
+      "source_item_ids": [
+        "3afe46746b8e5fb2"
+      ],
+      "title_zh": "英伟达称 Rubin 代 AI 基础设施将实现全液冷",
+      "summary_zh": "NVIDIA 介绍称，Rubin 代 AI 基础设施将采用 100% 液冷，芯片、网络组件等均由闭环液体冷却，不再依赖系统风扇。其 DSX AI factory 参考设计使用最高 45 摄氏度冷却液，在适宜气候下可用干式冷却器减少机械制冷和冷却用水。",
+      "sources": [
+        {
+          "name": "NVIDIA Blog",
+          "url": "https://blogs.nvidia.com/blog/liquid-cooling-ai-factories"
+        }
+      ],
+      "relevance_score": 76,
+      "importance_score": 70
+    },
+    {
+      "source_item_ids": [
+        "18d6bb87b9489702"
+      ],
+      "title_zh": "AI 内存需求推动美光季度营收和利润大增",
+      "summary_zh": "TechCrunch 报道称，AI 需求造成内存芯片供应紧张，并推高美光业绩。美光第三财季营收同比增长四倍至 414.5 亿美元，利润从上年同期 18.8 亿美元升至 282 亿美元，并预计第四财季营收为 490 亿至 510 亿美元。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/06/24/the-memory-chip-crunch-is-paying-off-for-this-u-s-company"
+        }
+      ],
+      "relevance_score": 68,
+      "importance_score": 72
+    },
+    {
+      "source_item_ids": [
+        "b7eb1300023df5b1"
+      ],
+      "title_zh": "Anthropic 推出接入 Slack 的 Claude Tag",
+      "summary_zh": "Anthropic 推出 Claude Tag，把“常驻 Claude”接入 Slack，面向 Claude Enterprise 和 Claude Team 客户提供测试。用户可在频道中 @Claude 获取洞察或分配任务，管理员可限定其可访问的工具、信息和频道。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/06/23/anthropics-claude-tag-is-learning-your-company-one-slack-message-at-a-time"
+        }
+      ],
+      "relevance_score": 70,
+      "importance_score": 66
+    },
+    {
+      "source_item_ids": [
+        "3d63457388de0d56",
+        "794925a50209e8d7"
+      ],
+      "title_zh": "Google Play 开始开放外部支付并降低开发者费率",
+      "summary_zh": "Google 将按与 Epic 的和解方案推进 Play Store 计费调整，6 月 30 日起先在欧洲、英国和美国提供新费率结构。新方案把服务费和计费费拆分，开发者可引导用户到 Play Store 外完成交易，小开发者每年前 100 万美元收入对应 10% 服务费。",
+      "sources": [
+        {
+          "name": "The Verge",
+          "url": "https://www.theverge.com/policy/956296/google-play-app-store-alternative-billing-fee-antitrust"
+        },
+        {
+          "name": "Ars Technica",
+          "url": "https://arstechnica.com/google/2026/06/google-starts-lowering-play-store-fees-making-good-on-epic-games-settlement"
+        }
+      ],
+      "relevance_score": 64,
+      "importance_score": 75
+    },
+    {
+      "source_item_ids": [
+        "97cc9b0595b16eb4"
+      ],
+      "title_zh": "Zoox 为商业化服务前升级无人出租车",
+      "summary_zh": "亚马逊旗下 Zoox 发布其定制 robotaxi 的一系列升级，包括座椅和头枕增加填充、内饰改用更浅配色、手机充电区增加防滑纹路、杯架加大、触摸屏更显眼，以及车门界面新增扬声器、麦克风和双向音频能力。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/06/24/zoox-upgrades-its-robotaxi-as-it-prepares-for-commercial-service"
+        }
+      ],
+      "relevance_score": 68,
+      "importance_score": 62
+    },
+    {
+      "source_item_ids": [
+        "0b071d112749ff13"
+      ],
+      "title_zh": "企业开始限制员工把 AI 预算消耗在小任务上",
+      "summary_zh": "TechCrunch 援引 404 Media 报道称，Accenture 试图阻止员工用 AI 处理 PDF 转演示文稿等基础任务以消耗 token 储备。泄露会议音频显示，公司内部关注 AI 支出不可预测，以及 CFO、COO、CIO 层面对 AI 投入回报的追问。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/06/24/companies-are-scrambling-to-stop-employees-from-maxing-out-ai-budgets-with-small-tasks"
+        }
+      ],
+      "relevance_score": 58,
+      "importance_score": 63
+    },
+    {
+      "source_item_ids": [
+        "beb3c49e9da386b6"
+      ],
+      "title_zh": "Figma 更新代码层、动画和更多 AI 功能",
+      "summary_zh": "Figma 发布更新，新增 code layer、动画、过渡、3D 变换和 shader 支持，并允许用户用 AI 创建自定义插件。公司称 code layer 可让团队克隆代码仓库，并从代码中提取流程转为设计层以便测试。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/06/24/figma-adds-code-layers-support-for-animations-more-ai-features-in-new-update"
+        }
+      ],
+      "relevance_score": 66,
+      "importance_score": 60
+    },
+    {
+      "source_item_ids": [
+        "af229af94475652d"
+      ],
+      "title_zh": "中金称高端 AI 服务器或采用金刚石热沉加全液冷方案",
+      "summary_zh": "36氪援引中金公司研报称，H100、Blackwell、Rubin 系列 GPU 功耗持续突破千瓦级，3D 封装抬升芯片局部热流，铜铝材料热传导瓶颈凸显。研报认为，未来高端 AI 服务器有望采用“金刚石热沉+全液冷”复合散热方案。",
+      "sources": [
+        {
+          "name": "36氪",
+          "url": "https://36kr.com/newsflashes/3867828859638792?f=rss"
+        }
+      ],
+      "relevance_score": 67,
+      "importance_score": 59
+    },
+    {
+      "source_item_ids": [
+        "a7c72d0716b608e2"
+      ],
+      "title_zh": "Oracle 年度文件称 AI 部署已导致部分岗位减少",
+      "summary_zh": "Ars Technica 报道称，Oracle 在截至 2026 年 5 月 31 日的年度监管文件中披露全职员工 14.1 万人，低于上一年文件中的 16.2 万人。文件称，公司运营中采用和部署 AI 技术已经并可能继续导致员工减少，同时公司计划为 AI 工作负载扩建云基础设施。",
+      "sources": [
+        {
+          "name": "Ars Technica",
+          "url": "https://arstechnica.com/ai/2026/06/oracles-21000-layoffs-help-drive-its-debt-fueled-ai-investments"
+        }
+      ],
+      "relevance_score": 54,
+      "importance_score": 68
+    },
+    {
+      "source_item_ids": [
+        "c2fff93f7e8e64ac"
+      ],
+      "title_zh": "豆包专业版上线，主打办公任务模式",
+      "summary_zh": "爱范儿报道，豆包专业版基于豆包 2.1 系列模型，新增办公任务模式，并提供更高使用额度。标准套餐连续包月 68 元，办公任务模式支持在用户授权后进行本地电脑操作、浏览器操作、网站生成、Office 集成、飞书协同、技能调用和定时任务。",
+      "sources": [
+        {
+          "name": "爱范儿",
+          "url": "https://www.ifanr.com/1669687"
+        }
+      ],
+      "relevance_score": 63,
+      "importance_score": 58
+    },
+    {
+      "source_item_ids": [
+        "265f247277777209"
+      ],
+      "title_zh": "SignalFire 数据称工程岗位在 AI 冲击中更具韧性",
+      "summary_zh": "TechCrunch 报道称，SignalFire 分析数百万员工职业轨迹后认为，工程岗位是 2025 年最具韧性的职能。其数据显示，大型科技公司总招聘量较 2019 年下降 25%，工程岗位招聘仅下降 11%；工程师占 12 家科技巨头新招员工的 55%，高于 2019 年的 46%。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/06/24/ai-was-supposed-to-kill-engineering-jobs-but-new-data-suggests-theyre-the-most-resilient"
+        }
+      ],
+      "relevance_score": 47,
+      "importance_score": 57
+    },
+    {
+      "source_item_ids": [
+        "2c0a4b353cfb7a91"
+      ],
+      "title_zh": "Facebook 测试面向创作者的 AI companion 应用",
+      "summary_zh": "Facebook 宣布将 Creator Studio 重构为独立 AI companion 应用，目前向部分创作者测试。新应用内置近期推出的 AI creator assistant，可根据内容风格、表现、受众互动和目标提供建议，并用 AI 辅助评论筛选和回复草拟。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/06/24/facebook-rolls-out-an-ai-companion-app-for-creators"
+        }
+      ],
+      "relevance_score": 50,
+      "importance_score": 52
+    }
+  ],
+  "discarded": [
+    {
+      "source_item_ids": [
+        "80c2d405ddd42dd8"
+      ],
+      "reason": "会议圆桌实录，内容偏行业观点汇总，不是清晰的单一新闻事件；虽命中多项关键词，但选题纯度不足。",
+      "relevance_score": 55,
+      "importance_score": 38
+    },
+    {
+      "source_item_ids": [
+        "a270233382b8affb"
+      ],
+      "reason": "影眸科技融资与产品稿色彩较重，属于用户明确规避的小公司融资，且商业影响尚有限。",
+      "relevance_score": 42,
+      "importance_score": 35
+    },
+    {
+      "source_item_ids": [
+        "4e52ea888cccf172"
+      ],
+      "reason": "聚合早报，包含多个不同事件，无法作为单一选题入选；其中若干相关信息缺少独立展开。",
+      "relevance_score": 50,
+      "importance_score": 40
+    },
+    {
+      "source_item_ids": [
+        "3026254b61a0302f"
+      ],
+      "reason": "会议圆桌对话，偏趋势讨论和创投活动内容，不是当天需要优先呈现的硬新闻。",
+      "relevance_score": 48,
+      "importance_score": 35
+    },
+    {
+      "source_item_ids": [
+        "183cec07a385860f"
+      ],
+      "reason": "微软Surface低配新品主要是消费电子 SKU 调整，与AI芯片、大模型或半导体核心关注关联较弱。",
+      "relevance_score": 38,
+      "importance_score": 35
+    },
+    {
+      "source_item_ids": [
+        "0b96cb6ed2b1aef5"
+      ],
+      "reason": "聚合早报，含传闻、融资和多个不相关短讯，难以合并成一个清晰科技选题。",
+      "relevance_score": 36,
+      "importance_score": 32
+    },
+    {
+      "source_item_ids": [
+        "938922fe20198833"
+      ],
+      "reason": "网络犯罪执法行动虽有科技属性，但未命中用户关注的公司、人物和主题主线。",
+      "relevance_score": 18,
+      "importance_score": 45
+    },
+    {
+      "source_item_ids": [
+        "fab4f492db536733"
+      ],
+      "reason": "后量子加密政策重要，但与本期关注的AI芯片、大模型、自动驾驶和重点公司相关度较低。",
+      "relevance_score": 24,
+      "importance_score": 58
+    },
+    {
+      "source_item_ids": [
+        "913273fa4cfbb995"
+      ],
+      "reason": "Agility Robotics通过SPAC上市更偏融资资本市场事件，且公司不在重点关注范围，符合规避小公司融资倾向。",
+      "relevance_score": 28,
+      "importance_score": 42
+    }
+  ],
+  "merged_sources": [
+    {
+      "source_item_ids": [
+        "53c0335ea7ff8aa3",
+        "cdd77d01d10b9acd",
+        "be29c46137231e82"
+      ],
+      "reason": "同一事件：OpenAI与Broadcom发布Jalapeño推理芯片"
+    },
+    {
+      "source_item_ids": [
+        "0f9a7c37ec17aeca",
+        "1549a52a95e7a9e4"
+      ],
+      "reason": "同一事件：得州特斯拉致命事故及FSD相关调查和回应"
+    },
+    {
+      "source_item_ids": [
+        "3d63457388de0d56",
+        "794925a50209e8d7"
+      ],
+      "reason": "同一事件：Google Play按Epic和解推进外部支付与费用调整"
+    }
+  ]
+}

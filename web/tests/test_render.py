@@ -6,7 +6,7 @@ from daily_news.main import make_issue
 from daily_news.render import build_frontend_app
 
 
-def test_render_issue_and_index(tmp_path: Path) -> None:
+def test_build_frontend_app(tmp_path: Path) -> None:
     fixture = Path(__file__).parent / "fixtures" / "sample_ai_output.json"
     output = AIIssueOutput.model_validate_json(fixture.read_text(encoding="utf-8"))
     issue = make_issue(

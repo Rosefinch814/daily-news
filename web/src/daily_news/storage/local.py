@@ -91,21 +91,6 @@ def save_selection(run_id: str, selection: CodexSelectionOutput) -> Path:
     return path
 
 
-def save_prompt(run_id: str, prompt: str) -> Path:
-    path = run_dir(run_id) / "03_prompt.md"
-    _write_text(path, prompt)
-    return path
-
-
-def save_ai_run(run_id: str, ai_run: AIRunRecord) -> Path:
-    base_dir = run_dir(run_id)
-    _write_text(base_dir / "04_ai_raw.txt", ai_run.raw_output)
-    if ai_run.parsed_output is not None:
-        _write_json(base_dir / "04_ai_output.json", ai_run.parsed_output)
-    _write_json(base_dir / "04_ai_run.json", ai_run.model_dump(mode="json"))
-    return base_dir / "04_ai_run.json"
-
-
 def save_ai_task_run(
     run_id: str,
     stage: str,

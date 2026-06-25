@@ -19,14 +19,9 @@ from daily_news.ai_engine import (
     AIEngineError,
     ProviderName,
     build_issue_file_prompt,
-    build_issue_from_selection_prompt,
-    build_issue_prompt,
     build_selection_file_prompt,
-    build_selection_prompt,
     build_shortlist_file_prompt,
-    build_shortlist_prompt,
     extract_json_object,
-    generate_issue_output,
     run_provider,
     run_ai_task,
 )
@@ -56,14 +51,12 @@ from daily_news.storage.local import (
     load_selection,
     load_shortlist,
     run_dir,
-    save_ai_run,
     save_ai_task_run,
     save_candidates,
     save_codex_shortlist,
     save_enriched_candidates,
     save_issue,
     save_selection,
-    save_prompt,
     save_raw_items,
     output_dir,
 )
@@ -140,10 +133,6 @@ def make_issue(
         discarded=output.discarded,
         merged_sources=output.merged_sources,
     )
-
-
-def load_ai_output(path: Path) -> AIIssueOutput:
-    return AIIssueOutput.model_validate_json(path.read_text(encoding="utf-8"))
 
 
 def log_step(step: str, message: str) -> None:
@@ -1206,93 +1195,6 @@ def sync_run(args: argparse.Namespace) -> int:
     return 0
 
 
-async def generate(args: argparse.Namespace) -> int:
-    load_dotenv(WEB_DIR / ".env")
-    section = load_section(args.section)
-    issue_date = parse_date(args.date)
-    run_id = f"{section.slug}-{issue_date.isoformat()}-{datetime.now().strftime('%H%M%S')}"
-    timeout_seconds = float(os.getenv("DAILY_NEWS_FETCH_TIMEOUT_SECONDS", "20"))
-
-    store = SupabaseStore.from_env()
-
-    log_step("1/6", f"抓取 RSS：{len(section.enabled_sources)} 个源，每源最多 {args.per_source_limit} 条")
-    raw_items = await fetch_section_items(
-        section,
-        per_source_limit=args.per_source_limit,
-        timeout_seconds=timeout_seconds,
-    )
-    raw_path = save_raw_items(run_id, raw_items)
-    successful_raw_items = [item for item in raw_items if item.fetch_status != "failed"]
-    log_step("1/6", f"抓取完成：{len(successful_raw_items)} 条有效新闻，保存 {raw_path}")
-
-    log_step("2/6", f"本地粗筛：最多保留 {args.max_candidates} 条候选")
-    initial_candidates = rank_candidates(raw_items, section, max_candidates=args.max_candidates)
-    log_step("2/6", f"正文提取：只对前 {args.body_candidates} 条高潜候选抓正文")
-    enriched_items = await enrich_candidate_content(
-        [candidate.raw_item for candidate in initial_candidates],
-        limit=args.body_candidates,
-        timeout_seconds=timeout_seconds,
-    )
-    candidates = rank_candidates(enriched_items, section, max_candidates=args.max_candidates)
-    candidates_path = save_candidates(run_id, candidates)
-    log_step("2/6", f"候选完成：{len(candidates)} 条，保存 {candidates_path}")
-
-    log_step("3/6", "准备 Claude 输入")
-    prompt = build_issue_prompt(section, candidates)
-    prompt_path = save_prompt(run_id, prompt)
-    log_step("3/6", f"Prompt 保存：{prompt_path}")
-
-    if args.from_ai_json:
-        ai_output = load_ai_output(Path(args.from_ai_json))
-        ai_run = None
-        log_step("4/6", f"使用本地 AI JSON：{args.from_ai_json}")
-    else:
-        log_step("4/6", "调用 Claude 生成结构化日报 JSON")
-        ai_output, ai_run = generate_issue_output(section, candidates, prompt=prompt)
-        save_ai_run(run_id, ai_run)
-        log_step("4/6", f"AI 输出完成：头条 {len(ai_output.headlines)} 条，速览 {len(ai_output.briefs)} 条")
-
-    issue = make_issue(
-        ai_output,
-        section_slug=section.slug,
-        publication_name=section.publication_name,
-        issue_date=issue_date,
-        volume=section.issue_volume,
-        number=args.issue_number or next_issue_number(section.slug),
-    )
-    issue_path = save_issue(run_id, issue)
-    log_step("5/6", f"日报结构保存：{issue_path}")
-
-    if args.dry_run:
-        print(f"Dry-run complete. Private snapshot: {run_dir(run_id)}")
-        return 0
-
-    outputs = build_frontend_app(issue)
-    rendered_issue_path = outputs["issue"]
-    log_step("5/6", f"前端应用与数据生成完成：{rendered_issue_path}")
-
-    if store.enabled and not args.no_supabase:
-        log_step("6/6", "同步 Supabase")
-        store.upsert_sources(section)
-        store.create_fetch_run(run_id, section, issue_date.isoformat())
-        store.insert_raw_items(run_id, raw_items)
-        store.insert_candidates(run_id, candidates)
-        if ai_run:
-            store.insert_ai_run(run_id, ai_run)
-        store.insert_issue(run_id, issue)
-        store.finish_fetch_run(run_id, status="success")
-        log_step("6/6", "Supabase 同步完成")
-    elif not args.no_supabase:
-        print("Supabase env not configured; skipped cloud persistence.")
-    else:
-        log_step("6/6", "已按参数跳过 Supabase 同步")
-
-    print(f"Run snapshot: {run_dir(run_id)}")
-    print(f"Generated {rendered_issue_path}")
-    print(f"Published index {DIST_DIR / 'index.html'}")
-    return 0
-
-
 def render_existing(args: argparse.Namespace) -> int:
     issue = load_issue(args.issue_id)
     if args.output_dir:
@@ -1415,18 +1317,6 @@ def clean_run(args: argparse.Namespace) -> int:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="daily-news")
     subparsers = parser.add_subparsers(dest="command", required=True)
-
-    generate_parser = subparsers.add_parser("generate", help="Generate one issue")
-    generate_parser.add_argument("--section", default="tech")
-    generate_parser.add_argument("--date")
-    generate_parser.add_argument("--dry-run", action="store_true")
-    generate_parser.add_argument("--no-supabase", action="store_true")
-    generate_parser.add_argument("--per-source-limit", type=int, default=15)
-    generate_parser.add_argument("--max-candidates", type=int, default=30)
-    generate_parser.add_argument("--body-candidates", type=int, default=20)
-    generate_parser.add_argument("--issue-number", type=int)
-    generate_parser.add_argument("--from-ai-json", help="Use a saved AI JSON response instead of calling Claude")
-    generate_parser.set_defaults(func=lambda args: asyncio.run(generate(args)))
 
     run_pipeline_parser = subparsers.add_parser("run-pipeline", help="Run the checkpoint pipeline end to end")
     run_pipeline_parser.add_argument("--section", default="tech")
