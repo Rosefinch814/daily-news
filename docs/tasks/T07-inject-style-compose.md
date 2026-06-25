@@ -24,6 +24,7 @@ status: todo
 
 ## 实现要点
 
+- **开工门槛**：必须先由用户人工确认 `digest-feedback` 生成的 `style.md` 质量可接受，再开始本工单。
 - style 是 markdown 文本，作为一段"写作偏好（用户调教得来）"附在写作 prompt 里，**不覆盖** spec §8 的红线（忠于原文、AI 判断标注、全程中文）——风格偏好在红线之内调，冲突时红线优先。
 - 路径约定：`web/profiles/<section_slug>/style.md`；**不存在 → 传 None → 走原逻辑**。
 - 不改 issue JSON 的结构与字段（title_zh/read_body_zh/ai_impact 等不变），只影响行文风格。
@@ -42,6 +43,6 @@ status: todo
 
 ## 开放问题
 
-（无）
+- 等待用户人工校验 T05 产物质量后再开工。
 
 ## 完成说明（开发填）

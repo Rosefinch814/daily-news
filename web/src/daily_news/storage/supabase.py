@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass
+from datetime import date, datetime, timezone
 from typing import Any
 
 from supabase import Client, create_client
@@ -118,6 +119,68 @@ class SupabaseStore:
                 "finished_at": ai_run.finished_at.isoformat(),
             }
         ).execute()
+
+    def insert_feedback(
+        self,
+        *,
+        issue_id: str,
+        issue_date: str | date,
+        section_slug: str,
+        scope: str,
+        article_level: str | None = None,
+        article_index: int | None = None,
+        source_item_ids: list[str] | None = None,
+        signal: str | None = None,
+        note: str | None = None,
+    ) -> dict[str, Any] | None:
+        if not self.client:
+            return None
+        row = {
+            "issue_id": issue_id,
+            "issue_date": issue_date.isoformat() if isinstance(issue_date, date) else issue_date,
+            "section_slug": section_slug,
+            "scope": scope,
+            "article_level": article_level,
+            "article_index": article_index,
+            "source_item_ids": source_item_ids or [],
+            "signal": signal,
+            "note": note,
+        }
+        result = self.client.table("feedback").insert(row).execute()
+        data = getattr(result, "data", None)
+        if isinstance(data, list) and data:
+            return data[0]
+        return None
+
+    def fetch_undigested_feedback(
+        self,
+        section_slug: str,
+        *,
+        from_date: str | date | None = None,
+        to_date: str | date | None = None,
+        include_digested: bool = False,
+    ) -> list[dict[str, Any]]:
+        if not self.client:
+            return []
+        query = self.client.table("feedback").select("*").eq("section_slug", section_slug)
+        if not include_digested:
+            query = query.is_("digested_at", "null")
+        if from_date:
+            value = from_date.isoformat() if isinstance(from_date, date) else from_date
+            query = query.gte("issue_date", value)
+        if to_date:
+            value = to_date.isoformat() if isinstance(to_date, date) else to_date
+            query = query.lte("issue_date", value)
+        result = query.order("issue_date").order("created_at").execute()
+        data = getattr(result, "data", None)
+        return data if isinstance(data, list) else []
+
+    def mark_feedback_digested(self, ids: list[str]) -> None:
+        if not self.client or not ids:
+            return
+        self.client.table("feedback").update(
+            {"digested_at": datetime.now(timezone.utc).isoformat()}
+        ).in_("id", ids).execute()
 
     def insert_issue(self, run_id: str, issue: Issue) -> None:
         if not self.client:

@@ -4,6 +4,7 @@ ai:
     semantic_shortlist: codex
     selection: codex
     issue_compose: codex
+    digest_feedback: codex
   timeout_seconds: 300
   repair_attempts: 1
   codex:

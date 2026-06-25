@@ -95,6 +95,31 @@ create table if not exists issue_articles (
   created_at timestamptz not null default now()
 );
 
+create table if not exists feedback (
+  id uuid primary key default gen_random_uuid(),
+  issue_id text not null,
+  issue_date date not null,
+  section_slug text not null,
+  scope text not null check (scope in ('article', 'issue')),
+  article_level text check (article_level in ('headline', 'brief')),
+  article_index integer check (article_index is null or article_index > 0),
+  source_item_ids text[] not null default '{}',
+  signal text check (signal in ('up', 'down')),
+  note text check (note is null or char_length(note) <= 2000),
+  created_at timestamptz not null default now(),
+  digested_at timestamptz,
+  check (cardinality(source_item_ids) <= 20),
+  check (
+    (scope = 'article' and article_level is not null and article_index is not null)
+    or
+    (scope = 'issue' and article_level is null and article_index is null)
+  )
+);
+
+create index if not exists feedback_undigested_idx
+  on feedback (section_slug, issue_date, created_at)
+  where digested_at is null;
+
 alter table sources enable row level security;
 alter table fetch_runs enable row level security;
 alter table raw_items enable row level security;
@@ -102,3 +127,12 @@ alter table candidates enable row level security;
 alter table ai_runs enable row level security;
 alter table issues enable row level security;
 alter table issue_articles enable row level security;
+alter table feedback enable row level security;
+
+grant insert on feedback to anon;
+grant select, insert, update on feedback to service_role;
+
+drop policy if exists feedback_anon_insert on feedback;
+create policy feedback_anon_insert on feedback
+  for insert to anon
+  with check (true);

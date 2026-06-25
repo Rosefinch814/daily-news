@@ -13,6 +13,7 @@ from daily_news.models import (
     RawItem,
 )
 from daily_news.paths import LOGS_DIR, RUNS_DIR
+from daily_news.paths import PROFILES_DIR
 
 
 def _write_json(path: Path, payload: Any) -> None:
@@ -45,6 +46,56 @@ def logs_dir(run_id: str) -> Path:
 
 def ai_logs_dir(run_id: str) -> Path:
     return logs_dir(run_id) / "ai"
+
+
+def profile_dir(section_slug: str) -> Path:
+    return PROFILES_DIR / section_slug
+
+
+def default_profile_text(section_slug: str, name: str) -> str:
+    title = {
+        "taste.md": "选题口味档案",
+        "style.md": "写作口味档案",
+        "seed-suggestions.md": "关注清单待确认建议",
+    }[name]
+    return f"# {title} · {section_slug}\n\n暂无记录。\n"
+
+
+def ensure_profile_files(section_slug: str) -> dict[str, Path]:
+    directory = profile_dir(section_slug)
+    directory.mkdir(parents=True, exist_ok=True)
+    paths = {
+        "taste": directory / "taste.md",
+        "style": directory / "style.md",
+        "seed_suggestions": directory / "seed-suggestions.md",
+    }
+    for key, path in paths.items():
+        if not path.exists():
+            filename = "seed-suggestions.md" if key == "seed_suggestions" else f"{key}.md"
+            _write_text(path, default_profile_text(section_slug, filename))
+    return paths
+
+
+def load_profiles(section_slug: str) -> dict[str, str]:
+    paths = ensure_profile_files(section_slug)
+    return {key: path.read_text(encoding="utf-8") for key, path in paths.items()}
+
+
+def write_profiles(
+    section_slug: str,
+    *,
+    taste_md: str,
+    style_md: str,
+    seed_suggestions_append: str = "",
+) -> dict[str, Path]:
+    paths = ensure_profile_files(section_slug)
+    _write_text(paths["taste"], taste_md.rstrip() + "\n")
+    _write_text(paths["style"], style_md.rstrip() + "\n")
+    append_text = seed_suggestions_append.strip()
+    if append_text:
+        existing = paths["seed_suggestions"].read_text(encoding="utf-8").rstrip()
+        _write_text(paths["seed_suggestions"], existing + "\n\n" + append_text + "\n")
+    return paths
 
 
 def output_path(run_id: str, filename: str) -> Path:

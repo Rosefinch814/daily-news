@@ -1,13 +1,15 @@
 from __future__ import annotations
 
 import json
+import os
 import shutil
 from pathlib import Path
 
+from dotenv import load_dotenv
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from daily_news.models import Issue
-from daily_news.paths import DIST_DIR, FRONTEND_DIR
+from daily_news.paths import DIST_DIR, FRONTEND_DIR, WEB_DIR
 
 
 def _frontend_env() -> Environment:
@@ -32,8 +34,20 @@ def _write_js_assignment(path: Path, assignment: str, payload: object) -> None:
 
 def _read_manifest(manifest_path: Path) -> dict:
     if not manifest_path.exists():
-        return {"latest_issue_date": None, "issues": []}
+        return {"latest_issue_date": None, "issues": [], "public_config": {}}
     return json.loads(manifest_path.read_text(encoding="utf-8"))
+
+
+def _public_config() -> dict[str, str]:
+    load_dotenv(WEB_DIR / ".env")
+    supabase_url = os.getenv("SUPABASE_URL", "").rstrip("/")
+    supabase_anon_key = os.getenv("SUPABASE_ANON_KEY") or os.getenv("SUPABASE_PUBLISHABLE_KEY") or ""
+    if not supabase_url or not supabase_anon_key:
+        return {}
+    return {
+        "supabase_url": supabase_url,
+        "supabase_anon_key": supabase_anon_key,
+    }
 
 
 def _issue_manifest_entry(issue: Issue) -> dict:
@@ -68,7 +82,11 @@ def export_issue_data(issue: Issue, *, dist_dir: Path = DIST_DIR) -> Path:
     entries = [item for item in manifest.get("issues", []) if item.get("date") != issue_date]
     entries.append(entry)
     entries.sort(key=lambda item: item["date"], reverse=True)
-    manifest = {"latest_issue_date": entries[0]["date"], "issues": entries}
+    manifest = {
+        "latest_issue_date": entries[0]["date"],
+        "issues": entries,
+        "public_config": _public_config(),
+    }
     _write_json(manifest_path, manifest)
     _write_js_assignment(dist_dir / "data" / "manifest.js", "window.DAILY_NEWS_MANIFEST", manifest)
     return issue_json_path

@@ -1,7 +1,7 @@
 ---
 id: T03
 title: Supabase feedback 表 + RLS + SupabaseStore 读写方法
-status: todo
+status: done
 依赖: []
 里程碑: M2
 ---
@@ -76,3 +76,5 @@ status: todo
 （无；anon key 的获取与前端用法在 T04 处理）
 
 ## 完成说明（开发填）
+
+2026-06-25：已新增 feedback 表/RLS/匿名仅 INSERT 策略，补齐 SupabaseStore 反馈插入、读取未消化与标记消化方法，并加 fake client 测试。

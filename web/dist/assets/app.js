@@ -63,6 +63,177 @@
     return parent;
   }
 
+  function feedbackPublicConfig(){
+    return (window.DAILY_NEWS_MANIFEST && window.DAILY_NEWS_MANIFEST.public_config) || {};
+  }
+
+  function feedbackEnabled(){
+    var config = feedbackPublicConfig();
+    return Boolean(config.supabase_url && config.supabase_anon_key);
+  }
+
+  function feedbackQueueKey(){
+    return "daily-news-feedback-queue";
+  }
+
+  function queuedFeedback(){
+    try{
+      return JSON.parse(localStorage.getItem(feedbackQueueKey()) || "[]");
+    }catch(error){
+      return [];
+    }
+  }
+
+  function saveFeedbackQueue(queue){
+    try{
+      localStorage.setItem(feedbackQueueKey(), JSON.stringify(queue));
+    }catch(error){}
+  }
+
+  async function postFeedback(payload){
+    var config = feedbackPublicConfig();
+    if(!config.supabase_url || !config.supabase_anon_key) throw new Error("反馈功能未配置");
+    var response = await fetch(config.supabase_url.replace(/\/$/, "") + "/rest/v1/feedback", {
+      method:"POST",
+      headers:{
+        "apikey":config.supabase_anon_key,
+        "Authorization":"Bearer " + config.supabase_anon_key,
+        "Content-Type":"application/json",
+        "Prefer":"return=minimal"
+      },
+      body:JSON.stringify(payload)
+    });
+    if(!response.ok) throw new Error("反馈写入失败：" + response.status);
+  }
+
+  async function flushFeedbackQueue(){
+    if(!feedbackEnabled()) return;
+    var queue = queuedFeedback();
+    if(!queue.length) return;
+    var remaining = [];
+    for(var i=0;i<queue.length;i++){
+      try{
+        await postFeedback(queue[i]);
+      }catch(error){
+        remaining.push(queue[i]);
+      }
+    }
+    saveFeedbackQueue(remaining);
+  }
+
+  function queueFeedback(payload){
+    var queue = queuedFeedback();
+    queue.push(payload);
+    saveFeedbackQueue(queue);
+  }
+
+  function feedbackPayload(issue, scope, options){
+    options = options || {};
+    return {
+      issue_id: issue.id,
+      issue_date: issue.issue_date,
+      section_slug: issue.section_slug,
+      scope: scope,
+      article_level: options.articleLevel || null,
+      article_index: options.articleIndex || null,
+      source_item_ids: options.sourceItemIds || [],
+      signal: options.signal || null,
+      note: options.note || null
+    };
+  }
+
+  function articleFeedbackKey(issue, level, index){
+    return [issue.id, level, index].join(":");
+  }
+
+  var articleFeedbackState = {};
+  var articleFeedbackTimers = {};
+
+  function setFeedbackStatus(node, text){
+    if(!node) return;
+    node.textContent = text || "";
+    if(text){
+      window.setTimeout(function(){
+        if(node.textContent === text) node.textContent = "";
+      }, 2600);
+    }
+  }
+
+  async function submitFeedback(payload, statusNode){
+    try{
+      await flushFeedbackQueue();
+      await postFeedback(payload);
+      setFeedbackStatus(statusNode, "已记下 · 调整下一期");
+    }catch(error){
+      queueFeedback(payload);
+      setFeedbackStatus(statusNode, "已暂存 · 联网后重试");
+    }
+  }
+
+  function updateFeedbackReview(root){
+    if(!root) return;
+    var up = document.querySelectorAll(".fb-btn.is-on[data-signal='up']").length;
+    var down = document.querySelectorAll(".fb-btn.is-on[data-signal='down']").length;
+    root.textContent = "本期已标记：" + up + " 条好，" + down + " 条不好。";
+  }
+
+  function renderArticleFeedback(issue, article, options){
+    if(!feedbackEnabled()) return null;
+    var key = articleFeedbackKey(issue, options.level, options.index);
+    articleFeedbackState[key] = articleFeedbackState[key] || {signal:null, note:""};
+    var box = el("span", "feedback-inline");
+    var status = el("span", "fb-status");
+    var up = document.createElement("button");
+    var down = document.createElement("button");
+    [up, down].forEach(function(button){
+      button.type = "button";
+      button.className = "fb-btn";
+    });
+    up.dataset.signal = "up";
+    down.dataset.signal = "down";
+    up.setAttribute("aria-label", "标记为好");
+    down.setAttribute("aria-label", "标记为不好");
+    up.setAttribute("aria-pressed", "false");
+    down.setAttribute("aria-pressed", "false");
+    up.textContent = "👍 好";
+    down.textContent = "👎 不好";
+
+    function syncButtons(){
+      var signal = articleFeedbackState[key].signal;
+      up.classList.toggle("is-on", signal === "up");
+      down.classList.toggle("is-on", signal === "down");
+      up.setAttribute("aria-pressed", signal === "up" ? "true" : "false");
+      down.setAttribute("aria-pressed", signal === "down" ? "true" : "false");
+      if(options.noteRow) options.noteRow.hidden = !signal;
+      updateFeedbackReview(document.querySelector(".issue-feedback-review"));
+    }
+
+    function scheduleWrite(){
+      window.clearTimeout(articleFeedbackTimers[key]);
+      articleFeedbackTimers[key] = window.setTimeout(function(){
+        var state = articleFeedbackState[key];
+        submitFeedback(feedbackPayload(issue, "article", {
+          articleLevel: options.level,
+          articleIndex: options.index,
+          sourceItemIds: article.source_item_ids || [],
+          signal: state.signal,
+          note: state.note || null
+        }), status);
+      }, 1000);
+    }
+
+    function handleClick(signal){
+      articleFeedbackState[key].signal = articleFeedbackState[key].signal === signal ? null : signal;
+      syncButtons();
+      scheduleWrite();
+    }
+
+    up.addEventListener("click", function(){ handleClick("up"); });
+    down.addEventListener("click", function(){ handleClick("down"); });
+    append(box, up, down, status);
+    return {node:box, sync:syncButtons, status:status};
+  }
+
   function sectionLabel(cn, role){
     var box = el("div", "section-label");
     append(box, el("span", "tab"), el("span", "cn", cn), el("span", "role", role), el("span", "line"));
@@ -102,44 +273,133 @@
     return judgement;
   }
 
-  function sourcesLine(article){
+  function sourcesLine(article, issue, options){
+    var block = el("div", "source-block");
     var p = el("p", "source");
     var names = (article.sources || []).map(function(source){ return source.name; }).join("、");
     p.appendChild(document.createTextNode("综合 " + names + " · "));
     if(article.sources && article.sources[0]) p.appendChild(link("ul", article.sources[0].url, "原文 ↗"));
-    return p;
+    var noteRow = null;
+    if(options && options.allowNote){
+      noteRow = el("div", "feedback-note");
+      noteRow.hidden = true;
+      var input = document.createElement("input");
+      input.type = "text";
+      input.maxLength = 2000;
+      input.placeholder = "补充一句";
+      var button = document.createElement("button");
+      button.type = "button";
+      button.textContent = "记下";
+      append(noteRow, input, button);
+      button.addEventListener("click", function(){
+        var key = articleFeedbackKey(issue, options.level, options.index);
+        var state = articleFeedbackState[key] || {signal:null, note:""};
+        var note = input.value.trim();
+        if(!note) return;
+        state.note = note;
+        articleFeedbackState[key] = state;
+        submitFeedback(feedbackPayload(issue, "article", {
+          articleLevel: options.level,
+          articleIndex: options.index,
+          sourceItemIds: article.source_item_ids || [],
+          signal: state.signal,
+          note: note
+        }), noteRow.querySelector(".fb-status"));
+      });
+      input.addEventListener("keydown", function(event){
+        if(event.key === "Enter"){
+          event.preventDefault();
+          button.click();
+        }
+      });
+      noteRow.appendChild(el("span", "fb-status"));
+    }
+    if(issue && options){
+      var feedback = renderArticleFeedback(issue, article, {
+        level: options.level,
+        index: options.index,
+        noteRow: noteRow
+      });
+      if(feedback){
+        p.appendChild(feedback.node);
+        feedback.sync();
+      }
+    }
+    append(block, p, noteRow);
+    return block;
   }
 
-  function renderHero(article){
+  function renderHero(article, issue){
     var hero = el("article", "hero");
     hero.id = "hl1";
     var kicker = el("div", "kicker", article.kicker || "");
     kicker.appendChild(document.createTextNode("　"));
     kicker.appendChild(el("span", "no", "／ 头版头条"));
-    append(hero, kicker, el("h2", "", article.title_zh), factSummary(article.summary_zh), readDetails(article), impactBlock(article.ai_impact), sourcesLine(article));
+    append(
+      hero,
+      kicker,
+      el("h2", "", article.title_zh),
+      factSummary(article.summary_zh),
+      readDetails(article),
+      impactBlock(article.ai_impact),
+      sourcesLine(article, issue, {level:"headline", index:1, allowNote:true})
+    );
     return hero;
   }
 
-  function renderSecondary(article, index){
+  function renderSecondary(article, index, issue){
     var card = el("article", "sec");
     card.id = "hl" + index;
     var kicker = el("div", "kicker", article.kicker || "");
     kicker.appendChild(document.createTextNode("　"));
     kicker.appendChild(el("span", "no", "／ " + String(index).padStart(2, "0")));
-    append(card, kicker, el("h3", "t", article.title_zh), factSummary(article.summary_zh), readDetails(article), impactBlock(article.ai_impact), sourcesLine(article));
+    append(
+      card,
+      kicker,
+      el("h3", "t", article.title_zh),
+      factSummary(article.summary_zh),
+      readDetails(article),
+      impactBlock(article.ai_impact),
+      sourcesLine(article, issue, {level:"headline", index:index, allowNote:true})
+    );
     return card;
   }
 
-  function renderBrief(article, number){
+  function renderBrief(article, number, issue, briefIndex){
     var item = el("div", "brief");
     var title = el("h3");
     append(title, el("span", "bno", String(number).padStart(2, "0")));
     title.appendChild(document.createTextNode(article.title_zh || ""));
-    var source = el("p", "source");
-    source.appendChild(document.createTextNode((article.sources || []).map(function(s){return s.name;}).join("、") + " · "));
-    if(article.sources && article.sources[0]) source.appendChild(link("ul", article.sources[0].url, "原文↗"));
-    append(item, title, el("p", "", article.summary_zh), source);
+    append(
+      item,
+      title,
+      el("p", "", article.summary_zh),
+      sourcesLine(article, issue, {level:"brief", index:briefIndex, allowNote:false})
+    );
     return item;
+  }
+
+  function renderIssueFeedback(issue){
+    if(!feedbackEnabled()) return null;
+    var section = el("section", "issue-feedback");
+    append(section, sectionLabel("本期反馈", "只影响下一期"));
+    var review = el("p", "issue-feedback-review", "本期已标记：0 条好，0 条不好。");
+    var textarea = document.createElement("textarea");
+    textarea.maxLength = 2000;
+    textarea.rows = 4;
+    textarea.placeholder = "对这一期整体有什么想补充的？";
+    var button = document.createElement("button");
+    button.type = "button";
+    button.className = "issue-feedback-submit";
+    button.textContent = "记下本期";
+    var status = el("span", "fb-status");
+    button.addEventListener("click", function(){
+      var note = textarea.value.trim();
+      if(!note) return;
+      submitFeedback(feedbackPayload(issue, "issue", {note:note}), status);
+    });
+    append(section, review, textarea, append(el("div", "issue-feedback-actions"), button, status), el("p", "feedback-hint", "反馈不会改变本期内容，只会用于调整下一期。"));
+    return section;
   }
 
   function renderIssuePicker(manifest, currentDate){
@@ -201,11 +461,11 @@
     headlines.id = "headlines";
     append(headlines, sectionLabel("头条精读", "深读 · " + issue.headlines.length + " 条"));
     if(issue.headlines.length){
-      headlines.appendChild(renderHero(issue.headlines[0]));
+      headlines.appendChild(renderHero(issue.headlines[0], issue));
       if(issue.headlines.length > 1){
         var secondary = el("div", "secondary");
         issue.headlines.slice(1).forEach(function(article, index){
-          secondary.appendChild(renderSecondary(article, index + 2));
+          secondary.appendChild(renderSecondary(article, index + 2, issue));
         });
         headlines.appendChild(secondary);
       }
@@ -216,14 +476,15 @@
     append(briefs, sectionLabel("速览", "快扫 · " + issue.briefs.length + " 条"));
     var briefList = el("div", "brief-list");
     issue.briefs.forEach(function(article, index){
-      briefList.appendChild(renderBrief(article, issue.headlines.length + index + 1));
+      briefList.appendChild(renderBrief(article, issue.headlines.length + index + 1, issue, index + 1));
     });
     briefs.appendChild(briefList);
 
-    append(wrap, masthead, nav, headlines, briefs);
+    append(wrap, masthead, nav, headlines, briefs, renderIssueFeedback(issue));
     fragment.appendChild(wrap);
     app.replaceChildren(fragment);
     activateJump();
+    flushFeedbackQueue();
   }
 
   function anchor(href, text){
@@ -240,6 +501,7 @@
 
   async function start(){
     var manifest = await loadJson("data/manifest.json", "data/manifest.js", function(){ return window.DAILY_NEWS_MANIFEST; });
+    window.DAILY_NEWS_MANIFEST = manifest;
     var currentDate = getRequestedDate(manifest);
     var issue = await loadJson(
       "data/issues/" + currentDate + ".json",

@@ -1,7 +1,7 @@
 ---
 id: T04
 title: 前端反馈采集（A 常驻图标 + 头条补充一句 + 整期留言）→ 直写 Supabase
-status: todo
+status: done
 依赖: [T03]
 里程碑: M2
 ---
@@ -60,3 +60,5 @@ status: todo
 - 去抖时长（~1s 起）与本地重试上限——实现时定。
 
 ## 完成说明（开发填）
+
+2026-06-25：已实现前端常驻反馈入口、头条补充一句、整期留言和 anon key 直写 Supabase，public 配置由 manifest 注入且 dist 通过 service key 检查。

@@ -224,6 +224,20 @@ class AIIssueOutput(BaseModel):
     merged_sources: list[MergedSourceEvent] = Field(default_factory=list)
 
 
+class DigestFeedbackOutput(BaseModel):
+    taste_md: str
+    style_md: str
+    seed_suggestions_append: str = ""
+    changes: list[str] = Field(default_factory=list)
+
+    @field_validator("taste_md", "style_md")
+    @classmethod
+    def profile_text_required(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("profile markdown must not be empty")
+        return value
+
+
 class Issue(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 

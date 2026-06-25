@@ -25,5 +25,6 @@
       "path": "issues/2026-06-23.html",
       "data_path": "data/issues/2026-06-23.json"
     }
-  ]
+  ],
+  "public_config": {}
 }

@@ -56,6 +56,37 @@ details[open] summary .tw{transform:rotate(90deg);}
 .ai-impact{background:var(--ai-bg);border-left:3px solid var(--seal);padding:13px 17px;font-size:14.5px;line-height:1.66;color:var(--ink-2);}
 .ai-impact .mk{display:block;font-family:"JetBrains Mono",monospace;font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--seal);margin-bottom:7px;}
 .source{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--muted);}
+.source-block{margin-top:10px;}
+.source.has-feedback,.source-block .source{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.feedback-inline{display:inline-flex;align-items:center;gap:6px;margin-left:auto;}
+.fb-btn{
+  min-height:28px;border:1px solid var(--rule);background:rgba(244,239,227,.72);color:var(--muted);
+  font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:.08em;line-height:1;
+  padding:6px 8px;border-radius:999px;cursor:pointer;transition:background .2s,color .2s,border-color .2s;
+}
+.fb-btn:hover,.fb-btn:focus-visible{border-color:var(--seal);color:var(--seal);outline:none;}
+.fb-btn.is-on{background:var(--seal-soft);border-color:var(--seal);color:var(--seal-deep);}
+.fb-status{font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:.08em;color:var(--muted);}
+.feedback-note{display:flex;align-items:center;gap:8px;margin:6px 0 2px;}
+.feedback-note[hidden]{display:none;}
+.feedback-note input{
+  flex:1;min-width:180px;border:1px solid var(--rule);background:rgba(244,239,227,.78);color:var(--ink-2);
+  font:inherit;font-size:13px;line-height:1.4;padding:7px 9px;border-radius:0;
+}
+.feedback-note button,.issue-feedback-submit{
+  border:1px solid var(--seal);background:transparent;color:var(--seal);
+  font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.12em;padding:7px 10px;cursor:pointer;
+}
+.feedback-note button:hover,.feedback-note button:focus-visible,.issue-feedback-submit:hover,.issue-feedback-submit:focus-visible{
+  background:var(--seal-soft);outline:none;
+}
+.issue-feedback{margin-top:52px;border-top:2px solid var(--ink);padding-top:8px;}
+.issue-feedback-review,.feedback-hint{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.08em;color:var(--muted);}
+.issue-feedback textarea{
+  width:100%;resize:vertical;min-height:96px;border:1px solid var(--rule);background:rgba(244,239,227,.78);
+  color:var(--ink-2);font:inherit;font-size:15px;line-height:1.6;padding:10px 12px;border-radius:0;
+}
+.issue-feedback-actions{display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap;}
 .secondary{display:grid;grid-template-columns:1fr 1fr;gap:0 36px;}
 .sec{padding:4px 0 22px;}
 .sec:nth-child(odd){border-right:1px solid var(--rule);padding-right:36px;}

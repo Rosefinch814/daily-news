@@ -18,6 +18,7 @@ from dotenv import load_dotenv
 from daily_news.ai_engine import (
     AIEngineError,
     ProviderName,
+    build_digest_file_prompt,
     build_issue_file_prompt,
     build_selection_file_prompt,
     build_shortlist_file_prompt,
@@ -33,6 +34,7 @@ from daily_news.models import (
     CandidateItem,
     CodexSelectionOutput,
     CodexShortlistOutput,
+    DigestFeedbackOutput,
     Issue,
     RawItem,
 )
@@ -47,6 +49,7 @@ from daily_news.storage.local import (
     load_codex_shortlist,
     load_enriched_candidates,
     load_issue_from_run,
+    load_profiles,
     load_raw_items,
     load_selection,
     load_shortlist,
@@ -59,6 +62,7 @@ from daily_news.storage.local import (
     save_selection,
     save_raw_items,
     output_dir,
+    write_profiles,
 )
 from daily_news.storage.supabase import SupabaseStore
 
@@ -74,7 +78,7 @@ PipelineStage = Literal[
     "publish_frontend",
 ]
 AIStage = Literal["ai_shortlist", "ai_select", "ai_compose"]
-AITaskType = Literal["semantic_shortlist", "selection", "issue_compose"]
+AITaskType = Literal["semantic_shortlist", "selection", "issue_compose", "digest_feedback"]
 AI_STAGE_TASKS: dict[AIStage, AITaskType] = {
     "ai_shortlist": "semantic_shortlist",
     "ai_select": "selection",
@@ -822,6 +826,186 @@ def ai_file_read_test(args: argparse.Namespace) -> int:
         raise
 
 
+def _parse_feedback_datetime(value: Any) -> datetime:
+    if isinstance(value, datetime):
+        return value
+    if isinstance(value, str):
+        normalized = value.replace("Z", "+00:00")
+        return datetime.fromisoformat(normalized)
+    return datetime.min.replace(tzinfo=timezone.utc)
+
+
+def _feedback_group_key(row: dict[str, Any]) -> tuple[Any, ...]:
+    if row.get("scope") == "issue":
+        return (row.get("issue_id"), "issue")
+    return (row.get("issue_id"), "article", row.get("article_level"), row.get("article_index"))
+
+
+def _latest_signal(rows: list[dict[str, Any]]) -> str | None:
+    latest = rows[-1]
+    if latest.get("signal") is None:
+        return None
+    for row in reversed(rows):
+        signal = row.get("signal")
+        if signal in {"up", "down"}:
+            return signal
+    return None
+
+
+def _latest_note(rows: list[dict[str, Any]]) -> str | None:
+    for row in reversed(rows):
+        note = (row.get("note") or "").strip()
+        if note:
+            return note
+    return None
+
+
+def _load_issue_for_feedback(issue_id: str, issue_date: str) -> Issue:
+    run_issue_path = run_dir("issues") / f"{issue_id}.json"
+    if run_issue_path.exists():
+        return Issue.model_validate_json(run_issue_path.read_text(encoding="utf-8"))
+    dist_issue_path = DIST_DIR / "data" / "issues" / f"{issue_date}.json"
+    if dist_issue_path.exists():
+        return Issue.model_validate_json(dist_issue_path.read_text(encoding="utf-8"))
+    raise FileNotFoundError(
+        f"Cannot find issue data for feedback: {issue_id} ({issue_date}); checked {run_issue_path} and {dist_issue_path}"
+    )
+
+
+def _article_context(issue: Issue, level: str, index: int) -> dict[str, Any]:
+    articles = issue.headlines if level == "headline" else issue.briefs
+    try:
+        article = articles[index - 1]
+    except IndexError as exc:
+        raise ValueError(f"Feedback points to missing article: {issue.id} {level} #{index}") from exc
+    return {
+        "level": level,
+        "index": index,
+        "source_item_ids": article.source_item_ids,
+        "title_zh": article.title_zh,
+        "summary_zh": article.summary_zh,
+        "ai_impact": article.ai_impact if level == "headline" else None,
+    }
+
+
+def prepare_digest_feedback_payload(
+    *,
+    section_slug: str,
+    feedback_rows: list[dict[str, Any]],
+) -> tuple[dict[str, Any], list[str], int]:
+    grouped: dict[tuple[Any, ...], list[dict[str, Any]]] = {}
+    consumed_ids: list[str] = []
+    for row in feedback_rows:
+        grouped.setdefault(_feedback_group_key(row), []).append(row)
+        if row.get("id"):
+            consumed_ids.append(str(row["id"]))
+
+    aggregated: list[dict[str, Any]] = []
+    issues: dict[str, Issue] = {}
+    for rows in grouped.values():
+        rows.sort(key=lambda row: _parse_feedback_datetime(row.get("created_at")))
+        latest = rows[-1]
+        signal = _latest_signal(rows)
+        note = _latest_note(rows)
+        if not signal and not note:
+            continue
+        issue_id = str(latest["issue_id"])
+        issue_date = str(latest["issue_date"])
+        issue = issues.get(issue_id)
+        if issue is None:
+            issue = _load_issue_for_feedback(issue_id, issue_date)
+            issues[issue_id] = issue
+        item: dict[str, Any] = {
+            "issue_id": issue_id,
+            "issue_date": issue_date,
+            "scope": latest["scope"],
+            "signal": signal,
+            "note": note,
+            "event_count": len(rows),
+        }
+        if latest["scope"] == "article":
+            item["article"] = _article_context(issue, str(latest["article_level"]), int(latest["article_index"]))
+        else:
+            item["issue_summary"] = {
+                "headlines": [article.title_zh for article in issue.headlines],
+                "briefs": [article.title_zh for article in issue.briefs],
+            }
+        aggregated.append(item)
+
+    profiles = load_profiles(section_slug)
+    return {
+        "section_slug": section_slug,
+        "feedback": aggregated,
+        "current_profiles": profiles,
+    }, consumed_ids, len(aggregated)
+
+
+def digest_feedback(args: argparse.Namespace) -> int:
+    load_dotenv(WEB_DIR / ".env")
+    section = load_section(args.section)
+    config = load_pipeline_config(Path(args.config) if args.config else None)
+    provider = args.provider or resolve_stage_provider(config, "digest_feedback")
+    run_id = args.run_id or f"digest-{section.slug}-{datetime.now().strftime('%Y%m%d-%H%M%S')}"
+    store = SupabaseStore.from_env()
+    rows = store.fetch_undigested_feedback(
+        section.slug,
+        from_date=args.from_date,
+        to_date=args.to_date,
+        include_digested=args.redigest,
+    )
+    if not rows:
+        print("No feedback to digest.")
+        return 0
+
+    payload, consumed_ids, aggregated_count = prepare_digest_feedback_payload(
+        section_slug=section.slug,
+        feedback_rows=rows,
+    )
+    if aggregated_count == 0:
+        store.mark_feedback_digested(consumed_ids)
+        print(f"No active feedback after aggregation. Marked {len(consumed_ids)} row(s) digested.")
+        return 0
+
+    input_path = logs_dir(run_id) / "digest_feedback_input.json"
+    _write_json_file(input_path, payload)
+    prompt = build_digest_file_prompt(section, input_path.resolve())
+    try:
+        output, ai_run = run_ai_task(
+            task_type="digest_feedback",
+            prompt=prompt,
+            output_model=DigestFeedbackOutput,
+            provider=provider,
+            config=config,
+            use_output_schema=False,
+        )
+    except AIEngineError as exc:
+        if exc.record:
+            debug_path = save_ai_debug(run_id, "06_ai_digest", exc.record, config)
+            print(f"Debug: {debug_path}")
+        raise
+
+    profile_paths = write_profiles(
+        section.slug,
+        taste_md=output.taste_md,
+        style_md=output.style_md,
+        seed_suggestions_append=output.seed_suggestions_append,
+    )
+    store.mark_feedback_digested(consumed_ids)
+    debug_path = save_ai_debug(run_id, "06_ai_digest", ai_run, config)
+    print(f"Provider: {provider}")
+    print(f"Input: {input_path}")
+    print(f"Debug: {debug_path}")
+    print(f"Digested feedback groups: {aggregated_count}")
+    print(f"Marked feedback rows: {len(consumed_ids)}")
+    for name, path in profile_paths.items():
+        print(f"{name}: {path}")
+    if output.changes:
+        print("Changes:")
+        for change in output.changes:
+            print(f"- {change}")
+    return 0
+
+
 def _json_default(value: object) -> str:
     if isinstance(value, (datetime, date)):
         return value.isoformat()
@@ -1337,6 +1521,16 @@ def build_parser() -> argparse.ArgumentParser:
     run_pipeline_parser.add_argument("--ai-select-provider", choices=["claude", "codex"])
     run_pipeline_parser.add_argument("--ai-compose-provider", choices=["claude", "codex"])
     run_pipeline_parser.set_defaults(func=lambda args: asyncio.run(run_pipeline(args)))
+
+    digest_parser = subparsers.add_parser("digest-feedback", help="Digest Supabase feedback into local taste/style profiles")
+    digest_parser.add_argument("--section", default="tech")
+    digest_parser.add_argument("--run-id")
+    digest_parser.add_argument("--provider", choices=["claude", "codex"])
+    digest_parser.add_argument("--from", dest="from_date")
+    digest_parser.add_argument("--to", dest="to_date")
+    digest_parser.add_argument("--redigest", action="store_true")
+    digest_parser.add_argument("--config", help="Pipeline config path; defaults to web/config/pipeline.yaml")
+    digest_parser.set_defaults(func=digest_feedback)
 
     fetch_parser = subparsers.add_parser("fetch-mvp", help="Checkpoint 1: fetch RSS items")
     fetch_parser.add_argument("--section", default="tech")

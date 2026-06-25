@@ -24,6 +24,7 @@ status: todo
 
 ## 实现要点
 
+- **开工门槛**：必须先由用户人工确认 `digest-feedback` 生成的 `taste.md` 质量可接受，再开始本工单。
 - 注入位置：在 `_section_payload(section)` 产出的 JSON 里加一个 `taste_profile`（或在 prompt 里单列一段"口味档案"），**明确告诉 AI**：关注清单是硬过滤、口味档案是偏好加权（多看的提权、少看的降权），二者冲突时关注清单的"不想看"优先。
 - taste 是 markdown 文本，直接作为字符串喂进 prompt 即可（不必结构化解析）。
 - 路径约定：`web/profiles/<section_slug>/taste.md`；用 `paths.py` 风格拼接，**文件不存在 → 传 None → 走原逻辑**。
@@ -44,6 +45,6 @@ status: todo
 
 ## 开放问题
 
-（无）
+- 等待用户人工校验 T05 产物质量后再开工。
 
 ## 完成说明（开发填）

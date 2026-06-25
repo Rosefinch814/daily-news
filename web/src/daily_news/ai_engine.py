@@ -470,6 +470,45 @@ JSON schema 形状：
 """.strip()
 
 
+def build_digest_file_prompt(
+    section: SectionConfig,
+    digest_input_path: Path,
+) -> str:
+    payload = _section_payload(section)
+    return f"""
+你是《我的日报·科技》的口味档案维护员。请读取本地 JSON 文件，把用户反馈消化成可长期复用的偏好档案，输出严格 JSON。
+
+输入文件：
+{digest_input_path}
+
+板块和关注配置：
+{json.dumps(payload, ensure_ascii=False, indent=2)}
+
+任务目标：
+1. 只根据输入文件里的反馈、对应日报条目和现有档案做增量更新。
+2. 选题偏好写入 taste_md：多看/少看哪些主题、公司、人物、事件类型。
+3. 写作偏好写入 style_md：语气、长度、翻译、解释深度等。
+4. 对硬性关注清单的修改，只能写入 seed_suggestions_append，不能改 sections.yaml。
+5. 保留旧档案中仍然有效的偏好，不要因为一条反馈就大幅重写。
+6. 不要把临时情绪过度泛化成长期规则；没有证据就写轻量倾向。
+7. 反馈只影响下一期，不改当期日报事实。
+
+输出要求：
+- 只输出一个 JSON 对象，不要 Markdown，不要解释。
+- taste_md 和 style_md 必须是更新后的完整 Markdown 文本。
+- seed_suggestions_append 只放需要用户确认的新增建议；没有则输出空字符串。
+- changes 用中文列出本次消化做了哪些变化。
+
+JSON schema 形状：
+{{
+  "taste_md": "# 选题口味档案 · tech\\n\\n...",
+  "style_md": "# 写作口味档案 · tech\\n\\n...",
+  "seed_suggestions_append": "- 建议关注清单新增：...",
+  "changes": ["提高 AI 芯片供应链新闻权重", "降低发布会通稿权重"]
+}}
+""".strip()
+
+
 def _issue_prompt_from_payload(payload: dict[str, Any]) -> str:
     return f"""
 你是《我的日报·科技》的新闻编辑。请只基于输入候选新闻生成 v1 科技日报结构化 JSON。

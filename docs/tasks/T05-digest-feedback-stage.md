@@ -1,7 +1,7 @@
 ---
 id: T05
 title: digest_feedback 消化阶段（分类路由 + 批量 + 可独立运行）
-status: todo
+status: done
 依赖: [T03]
 里程碑: M2
 ---
@@ -14,9 +14,9 @@ status: todo
 
 1. 新增 AI `task_type: digest_feedback` 及其文件版 prompt 构造器与输出模型。
 2. 实现消化逻辑：读未消化反馈（按 `issue_date` 分组）+ 对应那期日报 + 现有 taste/style → **分类路由**增量更新三档档案 → 标记反馈 `digested_at`。
-3. 两种触发：
+3. 触发方式：
    - **独立命令** `digest-feedback`（攒几天批量、不出报只更新档案）。
-   - **run-pipeline 起手阶段**：在 `PIPELINE_STAGES` 的 `ai_shortlist` 之前插入，自动先消化。
+   - **不默认接入 `run-pipeline`**；日报生成只消费已确认的档案，digest 先由用户人工校验。
 4. **消化进度 = 逐行 `digested_at`**（不另存水位/游标）；默认只吃 `digested_at is null`，再跑幂等、只吃新的，不重复消化。
 5. **范围控制（独立命令的可选开关）**：
    - `--from YYYY-MM-DD` / `--to YYYY-MM-DD`：在未消化反馈里**再按 `issue_date` 圈一段**只消化这段（缺省＝全部未消化）。
@@ -25,7 +25,7 @@ status: todo
 
 ## 涉及文件
 
-- `web/src/daily_news/main.py`（`PIPELINE_STAGES` / `AI_STAGE_TASKS` 约 78–91 行加阶段；`_execute_stage` 加分支；新增 `digest-feedback` 子命令 + handler；新 `--ai-digest-provider`）
+- `web/src/daily_news/main.py`（新增 `digest-feedback` 子命令 + handler；不改 `PIPELINE_STAGES`）
 - `web/src/daily_news/ai_engine.py`（新增 `build_digest_file_prompt(...)`，复用 `_section_payload` + `run_ai_task` 模式）
 - `web/src/daily_news/models.py`（新增 digest 输出模型，见下）
 - `web/config/pipeline.yaml`（`stage_providers` 增 `digest_feedback`）
@@ -48,8 +48,8 @@ status: todo
 - **输出模型**：建议 `DigestFeedbackOutput { taste_md: str, style_md: str, seed_suggestions_append: str, changes: list[str] }`，沿用现有 Codex*Output 的 pydantic 校验风格。
 - **复用**：`run_ai_task` / `build_provider_command` / `save_ai_task_run`（日志落 `web/logs/<run_id>/`）—— 不要另造一套。
 - **标记消化**：成功写完档案后调用 `mark_feedback_digested([...])`（T03）。失败则不标记，保证可重试。
-- **provider 优先级**沿用现状：CLI 阶段参数 > pipeline.yaml stage_providers > default_provider。
-- **向后兼容**：无反馈 / Supabase 未配置时，阶段应安全跳过（不报错、不改档案），run-pipeline 照常往下走。
+- **provider 优先级**沿用现状：CLI `--provider` > pipeline.yaml `stage_providers.digest_feedback` > default_provider。
+- **向后兼容**：无反馈 / Supabase 未配置时，独立命令安全跳过（不报错、不改档案）。
 
 ## 验收标准
 
@@ -60,7 +60,7 @@ status: todo
   - 那几条反馈 `digested_at` 被写；再次跑不重复消化。
 - **范围控制**：`--from/--to` 只消化该 `issue_date` 段、段外未消化反馈仍保持 `digested_at=null`；不带范围＝全部未消化。
 - **重炒**：`--redigest --from X --to Y` 能把该段已消化反馈重吃一遍（验证逃生口可用）；默认不带 `--redigest` 时已消化的不会被重吃。
-- `run-pipeline` 起手会自动消化（同上效果），其余阶段行为不变。
+- `run-pipeline` 不会自动消化；需要先单独跑 `digest-feedback` 并人工确认 profile 质量。
 - `pytest -q` 全过；无反馈时 digest 阶段安全跳过。
 
 ## 非目标
@@ -71,6 +71,8 @@ status: todo
 
 ## 开放问题
 
-- 消化时给 AI 看"那期日报全文"还是"被反馈命中的条目"？建议只喂命中条目 + 必要上下文，控 token；实现时按效果微调，记此处。
+- T06/T07 开工前需用户人工确认 digest 产物质量，避免未验证偏好直接影响日报生成。
 
 ## 完成说明（开发填）
+
+2026-06-25：已新增独立 `digest-feedback` 命令、digest prompt/输出模型、profile 文件读写和测试；不默认接入 `run-pipeline`。

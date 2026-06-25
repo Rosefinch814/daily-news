@@ -1,12 +1,17 @@
 from datetime import date
 from pathlib import Path
 
+import pytest
+
 from daily_news.models import AIIssueOutput
 from daily_news.main import make_issue
 from daily_news.render import build_frontend_app
 
 
-def test_build_frontend_app(tmp_path: Path) -> None:
+def test_build_frontend_app(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("SUPABASE_URL", "https://example.supabase.co")
+    monkeypatch.setenv("SUPABASE_ANON_KEY", "anon-public-key")
+    monkeypatch.setenv("SUPABASE_SERVICE_ROLE_KEY", "service-secret-key")
     fixture = Path(__file__).parent / "fixtures" / "sample_ai_output.json"
     output = AIIssueOutput.model_validate_json(fixture.read_text(encoding="utf-8"))
     issue = make_issue(
@@ -37,5 +42,10 @@ def test_build_frontend_app(tmp_path: Path) -> None:
     assert "英伟达发布新一代 AI 芯片 Rubin" in issue_data
     assert "影响 · AI 分析（非原文事实）" in app_js
     assert "renderIssuePicker" in app_js
+    assert "postFeedback" in app_js
     assert "@media(max-width:520px)" in app_css
     assert '"latest_issue_date": "2026-06-23"' in manifest
+    assert '"supabase_url": "https://example.supabase.co"' in manifest
+    assert '"supabase_anon_key": "anon-public-key"' in manifest
+    assert "service-secret-key" not in manifest
+    assert "service-secret-key" not in (tmp_path / "data" / "manifest.js").read_text(encoding="utf-8")

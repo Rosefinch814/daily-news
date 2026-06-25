@@ -11,6 +11,8 @@ from daily_news.main import (
     ai_file_read_test,
     build_parser,
     clean_run,
+    digest_feedback,
+    make_issue,
     merge_enriched_candidates,
     resolve_stage_provider,
     run_pipeline,
@@ -19,7 +21,14 @@ from daily_news.main import (
 )
 from daily_news.ai_engine import ProviderRunResult
 from daily_news.config import PipelineConfig
-from daily_news.models import AIIssueOutput, CandidateItem, CodexSelectionOutput, CodexShortlistOutput, RawItem
+from daily_news.models import (
+    AIIssueOutput,
+    CandidateItem,
+    CodexSelectionOutput,
+    CodexShortlistOutput,
+    DigestFeedbackOutput,
+    RawItem,
+)
 from daily_news.models import AIRunRecord
 from daily_news.storage import local as local_storage
 
@@ -89,6 +98,7 @@ def test_checkpoint_commands_are_registered() -> None:
         ["render-mvp", "--run-id", "tech-2026-06-23-000000"],
         ["sync", "--run-id", "tech-2026-06-23-000000"],
         ["run-pipeline", "--date", "2026-06-24", "--ai-compose-provider", "claude"],
+        ["digest-feedback", "--section", "tech", "--provider", "codex"],
         ["clean-run", "--run-id", "tech-2026-06-23-000000", "--pack-logs"],
     ]
     for argv in commands:
@@ -492,6 +502,106 @@ def test_stage_provider_priority() -> None:
     assert resolve_stage_provider(config, "semantic_shortlist") == "claude"
     assert resolve_stage_provider(config, "selection") == "codex"
     assert resolve_stage_provider(config, "selection", "claude") == "claude"
+
+
+def test_digest_feedback_writes_profiles_and_marks_rows(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(local_storage, "RUNS_DIR", tmp_path / "runs")
+    monkeypatch.setattr(local_storage, "LOGS_DIR", tmp_path / "logs")
+    monkeypatch.setattr(local_storage, "PROFILES_DIR", tmp_path / "profiles")
+    fixture = Path(__file__).parent / "fixtures" / "sample_ai_output.json"
+    issue_output = AIIssueOutput.model_validate_json(fixture.read_text(encoding="utf-8"))
+    issue = make_issue(
+        issue_output,
+        section_slug="tech",
+        publication_name="我的日报·科技",
+        issue_date=datetime(2026, 6, 23, tzinfo=timezone.utc).date(),
+        volume=1,
+        number=7,
+    )
+    local_storage.save_issue("run-1", issue)
+
+    class FakeStore:
+        def __init__(self) -> None:
+            self.marked: list[str] = []
+
+        def fetch_undigested_feedback(self, *args, **kwargs):  # noqa: ANN002, ANN003
+            return [
+                {
+                    "id": "fb-1",
+                    "issue_id": issue.id,
+                    "issue_date": "2026-06-23",
+                    "section_slug": "tech",
+                    "scope": "article",
+                    "article_level": "headline",
+                    "article_index": 1,
+                    "source_item_ids": issue.headlines[0].source_item_ids,
+                    "signal": "up",
+                    "note": None,
+                    "created_at": "2026-06-24T00:00:00+00:00",
+                },
+                {
+                    "id": "fb-2",
+                    "issue_id": issue.id,
+                    "issue_date": "2026-06-23",
+                    "section_slug": "tech",
+                    "scope": "article",
+                    "article_level": "headline",
+                    "article_index": 1,
+                    "source_item_ids": issue.headlines[0].source_item_ids,
+                    "signal": "up",
+                    "note": "多看这类 AI 芯片供应链新闻",
+                    "created_at": "2026-06-24T00:01:00+00:00",
+                },
+            ]
+
+        def mark_feedback_digested(self, ids):  # noqa: ANN001
+            self.marked.extend(ids)
+
+    fake_store = FakeStore()
+    monkeypatch.setattr("daily_news.main.SupabaseStore.from_env", lambda: fake_store)
+
+    digest_output = DigestFeedbackOutput(
+        taste_md="# 选题口味档案 · tech\n\n- 多看 AI 芯片供应链新闻。\n",
+        style_md="# 写作口味档案 · tech\n\n- 保持专业简报体。\n",
+        seed_suggestions_append="- 建议确认：是否把 AI 芯片供应链加入想看主题。",
+        changes=["提高 AI 芯片供应链权重"],
+    )
+
+    def fake_run_ai_task(*, prompt: str, use_output_schema: bool, **kwargs):  # noqa: ANN003
+        assert use_output_schema is False
+        assert "digest_feedback_input.json" in prompt
+        now = datetime.now(timezone.utc)
+        return digest_output, AIRunRecord(
+            task_type="digest_feedback",
+            prompt_version="test",
+            prompt=prompt,
+            raw_output=digest_output.model_dump_json(),
+            parsed_output=digest_output.model_dump(mode="json"),
+            status="success",
+            started_at=now,
+            finished_at=now,
+            provider="codex",
+            attempt_count=1,
+            duration_ms=10,
+            prompt_chars=len(prompt),
+            raw_output_chars=len(digest_output.model_dump_json()),
+        )
+
+    monkeypatch.setattr("daily_news.main.run_ai_task", fake_run_ai_task)
+    args = build_parser().parse_args(
+        ["digest-feedback", "--section", "tech", "--run-id", "digest-test", "--provider", "codex"]
+    )
+
+    assert digest_feedback(args) == 0
+    assert fake_store.marked == ["fb-1", "fb-2"]
+    assert "AI 芯片供应链" in (tmp_path / "profiles" / "tech" / "taste.md").read_text(encoding="utf-8")
+    assert "专业简报体" in (tmp_path / "profiles" / "tech" / "style.md").read_text(encoding="utf-8")
+    assert "建议确认" in (tmp_path / "profiles" / "tech" / "seed-suggestions.md").read_text(encoding="utf-8")
+    assert (tmp_path / "logs" / "digest-test" / "digest_feedback_input.json").exists()
+    assert (tmp_path / "logs" / "digest-test" / "ai" / "06_ai_digest_run.json").exists()
 
 
 def test_run_pipeline_stops_after_ai_shortlist(
