@@ -15,7 +15,7 @@ status: todo
 1. 在 `web/supabase/schema.sql` 新增 `feedback` 表 + 启用 RLS + 一条**仅允许匿名 INSERT** 的策略。
 2. 给 `web/src/daily_news/storage/supabase.py` 的 `SupabaseStore` 补**读写**方法（现在只写不读）：
    - `insert_feedback(...)`（服务端写，主要给联调/测试用；前端是直接走 REST，不经此函数）。
-   - `fetch_undigested_feedback(section_slug) -> list[...]`：取 `digested_at is null` 的反馈，含定位字段。
+   - `fetch_undigested_feedback(section_slug, from_date=None, to_date=None, include_digested=False) -> list[...]`：默认取 `digested_at is null` 的反馈，含定位字段；`from_date/to_date` 按 `issue_date` 收窄；`include_digested=True` 时无视 `digested_at`（供 T05 的 `--redigest` 重炒用）。
    - `mark_feedback_digested(ids: list[...])`：批量写 `digested_at = now()`。
 3. 不改动阅读链路、不改现有 `sync` 行为。
 
