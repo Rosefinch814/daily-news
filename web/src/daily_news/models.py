@@ -122,6 +122,24 @@ class HeadlineArticle(BaseModel):
     relevance_score: int = Field(ge=0, le=100)
     importance_score: int = Field(ge=0, le=100)
 
+    @field_validator("pullquote", mode="before")
+    @classmethod
+    def coerce_pullquote(cls, value: Any) -> Any:
+        if value is None or isinstance(value, dict):
+            return value
+        if isinstance(value, str):
+            text = value.strip()
+            if not text or text.lower() == "null":
+                return None
+            if "——" in text:
+                quote_text, cite = text.split("——", 1)
+                quote_text = quote_text.strip()
+                cite = cite.strip() or None
+                if quote_text:
+                    return {"text": quote_text, "cite": cite}
+            return {"text": text, "cite": None}
+        return value
+
 
 class BriefArticle(BaseModel):
     source_item_ids: list[str]

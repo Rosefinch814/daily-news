@@ -27,7 +27,7 @@ from daily_news.text import clamp_text
 
 
 PROMPT_VERSION = "v1.1"
-JSON_OBJECT_RE = re.compile(r"\{.*\}", re.DOTALL)
+JSON_CODE_FENCE_RE = re.compile(r"```(?:json)?\s*(\{.*?\})\s*```", re.DOTALL | re.IGNORECASE)
 ProviderName = Literal["claude", "codex"]
 AIOutput = TypeVar("AIOutput", bound=BaseModel)
 
@@ -58,13 +58,78 @@ class ProviderRunResult:
 
 
 def extract_json_object(output: str) -> dict[str, Any]:
+    stripped = output.strip()
     try:
-        return json.loads(output)
+        parsed = json.loads(stripped)
     except json.JSONDecodeError:
-        match = JSON_OBJECT_RE.search(output)
-        if not match:
-            raise
-        return json.loads(match.group(0))
+        pass
+    else:
+        if isinstance(parsed, dict):
+            return parsed
+        raise ValueError("AI output JSON root must be an object")
+
+    for match in JSON_CODE_FENCE_RE.finditer(output):
+        try:
+            parsed = json.loads(match.group(1))
+        except json.JSONDecodeError:
+            continue
+        if isinstance(parsed, dict):
+            return parsed
+
+    candidates = _balanced_json_object_candidates(output)
+    if not candidates:
+        raise json.JSONDecodeError("No JSON object found", output, 0)
+    candidates.sort(key=lambda item: (not _looks_like_ai_output(item[0]), -len(item[1])))
+    return candidates[0][0]
+
+
+def _balanced_json_object_candidates(output: str) -> list[tuple[dict[str, Any], str]]:
+    candidates: list[tuple[dict[str, Any], str]] = []
+    for start, char in enumerate(output):
+        if char != "{":
+            continue
+        depth = 0
+        in_string = False
+        escaped = False
+        for index in range(start, len(output)):
+            current = output[index]
+            if in_string:
+                if escaped:
+                    escaped = False
+                elif current == "\\":
+                    escaped = True
+                elif current == '"':
+                    in_string = False
+                continue
+            if current == '"':
+                in_string = True
+            elif current == "{":
+                depth += 1
+            elif current == "}":
+                depth -= 1
+                if depth == 0:
+                    candidate = output[start : index + 1]
+                    try:
+                        parsed = json.loads(candidate)
+                    except json.JSONDecodeError:
+                        break
+                    if isinstance(parsed, dict):
+                        candidates.append((parsed, candidate))
+                    break
+    return candidates
+
+
+def _looks_like_ai_output(value: dict[str, Any]) -> bool:
+    expected_keys = {
+        "headlines",
+        "briefs",
+        "keep_item_ids",
+        "maybe_item_ids",
+        "drop_item_ids",
+        "headline_item_ids",
+        "brief_item_ids",
+    }
+    return bool(expected_keys.intersection(value))
 
 
 def _candidate_payload(config: PipelineConfig, candidates: list[CandidateItem]) -> list[dict[str, Any]]:
@@ -366,7 +431,8 @@ def build_issue_file_prompt(
 - briefs 只生成 title_zh、summary_zh、sources、relevance_score、importance_score，不要生成精读。
 - 摘要和精读只写事实；影响分析必须只放在 ai_impact。
 - 每条都必须给 relevance_score 和 importance_score，整数 0-100。
-- pullquote 没有可溯源事实或引语时用 null。
+- pullquote 默认输出 null。只有原文中存在明确、可溯源、值得突出展示的短引语时，才输出对象 {{"text": "引语正文", "cite": "来源或说话人"}}。
+- pullquote 绝不能输出字符串、数组、Markdown 或带破折号的拼接文本；只能是 null 或 {{"text": "...", "cite": "..."}}。
 
 JSON schema 形状：
 {{
@@ -423,7 +489,8 @@ def _issue_prompt_from_payload(payload: dict[str, Any]) -> str:
 - brief 字段：source_item_ids, title_zh, summary_zh, sources, relevance_score, importance_score。
 - discarded 字段记录主要丢弃项和原因。
 - merged_sources 字段记录合并了哪些 source_item_ids。
-- pullquote 没有可溯源事实或引语时用 null。
+- pullquote 默认输出 null。只有原文中存在明确、可溯源、值得突出展示的短引语时，才输出对象 {{"text": "引语正文", "cite": "来源或说话人"}}。
+- pullquote 绝不能输出字符串、数组、Markdown 或带破折号的拼接文本；只能是 null 或 {{"text": "...", "cite": "..."}}。
 
 JSON schema 形状：
 {{
@@ -471,7 +538,13 @@ def build_repair_prompt(original_prompt: str, raw_output: str, error: str) -> st
 解析错误：
 {error}
 
-请基于原始任务重新输出唯一一个合法 JSON 对象。不要 Markdown，不要解释。
+请基于原始任务和上一次输出，重新输出唯一一个合法 JSON 对象。
+
+强制格式规则：
+1. 输出必须从 {{ 开始，到 }} 结束。
+2. 不要 Markdown，不要 ```json 代码块，不要解释文字，不要前后缀。
+3. 如果错误涉及 pullquote：pullquote 只能是 null 或对象 {{"text": "引语正文", "cite": "来源或说话人"}}；绝不能是字符串。
+4. 优先修正字段类型和 JSON 格式，不要新增未入选条目。
 
 原始任务：
 {original_prompt}

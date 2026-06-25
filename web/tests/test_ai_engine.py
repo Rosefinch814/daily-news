@@ -10,6 +10,7 @@ from daily_news.ai_engine import (
     _provider_result_from_codex,
     build_issue_file_prompt,
     build_provider_command,
+    build_repair_prompt,
     build_selection_file_prompt,
     build_selection_prompt,
     build_shortlist_prompt,
@@ -27,12 +28,52 @@ def test_extract_json_object_from_plain_json() -> None:
     assert extract_json_object(json.dumps(payload)) == payload
 
 
+def test_extract_json_object_prefers_fenced_full_object_over_inline_json() -> None:
+    output = """
+`pullquote` must be {"text": "...", "cite": "..."}.
+
+```json
+{"headlines": [], "briefs": [], "discarded": [], "merged_sources": []}
+```
+"""
+
+    assert extract_json_object(output) == {"headlines": [], "briefs": [], "discarded": [], "merged_sources": []}
+
+
 def test_validate_sample_ai_output() -> None:
     fixture = Path(__file__).parent / "fixtures" / "sample_ai_output.json"
     output = AIIssueOutput.model_validate_json(fixture.read_text(encoding="utf-8"))
 
     assert output.headlines[0].title_zh == "英伟达发布新一代 AI 芯片 Rubin"
     assert output.briefs[0].relevance_score == 82
+
+
+def test_ai_issue_output_accepts_string_pullquote() -> None:
+    payload = {
+        "headlines": [
+            {
+                "source_item_ids": ["item-1"],
+                "kicker": "AI · 芯片",
+                "title_zh": "标题",
+                "summary_zh": "摘要",
+                "read_body_zh": ["正文"],
+                "pullquote": "一句话 —— 来源",
+                "ai_impact": "影响",
+                "sources": [{"name": "Source", "url": "https://example.com"}],
+                "relevance_score": 80,
+                "importance_score": 70,
+            }
+        ],
+        "briefs": [],
+        "discarded": [],
+        "merged_sources": [],
+    }
+
+    output = AIIssueOutput.model_validate(payload)
+
+    assert output.headlines[0].pullquote is not None
+    assert output.headlines[0].pullquote.text == "一句话"
+    assert output.headlines[0].pullquote.cite == "来源"
 
 
 def _candidate(item_id: str) -> CandidateItem:
@@ -86,7 +127,22 @@ def test_build_issue_file_prompt_uses_paths_without_candidates() -> None:
     assert "/tmp/04_selection.json" in prompt
     assert "/tmp/03_enriched_candidates.json" in prompt
     assert "ai_impact" in prompt
+    assert "pullquote 默认输出 null" in prompt
+    assert "绝不能输出字符串" in prompt
     assert "Nvidia AI chip news" not in prompt
+
+
+def test_repair_prompt_forbids_markdown_and_string_pullquote() -> None:
+    prompt = build_repair_prompt(
+        "原始任务",
+        '{"pullquote": "一句话 —— 来源"}',
+        "pullquote should be object",
+    )
+
+    assert "输出必须从 {" in prompt
+    assert "不要 ```json 代码块" in prompt
+    assert "pullquote 只能是 null 或对象" in prompt
+    assert "绝不能是字符串" in prompt
 
 
 def test_build_codex_provider_command_is_read_only() -> None:
