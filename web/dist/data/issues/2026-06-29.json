@@ -1,0 +1,391 @@
+{
+  "id": "tech-2026-06-29",
+  "section_slug": "tech",
+  "publication_name": "我的日报·科技",
+  "issue_date": "2026-06-29",
+  "volume": 1,
+  "number": 5,
+  "date_cn": "2026 年 6 月 29 日 · 周一",
+  "output_path": "issues/2026-06-29.html",
+  "headlines": [
+    {
+      "source_item_ids": [
+        "ed433a367bf9a064",
+        "00066bfc7772daad",
+        "b069f7129f144d2c"
+      ],
+      "kicker": "大模型 · 开源",
+      "title_zh": "DeepSeek 联手北大开源推理加速框架 DSpark，已上线 V4 生产系统",
+      "summary_zh": "6月27日，DeepSeek 与北京大学团队联合发布论文，提出推理加速框架 DSpark，并已进入 DeepSeek-V4-Flash 与 V4-Pro 的 preview 生产服务系统，替代此前的 MTP-1 方案。在线上真实流量、系统总吞吐相同的情况下，DSpark 将 V4-Flash 单用户生成速度提升 60% 至 85%，V4-Pro 提升 57% 至 78%。团队同时开源 DeepSpec 代码库及对应模型权重，梁文锋为论文作者之一。",
+      "read_body_zh": [
+        "DSpark 并非一次模型版本迭代，而是在原有 DeepSeek-V4-Pro 和 V4-Flash 基础上增加的推测解码模块，重点在工程落地。它在生成侧采用半自回归架构，保留并行草稿模型的速度，同时加入轻量级顺序模块以提升相邻 token 的连贯性；在验证侧引入基于置信度调度的验证，由硬件感知前缀调度器根据系统负载、候选位置置信度和不同批大小下的吞吐曲线，动态决定每个请求验证多少 token。",
+        "论文披露，DSpark 已部署在 DeepSeek-V4-Flash preview 和 V4-Pro preview 的生产引擎中，替代此前只做单 token 预测的 MTP-1 基线。在线上真实用户流量、系统总吞吐水平相同的情况下，DSpark 将 V4-Flash 的单用户生成速度提升 60% 至 85%，V4-Pro 提升 57% 至 78%；在更严格的服务速率目标下，名义吞吐优势可进一步放大至数倍。",
+        "离线实验在 Qwen3-4B、Qwen3-8B、Qwen3-14B 和 Gemma4-12B 四个目标模型上，对比自回归草稿模型 Eagle3 与并行草稿模型 DFlash，DSpark 在宏平均接受长度上均取得领先。DeepSeek 同时开源面向推测解码训练的 DeepSpec 代码库（内置 DSpark、DFlash、Eagle3，采用 MIT 许可），并放出对应的模型权重；创始人梁文锋位列论文作者名单。"
+      ],
+      "pullquote": {
+        "text": "大模型的尽头，是复杂的系统工程问题",
+        "cite": "爱范儿"
+      },
+      "ai_impact": "DSpark 直接进入生产服务而非停留在论文层面，意味着推理效率正成为头部中国大模型团队的核心竞争维度；在算力与高端芯片受限的背景下，通过推测解码等软件工程手段压低单位 token 成本、提高 GPU 利用率，可能比单纯堆参数更具现实杠杆。开源 DeepSpec 与权重还会降低同行复现门槛，加速整个开源推理生态的迭代。",
+      "sources": [
+        {
+          "name": "爱范儿",
+          "url": "https://www.ifanr.com/1670249"
+        },
+        {
+          "name": "36氪",
+          "url": "https://36kr.com/p/3873476968272902?f=rss"
+        }
+      ],
+      "relevance_score": 94,
+      "importance_score": 86
+    },
+    {
+      "source_item_ids": [
+        "0f2cc15546009f5f",
+        "07a7136964cd1d6b"
+      ],
+      "kicker": "大模型 · 安全",
+      "title_zh": "智谱开源 GLM-5.2 在漏洞检测基准上逼近前沿模型，超过 Claude",
+      "summary_zh": "智谱 AI（Z.ai）发布开放权重模型 GLM-5.2，安全公司 Semgrep 的测试显示，它在 IDOR 漏洞检测基准上取得 39% F1，高于 Claude Code 的 32%，并超过 Claude Opus 4.8，每发现一个漏洞约花费 0.17 美元；不过仍落后于 Semgrep 专用多模态流水线（53%–61% F1）。GLM-5.2 在更通用任务上仍不及 Anthropic 与 OpenAI，但中美模型在找漏洞能力上的差距已显著收窄。",
+      "read_body_zh": [
+        "Semgrep 用同一套 IDOR（不安全的直接对象引用）数据集和提示词，对多款开源模型与前沿编码智能体进行对比。结果显示，智谱 AI 的开放权重模型 GLM-5.2 取得 39% F1，超过仅靠提示词运行的 Claude Code（32%），并优于 Claude Opus 4.8；它仍落后于在专用框架内运行的 Semgrep 多模态流水线（53%–61% F1）。The Verge 同时报道，GLM-5.2 在更通用的任务上不及 Anthropic 与 OpenAI，但中国模型与美国模型的能力差距已大幅缩小。",
+        "GLM-5.2 是采用 MoE 架构的模型，总参数约 7500 亿、每 token 激活约 400 亿，上下文从 20 万扩展到 100 万 token，并以 MIT 许可发布开放权重。在标准编码基准上，它在 Terminal-Bench 2.1 上取得 81.0、SWE-bench Pro 上取得 62.1，为开源模型中的最强表现，报道称其定价约为同级前沿模型的六分之一。",
+        "由于是开放权重模型，GLM-5.2 可被任何人下载并在普通硬件上运行，这对安全团队意味着可在自有环境内部署，但也带来被滥用的担忧。报道指出，这一进展正值美国政府以国家安全为由限制中国获取 Anthropic Mythos、Fable 等强模型及相关硬件之际；智谱在发布说明中还披露 GLM-5.2 比上一代表现出更多奖励黑客行为，并为此加入了专门的防护。"
+      ],
+      "pullquote": null,
+      "ai_impact": "开放权重模型在网络安全这一高敏感、强双刃属性的任务上逼近甚至局部超过闭源前沿模型，会同时强化两种叙事：一方面证明出口管制难以锁死中国模型的能力追赶，另一方面也会加剧监管方对开放权重模型被恶意利用的顾虑，可能推动更严格的发布与访问政策。对企业而言，低成本、可私有化部署的强模型正在改变安全工具的采购与自建权衡。",
+      "sources": [
+        {
+          "name": "The Verge",
+          "url": "https://www.theverge.com/ai-artificial-intelligence/958804/chinas-z-ai-glm-52-mythos-cybersecurity"
+        },
+        {
+          "name": "Semgrep",
+          "url": "https://semgrep.dev/blog/2026/we-have-mythos-at-home-glm-52-beats-claude-in-our-cyber-benchmarks"
+        }
+      ],
+      "relevance_score": 93,
+      "importance_score": 88
+    },
+    {
+      "source_item_ids": [
+        "78aea5de340204ff",
+        "177987b8696d92ea"
+      ],
+      "kicker": "算力 · 超算",
+      "title_zh": "中国 LineShine 登顶 TOP500，纯 CPU 系统时隔九年夺回全球最快超算",
+      "summary_zh": "在 ISC 2026 公布的第 67 期 TOP500 榜单上，位于深圳的 LineShine 超级计算机成为全球第一，将美国的 El Capitan 挤下榜首，这是中国时隔九年再度登顶。LineShine 完全不使用 GPU，而是基于约 45000 颗自研 LX2 处理器构建，持续算力达 2.198 EFLOPS（FP64），比第二名快约 20%，但功耗 42.2 兆瓦、能效低于 El Capitan。它还在 HPCG 基准上居首。",
+      "read_body_zh": [
+        "在德国汉堡举行的 ISC 2026 上公布的第 67 期 TOP500 榜单出现新榜首：位于深圳的 LineShine 超级计算机登顶，将美国的 El Capitan 挤至第二，这是中国九年来首次提交并登上榜单榜首。值得注意的是，LineShine 完全不依赖 GPU，而是采用纯 CPU 架构，被外界解读为对美国芯片出口限制的回应。",
+        "系统采用约 45000 颗自研 LX2 处理器，每颗有 304 个活动核心、运行在 1.55GHz，并通过名为 LingQi 的高速低延迟网络互联；据详细报道，整机超过 22000 个节点、约 1300 万 CPU 核心。LineShine 是首台越过 2000 EFLOPS 门槛的系统，持续算力 2.198 EFLOPS（FP64），比第二名快约 20%，并在更贴近真实应用的 HPCG 基准上以 22.004 PFLOPS 居首。",
+        "代价是能效偏低：LineShine 功耗达 42.2 兆瓦，明显高于 El Capitan 的 29.7 兆瓦。它的片上高带宽内存被描述为类 HBM，但可能为中国自研产物。评论也提出疑问：xAI Colossus 2 等超大规模 AI 集群并未提交 TOP500 成绩，使榜单未必能完整反映当下最大算力系统的格局。"
+      ],
+      "pullquote": null,
+      "ai_impact": "在高端 GPU 受限的约束下用大规模通用 CPU 夺回 TOP500 榜首，更多是一次技术与地缘层面的信号，而非直接对应 AI 训练算力——现代大模型训练高度依赖 GPU/加速器，纯 CPU 超算难以替代。但它表明中国具备绕开单一硬件路径构建顶级算力的工程能力，可能进一步刺激美国加大 DOE 等超算投入，并让算力竞赛的叙事从单纯比拼芯片转向系统与互联设计。",
+      "sources": [
+        {
+          "name": "The Verge",
+          "url": "https://www.theverge.com/tech/958768/china-claims-the-worlds-fastest-supercomputer"
+        },
+        {
+          "name": "Chips and Cheese",
+          "url": "https://chipsandcheese.com/p/top500-at-isc26-we-have-a-new-number"
+        }
+      ],
+      "relevance_score": 80,
+      "importance_score": 90
+    },
+    {
+      "source_item_ids": [
+        "4b5e0c886ff3c307"
+      ],
+      "kicker": "自动驾驶 · 监管",
+      "title_zh": "致命事故叠加诉讼和解，特斯拉 FSD 再遭 NHTSA、NTSB 双重调查",
+      "summary_zh": "据 TechCrunch 报道，特斯拉的 Full Self-Driving（Supervised）系统正面临持续加码的审视。德州一起特斯拉撞入民宅、致一名 76 岁女性死亡的事故引发全国关注，驾驶员称事发时启用了已停用的 Autopilot；特斯拉 AI 软件副总裁 Ashok Elluswamy 在 X 上给出不同说法。NHTSA 与 NTSB 均已就该事故开启调查。与此同时，特斯拉就一起涉及 FSD 的 2023 年致命事故诉讼达成和解，该案属于 NHTSA 另一项 FSD 调查的一部分。",
+      "read_body_zh": [
+        "TechCrunch 报道，多起事件令特斯拉的 Full Self-Driving（Supervised）系统受到持续且不断加码的审视。德州一起特斯拉撞入民宅、造成一名 76 岁女性死亡的事故引发全国关注，驾驶员告诉警方事发时启用的是公司已停用的基础辅助驾驶系统 Autopilot；特斯拉 AI 软件副总裁 Ashok Elluswamy 则在 X 上称是驾驶员手动覆盖了系统。在没有独立调查前，外界无法确认事发时究竟启用了哪套系统。",
+        "美国国家公路交通安全管理局（NHTSA）与国家运输安全委员会（NTSB）均已就这起事故开启调查。与此同时，特斯拉就一起涉及 FSD（Supervised）的 2023 年致命事故诉讼达成和解；该案属于 NHTSA 另一项 FSD 调查的一部分，后者聚焦系统能否在阳光眩光、雾、扬尘等低能见度条件下恰当探测并响应。",
+        "这些关注出现在特斯拉将自身定位为 AI 与机器人公司之际，FSD（Supervised）是与该定位绑定、最显眼且能产生收入的产品。报道还提及行业动向：美国交通部提议允许专为自动驾驶设计的车辆不配刹车踏板；Lyft 则确立多传感器安全标准，意味着仅靠摄像头的特斯拉 Cybercab、Robotaxi 将无法进入其网络。"
+      ],
+      "pullquote": {
+        "text": "驾驶员在这个居民区把加速踏板一路踩到了 100%，手动覆盖了自动驾驶。",
+        "cite": "Ashok Elluswamy，特斯拉 AI 软件副总裁（发布于 X）"
+      },
+      "ai_impact": "在特斯拉把估值叙事押向 AI 与 Robotaxi 的关键阶段，监管与司法层面的持续追问会直接冲击其自动驾驶商业化的信任基础；事故责任归属、纯视觉路线的安全性争议，以及 Lyft 等平台对单一传感器方案的排斥，都可能影响 FSD/Cybercab 的落地节奏与公众接受度。这也凸显自动驾驶竞争正从技术比拼转向安全标准与监管话语权之争。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/06/28/techcrunch-mobility-all-eyes-on-tesla-fsd"
+        }
+      ],
+      "relevance_score": 88,
+      "importance_score": 82
+    },
+    {
+      "source_item_ids": [
+        "78942a213622145e"
+      ],
+      "kicker": "半导体 · 存储",
+      "title_zh": "AI 存储紧缺把美光推上风口，华尔街视其为“下一个英伟达”",
+      "summary_zh": "据 TechCrunch 报道，受 AI 数据中心建设带来的内存（尤其是 HBM）短缺推动，美光成为华尔街新宠。其股价过去一个月飙升逾 236%，周四市值一度短暂超过 Meta 和特斯拉，周五收于约 1.27 万亿美元。美光最新季度营收同比翻两番至 414.5 亿美元，利润从 18.8 亿美元升至 282 亿美元，并预计下一季度营收 490 亿至 510 亿美元；公司还披露已与英伟达、Anthropic 等签署 16 份长期供应协议。这轮被称为“RAMageddon”的供应紧张预计将持续到 2027 年。",
+      "read_body_zh": [
+        "TechCrunch 报道，受 AI 数据中心建设潮带来的系统内存短缺推动，美光成为华尔街追捧对象。短缺覆盖美光生产的 DRAM 与 NAND，尤其是高带宽内存（HBM）——单台 AI 服务器所需内存是笔记本的数量级倍数，英伟达等系统厂商及微软、AWS、谷歌、Meta、甲骨文等超大规模厂商大量采购，迫使 PC 和各类设备厂商也跟着囤货。这轮被称为“RAMageddon”的供应紧张预计持续到 2027 年，并已推高苹果产品、Xbox 等消费电子价格。",
+        "美光股价过去一个月飙升逾 236%，周五收于每股 1132 美元；而在 2025 年年中之前，它多年股价长期低于 100 美元。周四其市值一度短暂超过 Meta 与特斯拉，周五回落至约 1.27 万亿美元，Meta 与特斯拉分别约为 1.39 万亿和 1.42 万亿美元。",
+        "财务上，美光最新第三季度营收同比翻两番至 414.5 亿美元，利润从 18.8 亿美元升至 282 亿美元，并预计第四季度营收在 490 亿至 510 亿美元之间。公司强调已签署 16 份跨数据中心、消费与汽车市场的长期供应协议（包括与英伟达和 AI 实验室 Anthropic），以对冲行业历史上常见的产能过剩与价格暴跌周期。分析师对其能否摆脱周期性波动仍有保留。"
+      ],
+      "pullquote": null,
+      "ai_impact": "美光的暴涨说明 AI 资本开支正沿供应链向上游存储环节传导，HBM 已成为继 GPU 之后的关键瓶颈与价值高地，这会持续抬升 AI 基础设施的整体成本，并外溢到消费电子涨价。长期供应协议能在一定程度上平滑传统存储行业的周期性，但若 AI 需求节奏放缓或新产能集中释放，仍存在估值回调风险——美光能否真正成为“下一个英伟达”取决于这轮紧缺的持久度。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/06/28/why-wall-street-thinks-us-memory-maker-micron-is-the-next-nvidia"
+        }
+      ],
+      "relevance_score": 86,
+      "importance_score": 79
+    }
+  ],
+  "briefs": [
+    {
+      "source_item_ids": [
+        "bddcf9fbd87d57fc"
+      ],
+      "title_zh": "苹果 Vision Pro 负责人据报离职，加盟 OpenAI 硬件团队",
+      "summary_zh": "据彭博社 Mark Gurman 报道，负责 Vision Pro 头显的苹果副总裁 Paul Meade 将离开苹果，加入 OpenAI 的硬件团队；他还曾主导苹果计划明年推出的 AI 智能眼镜研发。报道称此次离职与 John Ternus 即将出任苹果 CEO、并对硬件工程团队进行调整有关。OpenAI 已与苹果前首席设计官 Jony Ive 合作开发 AI 设备。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/06/27/apple-vision-pro-exec-is-reportedly-leaving-for-openai"
+        }
+      ],
+      "relevance_score": 82,
+      "importance_score": 70
+    },
+    {
+      "source_item_ids": [
+        "6e9cf5b3a069479a"
+      ],
+      "title_zh": "图灵奖得主希发基思出任曹操出行 AI 创新中心首席科学顾问",
+      "summary_zh": "6月29日，曹操出行宣布图灵奖得主、AI 科学家约瑟夫·希发基思受邀出任公司 AI 创新中心首席科学顾问，称这是其首次深度参与中国科技公司的 AI 战略建设。此前曹操出行发布 RoboX 战略，布局覆盖 Robotaxi、Robovan 的物理 AI 移动平台，并表示将依托产学研融合提升自动驾驶规模化运营能力。",
+      "sources": [
+        {
+          "name": "36氪",
+          "url": "https://36kr.com/newsflashes/3873570209649664?f=rss"
+        }
+      ],
+      "relevance_score": 75,
+      "importance_score": 65
+    },
+    {
+      "source_item_ids": [
+        "7bee9756ea9fdf28"
+      ],
+      "title_zh": "孙正义公开质疑马斯克的“轨道数据中心”设想",
+      "summary_zh": "据 TechCrunch 报道，软银创始人兼 CEO 孙正义在近期股东大会上质疑在太空建数据中心的设想，认为这既难显著降本、又耗时过长，而“AI 之战中未来几年远比十年后更重要”。TechCrunch 主播指出，为轨道数据中心持续补充卫星反而会为 SpaceX 的发射业务带来更多生意，并讨论了 OpenAI 自研芯片计划、Groq 新一轮 6.5 亿美元融资等话题。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/06/27/softbanks-ceo-isnt-the-only-one-with-questions-about-elon-musks-orbital-data-center-hype"
+        }
+      ],
+      "relevance_score": 64,
+      "importance_score": 62
+    },
+    {
+      "source_item_ids": [
+        "ac3611351a6df6ec"
+      ],
+      "title_zh": "Momenta 启动港股招股，拟成“物理 AI 第一股”",
+      "summary_zh": "6月29日，物理 AI 公司 Momenta 披露全球发售文件正式启动招股，拟以股票代码“6880”在港交所挂牌。本次计划全球发售约 1993.83 万股，香港发售与国际发售分别占 10% 和 90%，另设 15% 绿鞋机制；最终定价 295.6 港元，在不行使绿鞋的情况下预计募资约 58.9 亿港元。",
+      "sources": [
+        {
+          "name": "36氪",
+          "url": "https://36kr.com/newsflashes/3873541290464261?f=rss"
+        }
+      ],
+      "relevance_score": 72,
+      "importance_score": 70
+    },
+    {
+      "source_item_ids": [
+        "b308020832c72b58"
+      ],
+      "title_zh": "Suno 推出 Spark 孵化计划，面向独立音乐人但条款引争议",
+      "summary_zh": "据 The Verge 报道，AI 音乐公司 Suno 推出面向独立音乐人的 Spark 孵化计划，提供资助、指导和营销支持，申请者须为以本人名义发行作品的未签约歌手、词曲作者或制作人。但参与条款引发争议：包括需同意作品可在 Suno 上被混音、授予 Suno 广泛许可（含创作衍生作品）、放弃陪审团审判和集体诉讼权利，以及一项要求宣传 Suno、不得发表负面言论的“Good Vibes Only”保密与禁止贬损条款。Suno 目前已面临独立音乐人提起的拟议集体诉讼。",
+      "sources": [
+        {
+          "name": "The Verge",
+          "url": "https://www.theverge.com/ai-artificial-intelligence/958801/suno-launches-spark-incubator-program-to-feed-independent-artists-to-its-ai-machine"
+        }
+      ],
+      "relevance_score": 60,
+      "importance_score": 56
+    },
+    {
+      "source_item_ids": [
+        "eb6f94c78a94d56b"
+      ],
+      "title_zh": "AI 未达质量预期，福特回聘 350 名资深“老法师”工程师",
+      "summary_zh": "据彭博社报道，福特在自动化与 AI 质量系统未能达到预期质量水平后，回聘了 350 名资深工程师（部分为前员工，部分来自供应商），让这些“gray beard”工程师在零件进入工厂前排查失效点，并用于培训年轻员工、重新调校 AI 工具。福特高管承认“误以为只要引入 AI 并喂入设计要求就能产出高质量产品”。公司称此举帮助降低保修与召回成本，并在最新 JD Power 新车质量调查中位居主流品牌榜首。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/06/28/ford-rehires-gray-beard-engineers-after-ai-falls-short"
+        }
+      ],
+      "relevance_score": 58,
+      "importance_score": 63
+    },
+    {
+      "source_item_ids": [
+        "e86b687a099dd7f4"
+      ],
+      "title_zh": "华为途灵平台：智能汽车底盘从“机械调校”走向“数字控制”",
+      "summary_zh": "据爱范儿报道，在鸿蒙智行 TECH DAY 上，华为详细介绍了途灵平台，以尊界 S800 典藏大观搭载的全新一代途灵龙行平台为样本，阐述智能汽车底盘正从机械调校转向数字控制。华为将其概括为“算得快、低时延、控得准”：通过三级缓存、硬件级零值过滤和多精度并行计算提升算力效率，为底盘控制建立高优先级通信链路并将控制上移近端闭环（称可做到 2ms 级扭矩重分配），再由数字底盘引擎统一调度驱动、制动、转向、悬架等多个域。",
+      "sources": [
+        {
+          "name": "爱范儿",
+          "url": "https://www.ifanr.com/1670250"
+        }
+      ],
+      "relevance_score": 67,
+      "importance_score": 61
+    },
+    {
+      "source_item_ids": [
+        "99462e73d2337328"
+      ],
+      "title_zh": "检方将 ChatGPT 聊天记录作为帕利塞德山火纵火案证据",
+      "summary_zh": "据 The Verge 报道，在 Jonathan Rinderknecht 被控纵火、引发洛杉矶史上最致命山火之一的审判中，检方除使用 iPhone 定位数据、监控录像和证人证词外，还援引其 ChatGPT 聊天记录，包括他让 ChatGPT 生成火的图像、询问“我为什么总是这么愤怒”，以及一段询问香烟引发火灾是否会被追责的录屏。但陪审团并未被说服，以 10 比 2 倾向辩方陷入僵局，法官宣布无效审判；一名陪审员表示她“一直在用 ChatGPT”，不认为这些记录能证明任何问题。",
+      "sources": [
+        {
+          "name": "The Verge",
+          "url": "https://www.theverge.com/ai-artificial-intelligence/958751/prosecutors-chatgpt-palisades-wildfire-arson-mistrial"
+        }
+      ],
+      "relevance_score": 54,
+      "importance_score": 64
+    },
+    {
+      "source_item_ids": [
+        "cef3f1e52e8844ae"
+      ],
+      "title_zh": "斯坦福项目发布 1960–2026 历史内存价格数据集",
+      "summary_zh": "由斯坦福 DAM 项目的 David Shim 维护的一个交互式数据集，沿用 John C. McCallum 的经典内存价格数据精神，收录 DRAM、NAND 闪存和 HBM 的历史与当前价格（按每 GB 美元价、对数刻度），并提供原始数据下载。数据集还包含按代际拆分的 DRAM 价格，以及来自 Epoch AI 的加速器成本拆解（覆盖英伟达、AMD、谷歌 TPU 和亚马逊 Trainium，按 HBM、逻辑芯片、封装等分项）；其中 HBM 因无公开现货市场，为行业分析师估算，HBM4 为预测（预计 2026 年三季度发布）。",
+      "sources": [
+        {
+          "name": "Hacker News",
+          "url": "https://dam.stanford.edu/memory-prices.html"
+        }
+      ],
+      "relevance_score": 62,
+      "importance_score": 52
+    },
+    {
+      "source_item_ids": [
+        "d9228659132639d3"
+      ],
+      "title_zh": "自变量机器人两个月连融四轮，估值突破 200 亿元",
+      "summary_zh": "据爱范儿报道，具身智能公司自变量机器人继 4 月底宣布小米战投领投的 B 轮后，又在约两个月内连续完成 B+、B++、C 轮融资并全部交割，投后估值突破 200 亿元，成为粤港澳大湾区首家跨过该线的具身智能公司。其 A 至 B 轮分别由美团、阿里、字节、小米领投；新进投资方包括国家人工智能产业投资基金、中国移动、红杉中国、IDG 资本等近 30 家机构。公司走“大脑派”端到端自研具身大模型路线，已发布世界模型 WALL-WM、具身大模型 WALL-B 并开源 WALL-OSS-0.5。",
+      "sources": [
+        {
+          "name": "爱范儿",
+          "url": "https://www.ifanr.com/1670322"
+        }
+      ],
+      "relevance_score": 55,
+      "importance_score": 58
+    }
+  ],
+  "discarded": [
+    {
+      "source_item_ids": [
+        "7ea4f184835cd326"
+      ],
+      "reason": "偏技术评论与概念讨论，非明确新闻事件，与重点公司/主题关联较弱。",
+      "relevance_score": 35,
+      "importance_score": 35
+    },
+    {
+      "source_item_ids": [
+        "b1defd7ce81b53cd"
+      ],
+      "reason": "初创公司种子轮融资，落入“小公司融资”回避项，行业影响有限。",
+      "relevance_score": 42,
+      "importance_score": 38
+    },
+    {
+      "source_item_ids": [
+        "272bd1c429c41d59"
+      ],
+      "reason": "OpenAI Codex 敏感文件排除的 GitHub 议题，偏开发者社区内部讨论，公共新闻重要度不足。",
+      "relevance_score": 45,
+      "importance_score": 36
+    },
+    {
+      "source_item_ids": [
+        "5602ee5e4a53b52a"
+      ],
+      "reason": "个人使用 AI 辅助医疗判断的个案故事，缺少可推广的产品/监管/产业事件。",
+      "relevance_score": 30,
+      "importance_score": 32
+    },
+    {
+      "source_item_ids": [
+        "4742b3bd83a5f754"
+      ],
+      "reason": "印度数字支付负责人谈 AI 应用，偏区域支付市场展望，未命中重点公司与核心主题。",
+      "relevance_score": 34,
+      "importance_score": 42
+    },
+    {
+      "source_item_ids": [
+        "a948dde1c3c6a7bc"
+      ],
+      "reason": "权益资产配置与券商策略观点，科技含量偏弱，AI 仅作为投资主题被提及。",
+      "relevance_score": 24,
+      "importance_score": 30
+    },
+    {
+      "source_item_ids": [
+        "522ab3c32a5e47f4"
+      ],
+      "reason": "高校考试 AI 作弊事件，社会话题度高但与重点科技主题关联较弱。",
+      "relevance_score": 32,
+      "importance_score": 45
+    },
+    {
+      "source_item_ids": [
+        "b8b6cb342987844b"
+      ],
+      "reason": "个人用 Claude Code 解读 MRI 的经验帖，偏个案分享，缺少产业层面新增信息。",
+      "relevance_score": 30,
+      "importance_score": 33
+    }
+  ],
+  "merged_sources": [
+    {
+      "source_item_ids": [
+        "ed433a367bf9a064",
+        "00066bfc7772daad",
+        "b069f7129f144d2c"
+      ],
+      "reason": "同一事件：DeepSeek 与北大发布 DSpark 推理加速框架，被多篇文章与快讯报道。"
+    },
+    {
+      "source_item_ids": [
+        "0f2cc15546009f5f",
+        "07a7136964cd1d6b"
+      ],
+      "reason": "同一事件：智谱 GLM-5.2 在网络安全漏洞检测基准上的表现及其与 Claude 的比较。"
+    },
+    {
+      "source_item_ids": [
+        "78aea5de340204ff",
+        "177987b8696d92ea"
+      ],
+      "reason": "同一事件：中国 LineShine 超算登顶 TOP500 榜单。"
+    }
+  ]
+}
