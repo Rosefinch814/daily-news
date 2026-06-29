@@ -1,4 +1,5 @@
 import asyncio
+import json
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -600,7 +601,11 @@ def test_digest_feedback_writes_profiles_and_marks_rows(
     assert "AI 芯片供应链" in (tmp_path / "profiles" / "tech" / "taste.md").read_text(encoding="utf-8")
     assert "专业简报体" in (tmp_path / "profiles" / "tech" / "style.md").read_text(encoding="utf-8")
     assert "建议确认" in (tmp_path / "profiles" / "tech" / "seed-suggestions.md").read_text(encoding="utf-8")
+    assert (tmp_path / "profiles" / "tech" / "history" / "digest-test" / "taste.md").exists()
     assert (tmp_path / "logs" / "digest-test" / "digest_feedback_input.json").exists()
+    profile_update = json.loads((tmp_path / "logs" / "digest-test" / "profile_update.json").read_text(encoding="utf-8"))
+    assert profile_update["snapshot_dir"].endswith("profiles/tech/history/digest-test")
+    assert profile_update["limits"]["taste_chars_max"] == 6000
     assert (tmp_path / "logs" / "digest-test" / "ai" / "06_ai_digest_run.json").exists()
 
 

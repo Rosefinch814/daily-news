@@ -237,6 +237,27 @@ class DigestFeedbackOutput(BaseModel):
             raise ValueError("profile markdown must not be empty")
         return value
 
+    @field_validator("taste_md", "style_md")
+    @classmethod
+    def profile_text_bounded(cls, value: str) -> str:
+        if len(value) > 6000:
+            raise ValueError("profile markdown must stay under 6000 characters")
+        return value
+
+    @field_validator("seed_suggestions_append")
+    @classmethod
+    def seed_suggestions_bounded(cls, value: str) -> str:
+        if len(value) > 2000:
+            raise ValueError("seed suggestions append must stay under 2000 characters")
+        return value
+
+    @field_validator("changes")
+    @classmethod
+    def changes_bounded(cls, value: list[str]) -> list[str]:
+        if len(value) > 20:
+            raise ValueError("changes must contain at most 20 items")
+        return value
+
 
 class Issue(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)

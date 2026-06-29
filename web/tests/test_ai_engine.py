@@ -13,6 +13,7 @@ from daily_news.ai_engine import (
     build_repair_prompt,
     build_selection_file_prompt,
     build_selection_prompt,
+    build_shortlist_file_prompt,
     build_shortlist_prompt,
     extract_json_object,
     run_ai_task,
@@ -114,6 +115,44 @@ def test_build_selection_file_prompt_uses_path_without_candidates() -> None:
     assert "headline_item_ids" in prompt
     assert "同一事件多源报道必须合并" in prompt
     assert "Nvidia AI chip news" not in prompt
+
+
+def test_file_prompts_include_taste_profile_when_present(tmp_path: Path) -> None:
+    section = load_section("tech")
+    taste_path = tmp_path / "taste.md"
+    taste_path.write_text("# 选题口味档案 · tech\n\n- 多看 AI 基础设施。\n- 少看发布会通稿。\n", encoding="utf-8")
+
+    shortlist_prompt = build_shortlist_file_prompt(
+        section,
+        Path("/tmp/02_candidates.json"),
+        taste_profile_path=taste_path,
+    )
+    selection_prompt = build_selection_file_prompt(
+        section,
+        Path("/tmp/03_enriched_candidates.json"),
+        taste_profile_path=taste_path,
+    )
+
+    assert "taste_profile" in shortlist_prompt
+    assert "soft_preference_weights" in shortlist_prompt
+    assert "多看 AI 基础设施" in shortlist_prompt
+    assert "interests.avoid 仍是硬边界" in shortlist_prompt
+    assert "taste_profile" in selection_prompt
+    assert "少看发布会通稿" in selection_prompt
+    assert "interests.avoid 仍是硬边界" in selection_prompt
+
+
+def test_file_prompts_ignore_missing_taste_profile() -> None:
+    section = load_section("tech")
+    prompt = build_shortlist_file_prompt(
+        section,
+        Path("/tmp/02_candidates.json"),
+        taste_profile_path=Path("/tmp/missing-taste.md"),
+    )
+
+    assert "soft_preference_weights" not in prompt
+    assert "content_md" not in prompt
+    assert "多看 AI 基础设施" not in prompt
 
 
 def test_build_issue_file_prompt_uses_paths_without_candidates() -> None:

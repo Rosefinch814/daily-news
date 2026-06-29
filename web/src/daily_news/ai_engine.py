@@ -155,9 +155,18 @@ def _candidate_payload(config: PipelineConfig, candidates: list[CandidateItem]) 
     return payload
 
 
-def _section_payload(section: SectionConfig) -> dict[str, Any]:
+def _read_profile_text(path: Path | None) -> str | None:
+    if path is None or not path.exists():
+        return None
+    text = path.read_text(encoding="utf-8").strip()
+    if not text or text.endswith("暂无记录。"):
+        return None
+    return text
+
+
+def _section_payload(section: SectionConfig, *, taste_profile_path: Path | None = None) -> dict[str, Any]:
     interests = section.interests
-    return {
+    payload: dict[str, Any] = {
         "section": section.name,
         "publication_name": section.publication_name,
         "targets": {
@@ -175,6 +184,14 @@ def _section_payload(section: SectionConfig) -> dict[str, Any]:
             "avoid": interests.avoid,
         },
     }
+    taste_profile = _read_profile_text(taste_profile_path)
+    if taste_profile is not None:
+        payload["taste_profile"] = {
+            "role": "soft_preference_weights",
+            "priority": "Use this to boost or lower relevance/importance within the hard boundaries above. If it conflicts with interests.avoid, interests.avoid wins.",
+            "content_md": taste_profile,
+        }
+    return payload
 
 
 def build_shortlist_prompt(
@@ -229,8 +246,9 @@ JSON schema 形状：
 def build_shortlist_file_prompt(
     section: SectionConfig,
     candidates_path: Path,
+    taste_profile_path: Path | None = None,
 ) -> str:
-    payload = _section_payload(section)
+    payload = _section_payload(section, taste_profile_path=taste_profile_path)
     return f"""
 你是《我的日报·科技》的第一轮新闻编辑。请读取本地 JSON 文件，并基于文件中的候选新闻做语义粗筛，输出严格 JSON。
 
@@ -246,6 +264,7 @@ def build_shortlist_file_prompt(
 3. keep 表示值得抓正文并大概率进入最终选题；maybe 表示值得抓正文但不确定；drop 表示不进入正文补全。
 4. 命中“不想看”应明显降权，但如果事件重大，可以保留并说明理由。
 5. 聚合类新闻需要判断其中是否包含真正命中关注清单的内容。
+6. 如果板块配置里包含 taste_profile，它是用户反馈沉淀出的软偏好：多看的主题可适度提权，少看的主题可适度降权；但 interests.avoid 仍是硬边界，不能被 taste_profile 翻盘。
 
 输出要求：
 - 只输出一个 JSON 对象，不要 Markdown，不要解释。
@@ -340,8 +359,9 @@ JSON schema 形状：
 def build_selection_file_prompt(
     section: SectionConfig,
     enriched_candidates_path: Path,
+    taste_profile_path: Path | None = None,
 ) -> str:
-    payload = _section_payload(section)
+    payload = _section_payload(section, taste_profile_path=taste_profile_path)
     return f"""
 你是《我的日报·科技》的主编。请读取本地 JSON 文件，并基于已补全文的候选新闻做最终选题和分层，输出严格 JSON。
 
@@ -357,6 +377,7 @@ def build_selection_file_prompt(
 3. 只做选题和分层，不写中文标题、摘要、精读正文。
 4. 丢弃项必须给出中文原因。
 5. relevance_score 表示与用户关注点相关度，importance_score 表示事件本身重要度。
+6. 如果板块配置里包含 taste_profile，它是用户反馈沉淀出的软偏好：多看的主题可适度提权，少看的主题可适度降权；但 interests.avoid 仍是硬边界，不能被 taste_profile 翻盘。
 
 输出要求：
 - 只输出一个 JSON 对象，不要 Markdown，不要解释。
@@ -492,6 +513,16 @@ def build_digest_file_prompt(
 5. 保留旧档案中仍然有效的偏好，不要因为一条反馈就大幅重写。
 6. 不要把临时情绪过度泛化成长期规则；没有证据就写轻量倾向。
 7. 反馈只影响下一期，不改当期日报事实。
+8. taste_md 和 style_md 是“当前稳定偏好摘要”，不是反馈流水账；必须合并重复项、删除过时或证据不足的表达。
+9. 如果旧档案已经包含同类偏好，请改写合并，不要追加同义句。
+
+档案长度与结构约束：
+- taste_md 总长度必须小于 6000 字符；style_md 总长度必须小于 6000 字符。
+- taste_md 建议结构：标题、当前倾向（最多 8 条）、降低权重（最多 6 条）、轻量观察（最多 5 条）。
+- style_md 建议结构：标题、当前倾向（最多 8 条）、写法偏好（最多 8 条）、轻量观察（最多 5 条）。
+- 每条偏好应短而可执行，避免长段落。
+- seed_suggestions_append 只写新增建议；已有建议不要重复追加。
+- changes 最多 20 条，说明新增、合并、弱化或删除了什么。
 
 输出要求：
 - 只输出一个 JSON 对象，不要 Markdown，不要解释。

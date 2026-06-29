@@ -81,6 +81,16 @@ def load_profiles(section_slug: str) -> dict[str, str]:
     return {key: path.read_text(encoding="utf-8") for key, path in paths.items()}
 
 
+def snapshot_profiles(section_slug: str, snapshot_id: str) -> Path:
+    paths = ensure_profile_files(section_slug)
+    snapshot_dir = profile_dir(section_slug) / "history" / snapshot_id
+    snapshot_dir.mkdir(parents=True, exist_ok=True)
+    for key, path in paths.items():
+        filename = "seed-suggestions.md" if key == "seed_suggestions" else f"{key}.md"
+        _write_text(snapshot_dir / filename, path.read_text(encoding="utf-8"))
+    return snapshot_dir
+
+
 def write_profiles(
     section_slug: str,
     *,

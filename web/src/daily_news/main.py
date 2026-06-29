@@ -61,6 +61,7 @@ from daily_news.storage.local import (
     save_issue,
     save_selection,
     save_raw_items,
+    snapshot_profiles,
     output_dir,
     write_profiles,
 )
@@ -427,7 +428,12 @@ def run_ai_shortlist_stage(
 ) -> tuple[CodexShortlistOutput, Path, Path]:
     candidates = load_shortlist(run_id)
     candidates_path = artifact_path(run_id, "02_candidates.json").resolve()
-    prompt = build_shortlist_file_prompt(section, candidates_path)
+    taste_profile_path = WEB_DIR / "profiles" / section.slug / "taste.md"
+    prompt = build_shortlist_file_prompt(
+        section,
+        candidates_path,
+        taste_profile_path=taste_profile_path if taste_profile_path.exists() else None,
+    )
     try:
         shortlist, ai_run = run_ai_task(
             task_type="semantic_shortlist",
@@ -481,7 +487,12 @@ def run_ai_select_stage(
 ) -> tuple[CodexSelectionOutput, Path, Path]:
     candidates = load_enriched_candidates(run_id)
     enriched_candidates_path = artifact_path(run_id, "03_enriched_candidates.json").resolve()
-    prompt = build_selection_file_prompt(section, enriched_candidates_path)
+    taste_profile_path = WEB_DIR / "profiles" / section.slug / "taste.md"
+    prompt = build_selection_file_prompt(
+        section,
+        enriched_candidates_path,
+        taste_profile_path=taste_profile_path if taste_profile_path.exists() else None,
+    )
     try:
         selection, ai_run = run_ai_task(
             task_type="selection",
@@ -984,12 +995,40 @@ def digest_feedback(args: argparse.Namespace) -> int:
             print(f"Debug: {debug_path}")
         raise
 
+    previous_profiles = payload["current_profiles"]
+    snapshot_dir = snapshot_profiles(section.slug, run_id)
     profile_paths = write_profiles(
         section.slug,
         taste_md=output.taste_md,
         style_md=output.style_md,
         seed_suggestions_append=output.seed_suggestions_append,
     )
+    profile_update_log = {
+        "run_id": run_id,
+        "section_slug": section.slug,
+        "snapshot_dir": str(snapshot_dir),
+        "digested_feedback_groups": aggregated_count,
+        "marked_feedback_rows": len(consumed_ids),
+        "changes": output.changes,
+        "before": {
+            "taste": _profile_text_stats(previous_profiles.get("taste", "")),
+            "style": _profile_text_stats(previous_profiles.get("style", "")),
+            "seed_suggestions": _profile_text_stats(previous_profiles.get("seed_suggestions", "")),
+        },
+        "after": {
+            "taste": _profile_text_stats(output.taste_md.rstrip() + "\n"),
+            "style": _profile_text_stats(output.style_md.rstrip() + "\n"),
+            "seed_suggestions_append": _profile_text_stats(output.seed_suggestions_append.strip()),
+        },
+        "limits": {
+            "taste_chars_max": 6000,
+            "style_chars_max": 6000,
+            "seed_suggestions_append_chars_max": 2000,
+            "changes_max": 20,
+        },
+    }
+    profile_update_path = logs_dir(run_id) / "profile_update.json"
+    _write_json_file(profile_update_path, profile_update_log)
     store.mark_feedback_digested(consumed_ids)
     debug_path = save_ai_debug(run_id, "06_ai_digest", ai_run, config)
     print(f"Provider: {provider}")
@@ -999,6 +1038,8 @@ def digest_feedback(args: argparse.Namespace) -> int:
     print(f"Marked feedback rows: {len(consumed_ids)}")
     for name, path in profile_paths.items():
         print(f"{name}: {path}")
+    print(f"Profile snapshot: {snapshot_dir}")
+    print(f"Profile update log: {profile_update_path}")
     if output.changes:
         print("Changes:")
         for change in output.changes:
@@ -1017,6 +1058,14 @@ def _json_default(value: object) -> str:
 def _write_json_file(path: Path, payload: Any) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2, default=_json_default), encoding="utf-8")
+
+
+def _profile_text_stats(text: str) -> dict[str, int]:
+    return {
+        "chars": len(text),
+        "lines": len(text.splitlines()),
+        "non_empty_lines": sum(1 for line in text.splitlines() if line.strip()),
+    }
 
 
 class PipelineLogger:
