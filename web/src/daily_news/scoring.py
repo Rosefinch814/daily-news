@@ -1,5 +1,10 @@
 from __future__ import annotations
 
+import hashlib
+import re
+from urllib.parse import urlsplit, urlunsplit
+
+from daily_news.fetch.rss import canonical_url
 from daily_news.models import CandidateItem, RawItem, SectionConfig
 
 
@@ -11,6 +16,9 @@ TERM_ALIASES = {
     "微软": ["microsoft", "windows", "copilot"],
     "谷歌": ["google", "gemini", "deepmind"],
     "英特尔": ["intel"],
+    "三星电子": ["samsung", "samsung electronics"],
+    "SK海力士": ["sk hynix", "sk hynix inc", "hynix"],
+    "美光": ["micron", "micron technology"],
     "AI芯片": ["ai chip", "ai chips", "gpu", "gpus", "accelerator", "accelerators"],
     "大模型进展": ["llm", "llms", "large language model", "foundation model", "openai", "anthropic", "glm"],
     "AI产品发布": ["ai product", "ai feature", "agentic ai", "agent", "agents"],
@@ -21,6 +29,33 @@ TERM_ALIASES = {
     "奥特曼": ["sam altman", "altman"],
     "库克": ["tim cook"],
 }
+
+TITLE_DEDUPE_NOISE_TERMS = [
+    "reportedly",
+    "report",
+    "says",
+    "said",
+    "launches",
+    "launch",
+    "announces",
+    "announce",
+    "announced",
+    "unveils",
+    "unveil",
+    "独家",
+    "首发",
+    "据悉",
+    "消息称",
+    "传",
+]
+
+TITLE_DEDUPE_MEDIA_PREFIXES = [
+    "exclusive",
+    "breaking",
+    "update",
+    "独家",
+    "首发",
+]
 
 AGGREGATE_NOISE_TERMS = [
     "早报",
@@ -92,6 +127,30 @@ def _match_plain_terms(text: str, terms: list[str]) -> list[str]:
     return [term for term in terms if term and term.lower() in lowered]
 
 
+def dedupe_url_key(url: str) -> str:
+    normalized = canonical_url(url)
+    split = urlsplit(normalized)
+    return urlunsplit(("https", split.netloc, split.path, split.query, ""))
+
+
+def normalize_title_for_dedupe(title: str) -> str:
+    normalized = title.lower()
+    for prefix in TITLE_DEDUPE_MEDIA_PREFIXES:
+        normalized = re.sub(rf"^\s*{re.escape(prefix.lower())}\s*[:：｜|\-—]\s*", "", normalized)
+    for term in TITLE_DEDUPE_NOISE_TERMS:
+        normalized = re.sub(rf"\b{re.escape(term.lower())}\b", " ", normalized)
+        normalized = normalized.replace(term, " ")
+    normalized = re.sub(r"[^\w\u4e00-\u9fff]+", "", normalized, flags=re.UNICODE)
+    return normalized.strip()
+
+
+def title_dedupe_hash(title: str) -> str | None:
+    normalized = normalize_title_for_dedupe(title)
+    if not normalized:
+        return None
+    return hashlib.sha1(normalized.encode("utf-8")).hexdigest()
+
+
 def score_item(item: RawItem, section: SectionConfig) -> CandidateItem:
     text = item.text_for_scoring
     want_terms = section.interests.want.all_terms
@@ -155,14 +214,21 @@ def rank_candidates(
     min_score: float = 0,
     per_source_limit: int = 4,
     require_interest_match_when_over_capacity: bool = True,
+    historical_urls: set[str] | None = None,
+    historical_title_hashes: set[str] | None = None,
 ) -> list[CandidateItem]:
     candidates = [score_item(item, section) for item in items if item.fetch_status != "failed"]
     candidates.sort(key=lambda candidate: candidate.score, reverse=True)
     selected: list[CandidateItem] = []
-    seen_urls: set[str] = set()
+    seen_urls: set[str] = set(historical_urls or set())
+    seen_title_hashes: set[str] = set(historical_title_hashes or set())
     source_counts: dict[str, int] = {}
     for candidate in candidates:
-        if candidate.raw_item.url in seen_urls:
+        url_key = dedupe_url_key(candidate.raw_item.url)
+        title_hash = title_dedupe_hash(candidate.raw_item.title)
+        if url_key in seen_urls:
+            continue
+        if title_hash and title_hash in seen_title_hashes:
             continue
         if (
             require_interest_match_when_over_capacity
@@ -173,7 +239,9 @@ def rank_candidates(
         source_name = candidate.raw_item.source_name
         if source_counts.get(source_name, 0) >= per_source_limit:
             continue
-        seen_urls.add(candidate.raw_item.url)
+        seen_urls.add(url_key)
+        if title_hash:
+            seen_title_hashes.add(title_hash)
         if candidate.score >= min_score:
             selected.append(candidate)
             source_counts[source_name] = source_counts.get(source_name, 0) + 1

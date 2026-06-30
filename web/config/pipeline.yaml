@@ -23,3 +23,6 @@ logging:
   save_attempts: true
   append_metrics_jsonl: true
   redact_command: true
+dedupe:
+  history_lookback_days: 7
+  title_hash_enabled: true

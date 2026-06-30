@@ -41,10 +41,16 @@ class PipelineLoggingConfig(BaseModel):
     redact_command: bool = True
 
 
+class PipelineDedupeConfig(BaseModel):
+    history_lookback_days: int = 7
+    title_hash_enabled: bool = True
+
+
 class PipelineConfig(BaseModel):
     ai: PipelineAIConfig = Field(default_factory=PipelineAIConfig)
     prompt: PipelinePromptConfig = Field(default_factory=PipelinePromptConfig)
     logging: PipelineLoggingConfig = Field(default_factory=PipelineLoggingConfig)
+    dedupe: PipelineDedupeConfig = Field(default_factory=PipelineDedupeConfig)
 
 
 def load_config(path: Path | None = None) -> AppConfig:

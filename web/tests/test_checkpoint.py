@@ -609,6 +609,53 @@ def test_digest_feedback_writes_profiles_and_marks_rows(
     assert (tmp_path / "logs" / "digest-test" / "ai" / "06_ai_digest_run.json").exists()
 
 
+def test_load_recent_issue_history_filters_by_window_and_section(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(local_storage, "RUNS_DIR", tmp_path / "runs")
+    fixture = Path(__file__).parent / "fixtures" / "sample_ai_output.json"
+    issue_output = AIIssueOutput.model_validate_json(fixture.read_text(encoding="utf-8"))
+    in_window = make_issue(
+        issue_output,
+        section_slug="tech",
+        publication_name="我的日报·科技",
+        issue_date=datetime(2026, 6, 23, tzinfo=timezone.utc).date(),
+        volume=1,
+        number=7,
+    )
+    outside_window = make_issue(
+        issue_output,
+        section_slug="tech",
+        publication_name="我的日报·科技",
+        issue_date=datetime(2026, 6, 22, tzinfo=timezone.utc).date(),
+        volume=1,
+        number=6,
+    )
+    other_section = make_issue(
+        issue_output,
+        section_slug="finance",
+        publication_name="我的日报·财经",
+        issue_date=datetime(2026, 6, 24, tzinfo=timezone.utc).date(),
+        volume=1,
+        number=1,
+    )
+    local_storage.save_issue("run-in-window", in_window)
+    local_storage.save_issue("run-outside-window", outside_window)
+    local_storage.save_issue("run-other-section", other_section)
+
+    history = local_storage.load_recent_issue_history(
+        section_slug="tech",
+        before_date=datetime(2026, 6, 30, tzinfo=timezone.utc).date(),
+        lookback_days=7,
+        include_title_hashes=True,
+    )
+
+    assert history.issue_ids == [in_window.id]
+    assert "https://example.com/nvidia" in history.urls
+    assert history.title_hashes
+
+
 def test_run_pipeline_stops_after_ai_shortlist(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,

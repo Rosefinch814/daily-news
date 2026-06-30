@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 
 from daily_news.config import load_section
 from daily_news.models import RawItem
-from daily_news.scoring import rank_candidates, score_item
+from daily_news.scoring import dedupe_url_key, rank_candidates, title_dedupe_hash, score_item
 
 
 def _item(title: str, summary: str) -> RawItem:
@@ -86,6 +86,47 @@ def test_rank_candidates_deduplicates_urls() -> None:
     items[1] = items[1].model_copy(update={"id": "item-2", "url": "https://example.com/article"})
 
     ranked = rank_candidates(items, section)
+
+    assert len(ranked) == 1
+
+
+def test_rank_candidates_filters_historical_urls() -> None:
+    section = load_section("tech")
+    item = _item("英伟达 AI芯片", "大模型进展")
+
+    ranked = rank_candidates(
+        [item],
+        section,
+        historical_urls={dedupe_url_key(item.url)},
+    )
+
+    assert ranked == []
+
+
+def test_rank_candidates_filters_historical_title_hashes() -> None:
+    section = load_section("tech")
+    old_title_hash = title_dedupe_hash("独家：Nvidia announces AI chip")
+    item = _item("Nvidia announces AI chip", "大模型进展")
+
+    ranked = rank_candidates(
+        [item.model_copy(update={"url": "https://example.com/new-url"})],
+        section,
+        historical_title_hashes={old_title_hash} if old_title_hash else set(),
+    )
+
+    assert ranked == []
+
+
+def test_rank_candidates_keeps_same_title_when_title_hash_disabled() -> None:
+    section = load_section("tech")
+    old_title_hash = title_dedupe_hash("Nvidia announces AI chip")
+    item = _item("Nvidia announces AI chip", "大模型进展")
+
+    ranked = rank_candidates(
+        [item.model_copy(update={"url": "https://example.com/new-url"})],
+        section,
+        historical_title_hashes=None if old_title_hash else set(),
+    )
 
     assert len(ranked) == 1
 

@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+from dataclasses import dataclass
+from datetime import date, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -14,6 +16,14 @@ from daily_news.models import (
 )
 from daily_news.paths import LOGS_DIR, RUNS_DIR
 from daily_news.paths import PROFILES_DIR
+from daily_news.scoring import dedupe_url_key, title_dedupe_hash
+
+
+@dataclass(frozen=True)
+class IssueHistory:
+    urls: set[str]
+    title_hashes: set[str]
+    issue_ids: list[str]
 
 
 def _write_json(path: Path, payload: Any) -> None:
@@ -284,3 +294,38 @@ def load_issue(issue_id: str) -> Issue:
     if not path.exists():
         raise FileNotFoundError(f"Local issue snapshot not found: {path}")
     return Issue.model_validate_json(path.read_text(encoding="utf-8"))
+
+
+def load_recent_issue_history(
+    *,
+    section_slug: str,
+    before_date: date,
+    lookback_days: int,
+    include_title_hashes: bool = True,
+) -> IssueHistory:
+    if lookback_days <= 0:
+        return IssueHistory(urls=set(), title_hashes=set(), issue_ids=[])
+
+    issues_dir = RUNS_DIR / "issues"
+    if not issues_dir.exists():
+        return IssueHistory(urls=set(), title_hashes=set(), issue_ids=[])
+
+    start_date = before_date - timedelta(days=lookback_days)
+    urls: set[str] = set()
+    title_hashes: set[str] = set()
+    issue_ids: list[str] = []
+    for path in sorted(issues_dir.glob("*.json")):
+        issue = Issue.model_validate_json(path.read_text(encoding="utf-8"))
+        if issue.section_slug != section_slug:
+            continue
+        if not (start_date <= issue.issue_date < before_date):
+            continue
+        issue_ids.append(issue.id)
+        for article in [*issue.headlines, *issue.briefs]:
+            for source in article.sources:
+                urls.add(dedupe_url_key(source.url))
+            if include_title_hashes:
+                title_hash = title_dedupe_hash(article.title_zh)
+                if title_hash:
+                    title_hashes.add(title_hash)
+    return IssueHistory(urls=urls, title_hashes=title_hashes, issue_ids=issue_ids)

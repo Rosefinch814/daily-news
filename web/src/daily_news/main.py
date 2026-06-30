@@ -50,6 +50,7 @@ from daily_news.storage.local import (
     load_enriched_candidates,
     load_issue_from_run,
     load_profiles,
+    load_recent_issue_history,
     load_raw_items,
     load_selection,
     load_shortlist,
@@ -188,6 +189,30 @@ def summarize_candidates(candidates: list[CandidateItem], *, limit: int = 10) ->
         item = candidate.raw_item
         print(f"{index:02d}. [{candidate.score:.1f}] {item.title}")
         print(f"    来源：{item.source_name}；原因：{candidate.reason}")
+
+
+def build_prefilter_history(
+    *,
+    section_slug: str,
+    issue_date: date,
+    config: PipelineConfig,
+) -> Any:
+    return load_recent_issue_history(
+        section_slug=section_slug,
+        before_date=issue_date,
+        lookback_days=config.dedupe.history_lookback_days,
+        include_title_hashes=config.dedupe.title_hash_enabled,
+    )
+
+
+def summarize_prefilter_history(history: Any, *, lookback_days: int, title_hash_enabled: bool) -> None:
+    print(
+        "历史去重："
+        f"窗口 {lookback_days} 天；"
+        f"历史期 {len(history.issue_ids)} 个；"
+        f"URL {len(history.urls)} 个；"
+        f"标题 hash {len(history.title_hashes) if title_hash_enabled else 0} 个"
+    )
 
 
 def summarize_codex_shortlist(shortlist: CodexShortlistOutput) -> None:
@@ -360,13 +385,23 @@ async def fetch_mvp(args: argparse.Namespace) -> int:
 
 def shortlist_mvp(args: argparse.Namespace) -> int:
     section = load_section(args.section)
+    config = load_pipeline_config(Path(args.config) if args.config else None)
+    issue_date = date_from_run_id(args.run_id, section.slug)
+    history = build_prefilter_history(section_slug=section.slug, issue_date=issue_date, config=config)
     raw_items = load_raw_items(args.run_id)
+    summarize_prefilter_history(
+        history,
+        lookback_days=config.dedupe.history_lookback_days,
+        title_hash_enabled=config.dedupe.title_hash_enabled,
+    )
     candidates = rank_candidates(
         raw_items,
         section,
         max_candidates=args.max_candidates,
         per_source_limit=args.per_source_limit,
         require_interest_match_when_over_capacity=False,
+        historical_urls=history.urls,
+        historical_title_hashes=history.title_hashes if config.dedupe.title_hash_enabled else None,
     )
     path = save_candidates(args.run_id, candidates)
     print(f"Saved: {path}")
@@ -1238,19 +1273,37 @@ class PipelineRunner:
 
         if stage == "local_shortlist":
             raw_items = load_raw_items(self.run_id)
+            history = build_prefilter_history(
+                section_slug=self.section.slug,
+                issue_date=self.issue_date,
+                config=self.config,
+            )
+            summarize_prefilter_history(
+                history,
+                lookback_days=self.config.dedupe.history_lookback_days,
+                title_hash_enabled=self.config.dedupe.title_hash_enabled,
+            )
             candidates = rank_candidates(
                 raw_items,
                 self.section,
                 max_candidates=self.args.max_candidates,
                 per_source_limit=self.args.per_source_limit,
                 require_interest_match_when_over_capacity=False,
+                historical_urls=history.urls,
+                historical_title_hashes=history.title_hashes if self.config.dedupe.title_hash_enabled else None,
             )
             path = save_candidates(self.run_id, candidates)
             summarize_candidates(candidates)
             return {
                 "inputs": [artifact_path(self.run_id, "01_raw_items.json")],
                 "outputs": [path],
-                "metadata": {"candidates": len(candidates)},
+                "metadata": {
+                    "candidates": len(candidates),
+                    "history_lookback_days": self.config.dedupe.history_lookback_days,
+                    "history_issue_count": len(history.issue_ids),
+                    "history_url_count": len(history.urls),
+                    "history_title_hash_count": len(history.title_hashes) if self.config.dedupe.title_hash_enabled else 0,
+                },
             }
 
         if stage == "ai_shortlist":
@@ -1599,6 +1652,7 @@ def build_parser() -> argparse.ArgumentParser:
     shortlist_parser.add_argument("--run-id", required=True)
     shortlist_parser.add_argument("--max-candidates", type=int, default=60)
     shortlist_parser.add_argument("--per-source-limit", type=int, default=12)
+    shortlist_parser.add_argument("--config", help="Pipeline config path; defaults to web/config/pipeline.yaml")
     shortlist_parser.set_defaults(func=shortlist_mvp)
 
     shortlist_codex_parser = subparsers.add_parser("shortlist-codex", help="Checkpoint 2b: validate Codex rough shortlist JSON")
