@@ -20,4 +20,10 @@
 
 ## 当前里程碑
 
-见 [../milestones/01-科技日报.md](../milestones/01-科技日报.md)。当前聚焦 **M1：科技单板块，验证筛得准 + 全中文可读**（调教闭环已挪 M2）。
+见 [../milestones/01-科技日报.md](../milestones/01-科技日报.md)。
+
+当前进度（2026-06-30）：
+- M1 主链路已完成：科技单板块日报可抓取、筛选、写作、导出并通过 Cloudflare Pages 发布。
+- M2 反馈闭环已完成：前端反馈写入 Supabase，`digest-feedback` 可生成 taste/style/seed-suggestions，T06/T07 已接入生成链路。
+- M3 先行项 T08 已完成：本地预筛支持近 7 天历史 URL 去重和可选标题 hash 去重。
+- 当前无新的 `todo` 工单；下一步以连续运行观察、重复新闻验证和后续工单拆分为主。
