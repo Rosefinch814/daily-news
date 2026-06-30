@@ -551,7 +551,13 @@ def run_ai_compose_stage(
     validate_selection_ids(selection, candidates)
     selection_path = artifact_path(run_id, "04_selection.json").resolve()
     enriched_candidates_path = artifact_path(run_id, "03_enriched_candidates.json").resolve()
-    prompt = build_issue_file_prompt(section, selection_path, enriched_candidates_path)
+    style_profile_path = WEB_DIR / "profiles" / section.slug / "style.md"
+    prompt = build_issue_file_prompt(
+        section,
+        selection_path,
+        enriched_candidates_path,
+        style_profile_path=style_profile_path if style_profile_path.exists() else None,
+    )
     try:
         ai_output, ai_run = run_ai_task(
             task_type="issue_compose",

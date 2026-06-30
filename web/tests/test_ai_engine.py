@@ -171,6 +171,39 @@ def test_build_issue_file_prompt_uses_paths_without_candidates() -> None:
     assert "Nvidia AI chip news" not in prompt
 
 
+def test_issue_file_prompt_includes_style_profile_when_present(tmp_path: Path) -> None:
+    section = load_section("tech")
+    style_path = tmp_path / "style.md"
+    style_path.write_text("# 写作口味档案 · tech\n\n- 翻译更口语。\n- 精读段落更短。\n", encoding="utf-8")
+
+    prompt = build_issue_file_prompt(
+        section,
+        Path("/tmp/04_selection.json"),
+        Path("/tmp/03_enriched_candidates.json"),
+        style_profile_path=style_path,
+    )
+
+    assert "style_profile" in prompt
+    assert "writing_style_preferences" in prompt
+    assert "翻译更口语" in prompt
+    assert "精读段落更短" in prompt
+    assert "不能覆盖以上事实红线和字段边界" in prompt
+
+
+def test_issue_file_prompt_ignores_missing_style_profile() -> None:
+    section = load_section("tech")
+    prompt = build_issue_file_prompt(
+        section,
+        Path("/tmp/04_selection.json"),
+        Path("/tmp/03_enriched_candidates.json"),
+        style_profile_path=Path("/tmp/missing-style.md"),
+    )
+
+    assert "writing_style_preferences" not in prompt
+    assert "content_md" not in prompt
+    assert "翻译更口语" not in prompt
+
+
 def test_repair_prompt_forbids_markdown_and_string_pullquote() -> None:
     prompt = build_repair_prompt(
         "原始任务",

@@ -424,8 +424,16 @@ def build_issue_file_prompt(
     section: SectionConfig,
     selection_path: Path,
     enriched_candidates_path: Path,
+    style_profile_path: Path | None = None,
 ) -> str:
     payload = _section_payload(section)
+    style_profile = _read_profile_text(style_profile_path)
+    if style_profile is not None:
+        payload["style_profile"] = {
+            "role": "writing_style_preferences",
+            "priority": "Use this to shape wording, length, explanation depth, and translation style. Product rules about factual accuracy, field boundaries, and Chinese readability override style preferences.",
+            "content_md": style_profile,
+        }
     return f"""
 你是《我的日报·科技》的新闻编辑。请读取本地 JSON 文件，并基于已确定的选题结构和候选原文生成 v1 科技日报结构化 JSON。
 
@@ -444,6 +452,7 @@ def build_issue_file_prompt(
 3. AI 判断只能写在 ai_impact 字段，不能混入 summary_zh 或 read_body_zh。
 4. 精准优先，宁缺毋滥。命中“不想看”的内容应丢弃或显著降权。
 5. 同一事件多源报道时，请合并为一条，并在 sources 中列出主要来源。
+6. 如果板块配置里包含 style_profile，它是用户反馈沉淀出的写作偏好：用于调整中文表达、句长、解释深度和翻译口吻；但不能覆盖以上事实红线和字段边界。
 
 输出要求：
 - 只输出一个 JSON 对象，不要 Markdown，不要解释。
