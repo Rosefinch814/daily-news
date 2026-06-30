@@ -168,6 +168,8 @@ def test_build_issue_file_prompt_uses_paths_without_candidates() -> None:
     assert "ai_impact" in prompt
     assert "pullquote 默认输出 null" in prompt
     assert "绝不能输出字符串" in prompt
+    assert "目标接近前两天日报而不是长报告" in prompt
+    assert "速览要像速览" in prompt
     assert "Nvidia AI chip news" not in prompt
 
 

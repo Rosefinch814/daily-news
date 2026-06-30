@@ -461,6 +461,9 @@ def build_issue_file_prompt(
 - briefs 只生成 title_zh、summary_zh、sources、relevance_score、importance_score，不要生成精读。
 - 摘要和精读只写事实；影响分析必须只放在 ai_impact。
 - 每条都必须给 relevance_score 和 importance_score，整数 0-100。
+- 控制阅读量，目标接近前两天日报而不是长报告：头条 summary_zh 约 180-260 个中文字符；头条 read_body_zh 固定 3 段，每段约 120-180 个中文字符；头条 ai_impact 约 180-260 个中文字符；速览 summary_zh 约 120-200 个中文字符。
+- 字数预算是上限倾向，不要机械凑字；信息特别复杂时可略超，但必须删除重复事实和次级细节，避免摘要、精读、影响分析互相复述。
+- 速览要像速览：一条讲清核心事实和一层意义即可，不要写成小型精读。
 - pullquote 默认输出 null。只有原文中存在明确、可溯源、值得突出展示的短引语时，才输出对象 {{"text": "引语正文", "cite": "来源或说话人"}}。
 - pullquote 绝不能输出字符串、数组、Markdown 或带破折号的拼接文本；只能是 null 或 {{"text": "...", "cite": "..."}}。
 
