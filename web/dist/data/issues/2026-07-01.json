@@ -1,0 +1,403 @@
+{
+  "id": "tech-2026-07-01",
+  "section_slug": "tech",
+  "publication_name": "我的日报·科技",
+  "issue_date": "2026-07-01",
+  "volume": 1,
+  "number": 7,
+  "date_cn": "2026 年 7 月 1 日 · 周三",
+  "output_path": "issues/2026-07-01.html",
+  "headlines": [
+    {
+      "source_item_ids": [
+        "1bcab5edcbc83304"
+      ],
+      "kicker": "半导体 · 存储",
+      "title_zh": "存储三巨头遭集体诉讼，韩国5760亿美元豪赌半导体与AI",
+      "summary_zh": "6月25日，美国加州联邦法院受理一起集体诉讼，指控三星、SK海力士、美光三家几乎垄断全球DRAM供应的存储巨头在内存价格大幅上涨期间限制传统DRAM供货、加剧短缺。几乎同时，韩国政府6月29日公布史上最大规模产业计划，总投资超5760亿美元，将半导体、物理AI与AI数据中心列为三大支柱，三星与SK海力士将联合供应商投入约800万亿韩元新建芯片基地，目标五年内把DRAM产能翻倍。此外，全球近20家模拟及功率半导体企业将于7月1日起启动新一轮涨价。",
+      "read_body_zh": [
+        "诉讼于6月25日在美国加州联邦法院提起，原告为当地消费者和小型企业。诉状指出，三星、SK海力士、美光几乎控制着全球DRAM市场的全部供应，却在价格大幅上涨期间限制传统DRAM产品供货，进一步加剧当前的内存短缺。就在数日前，苹果因存储芯片成本上涨上调了部分产品售价，多家手机厂商也已跟进提价。",
+        "6月29日，韩国政府宣布迄今最大规模的半导体与人工智能产业投资计划，总投资规模超过5760亿美元，把半导体、物理AI与AI数据中心定位为产业升级的三角支柱。三星电子与SK海力士将与供应商共同投资约800万亿韩元（约5178.7亿美元），在韩国西南地区各新建两座芯片制造基地，目标是五年内将DRAM产能翻倍，另有约81万亿韩元用于建设芯片封装集群。",
+        "与此同时，全球近20家模拟及功率半导体企业将于7月1日启动新一轮涨价，年内已多次阶梯式调价，不少厂商称在手订单饱满、产能能见度提升。据报道，本轮涨价源于晶圆代工与原材料成本上升，并与AI数据中心建设带来的功率芯片需求激增形成共振，市场份额正向具备IDM全链条能力的头部厂商集中。"
+      ],
+      "pullquote": null,
+      "ai_impact": "这组信号勾勒出存储产业链的核心张力：上游高度集中的DRAM寡头一边被指控限量保价、面临反垄断诉讼，一边又借AI需求把定价权牢牢握在手中，短缺因此更像结构性而非周期性。韩国5760亿美元豪赌本质是把国家产能与AI基础设施绑定，扩产要五年才见效，短期只会强化三星、海力士的议价地位。功率芯片同步涨价则说明成本压力正沿供应链向下游传导，从AI服务器、手机到消费电子的终端价格短期内难有回落空间，苹果提价只是第一波。",
+      "sources": [
+        {
+          "name": "36氪",
+          "url": "https://36kr.com/p/3874911939482880?f=rss"
+        }
+      ],
+      "relevance_score": 96,
+      "importance_score": 95
+    },
+    {
+      "source_item_ids": [
+        "5b8d2a0c4a89eac7",
+        "0e4f614562818d3c"
+      ],
+      "kicker": "大模型 · 商业化",
+      "title_zh": "Kimi估值升至315亿美元，API收入撑起中国大模型商业化",
+      "summary_zh": "月之暗面旗下Kimi上一轮200亿美元估值融资近日完成交割，新一轮融资已启动，投前估值升至315亿美元。据接近公司的机构人士透露，Kimi在融资沟通中披露：6月中旬其ARR（年度经常性收入，即按当前收入折算的全年经常性收入）突破3亿美元。增长主要来自模型迭代带动的开发者调用和API收入提升，目前API收入已占整体7成以上并持续走高，其收入曲线被指初现Anthropic早期商业化阶段的特征。",
+      "read_body_zh": [
+        "月之暗面Kimi上一轮以200亿美元估值完成的融资已于近日交割，公司随即启动新一轮融资，投前估值涨至315亿美元。在本轮融资沟通中，Kimi披露了最新收入数据：截至6月中旬，其ARR（年度经常性收入）突破3亿美元。该数据由接近Kimi的机构人士向媒体透露。",
+        "按公司说法，本轮收入增长主要来自模型能力迭代带动的开发者使用量和API收入提升。目前API收入已占Kimi整体收入的七成以上，并仍在持续走高，海外付费用户也在增长。换言之，其营收更依赖开发者按调用量付费的API业务，而非面向普通用户的订阅。",
+        "报道称，Kimi的收入曲线初现Anthropic早期商业化阶段的特征：开发者调用放量、API占比提升、海外付费用户增加，并由模型能力迭代带动价格体系整体上移。此前月之暗面还发布声明，强调所有融资由公司直接负责，未授权任何第三方机构处理融资交易。"
+      ],
+      "pullquote": null,
+      "ai_impact": "Kimi的估值与收入数据说明，中国头部大模型公司正从以订阅和流量讲故事，转向以API调用量兑现真金白银。API占比超七成意味着收入更贴近企业和开发者的实际用量，也更接近Anthropic、OpenAI靠模型能力驱动定价的路径，抗周期性和想象空间都更强。但这条路对模型迭代速度高度依赖：一旦能力停步，调用量和溢价会迅速回落。315亿美元估值也把国产大模型的一级市场预期重新抬高，为后续DeepSeek、智谱等的融资定价提供了参照。",
+      "sources": [
+        {
+          "name": "36氪",
+          "url": "https://36kr.com/p/3876318522077442?f=rss"
+        },
+        {
+          "name": "36氪",
+          "url": "https://36kr.com/p/3873626697470985?f=rss"
+        }
+      ],
+      "relevance_score": 88,
+      "importance_score": 83
+    },
+    {
+      "source_item_ids": [
+        "dbadcb8543a17c7d"
+      ],
+      "kicker": "AI芯片 · 推理",
+      "title_zh": "英伟达挑战者Etched估值50亿美元，推理芯片已锁定10亿美元订单",
+      "summary_zh": "英伟达的AI芯片挑战者Etched周二发布进展报告：在台积电于今年早些时候成功流片后，其产品——由自研芯片驱动的整套推理系统已锁定10亿美元合同订单，目前正与客户测试首款产品。Etched把这些系统称为“前沿推理集群”，捆绑芯片、定制机架与软件，宣称能让前沿模型的推理跑得更快、更便宜、更省电。公司成立于2022年，迄今累计融资8亿美元，最近一笔为去年12月完成、投后估值50亿美元的5亿美元融资。",
+      "read_body_zh": [
+        "Etched周二发布进展报告称，台积电已在今年早些时候成功制造出其芯片，公司随即为由该芯片驱动的整套系统锁定了10亿美元合同订单，并正与客户测试首款产品。它把这些系统称为“前沿推理集群”，将芯片与定制机架、软件打包，主打让前沿模型的推理比对手更快、更便宜、能效更高。推理是用户提交提示后模型生成结果的环节，也是当前AI公司规模化服务的最大瓶颈和成本中心。",
+        "融资方面，Etched成立于2022年，迄今累计融资8亿美元，最近一笔是去年12月完成的5亿美元、投后估值50亿美元的融资，由Stripes领投。其投资方阵容包括Jane Street、Two Sigma等，还获得Karpathy、Hinton、李飞飞等AI重量级人物的天使投资，股东名单中亦有蒂尔等亿万富翁。两位创始人均从哈佛退学并成为蒂尔学者。",
+        "报告发布之际，正值资本疯抢一切与AI相关、尤其是能加速推理的芯片技术：竞争对手Cerebras完成年内首个爆款IPO，AI芯片厂商Groq刚融资6.5亿美元；亚马逊、谷歌、微软等超大规模云厂商都在自研AI芯片，OpenAI也刚宣布由博通代工的首款定制芯片。"
+      ],
+      "pullquote": null,
+      "ai_impact": "Etched押注的是一条与英伟达通用GPU不同的路线：用为推理专门设计的芯片和整机系统，去啃AI最烧钱的推理环节。10亿美元在手订单加台积电成功流片，说明它已越过“PPT创业”阶段进入可交付的商业化窗口，这也是它区别于普通芯片初创的关键。但英伟达的护城河在于生态和软件栈，专用芯片要真正分走份额，还得证明客户愿意为省电省钱承担迁移成本。当超大厂纷纷自研、OpenAI找博通代工，推理芯片正从英伟达一家独大走向多方混战，长期利好AI算力成本下降。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/06/30/nvidia-competitor-etched-hits-5b-valuation-1b-in-sales-for-ai-chip"
+        }
+      ],
+      "relevance_score": 91,
+      "importance_score": 78
+    },
+    {
+      "source_item_ids": [
+        "cda2d076f633e18b",
+        "2c35ae22493da13c"
+      ],
+      "kicker": "大模型 · 发布",
+      "title_zh": "Anthropic发布Claude Sonnet 5：更强Agent能力、更低价格",
+      "summary_zh": "Anthropic发布中端模型Claude Sonnet 5，主打“史上最具Agent能力的Sonnet”：能制定计划、调用浏览器和终端等工具并自主运行，达到数月前还需更大更贵模型才能完成的水平，性能接近旗舰Opus 4.8但价格更低。即日起它成为免费版和Pro版的默认模型，并覆盖各档订阅。发布定价为每百万输入token 2美元、每百万输出token 10美元（8月31日前），之后升至3美元和15美元，低于Opus 4.8以及OpenAI GPT-5.5、谷歌Gemini 3.1 Pro。",
+      "read_body_zh": [
+        "Anthropic于6月30日发布Claude Sonnet 5，称其为迄今最具Agent能力的Sonnet级模型，可制定计划、使用浏览器和终端等工具并自主运行，官方称其性能接近旗舰Opus 4.8。即日起，Sonnet 5成为免费版和Pro版的默认模型，Max、Team、企业版及Claude Code、Claude平台均可使用，开发者可通过API调用。",
+        "定价上，Sonnet 5采用发布优惠价：8月31日前每百万输入token 2美元、每百万输出token 10美元，之后上调至3美元和15美元。这一价格低于Opus 4.8，也低于OpenAI的GPT-5.5和谷歌的Gemini 3.1 Pro，但仍高于Gemini 3.5 Flash。官方将其定位为在成本与性能间可调节的中端选项。",
+        "性能上，Sonnet 5在推理、工具使用、编程和知识工作等方面较前代Sonnet 4.6明显提升，在一项Agent编程基准上得分63.2%，介于Sonnet 4.6的58.1%与Opus 4.8的69.2%之间。安全方面，官方称其“不良行为”率低于4.6，更擅长拒绝恶意请求和抵御提示注入攻击，幻觉与谄媚也更少，但执行危险网络安全任务的能力显著低于Opus。"
+      ],
+      "pullquote": null,
+      "ai_impact": "Sonnet 5印证了一个趋势：Agent能力已从卖点变成各价位段的标配，竞争焦点转向谁能更便宜、更可靠地完成自主任务。把接近旗舰的能力压到中端价位、并设两个月促销价，是Anthropic在GPT-5.6、Gemini 3.5等密集发布中争夺开发者默认选择的直接手段。对企业用户，这意味着自动化Agent的单位成本继续下探，会加速把原本用大模型才敢做的多步骤工作交给中端模型。IPO前夕，用高性价比模型放量、把营收结构做厚，也符合Anthropic当下的商业化节奏。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/06/30/anthropic-launches-claude-sonnet-5-as-a-cheaper-way-to-run-agents"
+        },
+        {
+          "name": "Anthropic",
+          "url": "https://www.anthropic.com/news/claude-sonnet-5"
+        }
+      ],
+      "relevance_score": 86,
+      "importance_score": 82
+    },
+    {
+      "source_item_ids": [
+        "5e5fde5836ede999"
+      ],
+      "kicker": "自动驾驶 · Robotaxi",
+      "title_zh": "特斯拉在奥斯汀路测无方向盘的量产版Cybercab",
+      "summary_zh": "特斯拉开始在得州奥斯汀路测量产版Cybercab——一款只有两个座位、没有方向盘和踏板的车型，目前测试仍在副驾配有安全员，画面发布在马斯克旗下的X平台。这距离特斯拉首次公布Cybercab设计已近两年。约一年前，特斯拉已在奥斯汀用Model Y试运营Robotaxi服务；近几周还在多座美国城市测试带方向盘和踏板的Cybercab原型车。美国高速公路安全管理局上周提出拟不强制“仅由自动驾驶系统驾驶的车辆”配备刹车踏板，目前处于公众意见征询期。",
+      "read_body_zh": [
+        "特斯拉已开始在得克萨斯州奥斯汀测试量产版Cybercab，该车仅两个座位，取消了方向盘和踏板。据马斯克旗下X平台上发布的一段视频，目前测试仍在右侧副驾座位配有安全员。这距离特斯拉首次公布Cybercab设计已过去近两年，该车定位为可通过特斯拉App召唤的全自动Robotaxi。",
+        "约一年前，特斯拉已在奥斯汀用Model Y试运营Robotaxi服务，期间时有配备安全员。近几周，它还在美国多座城市测试带方向盘和踏板的Cybercab原型车，并在部分城市停车场停放了数百辆，引发外界对其即将大规模铺开Robotaxi网络的猜测。上周，美国高速公路安全管理局提出一项提案，拟不再强制“专为自动驾驶系统设计的车辆”配备刹车踏板，该提案仍在公众意见征询期，预计年内通过。",
+        "马斯克等特斯拉高管称，公司有望在多方面胜过当前Robotaxi领跑者Waymo：特斯拉自造整车与驾驶软件，成本控制优于依赖捷豹、极氪等品牌供车的Waymo；且其Cybercab仅用摄像头实现自动驾驶，而Waymo使用含激光雷达和毫米波雷达的更复杂传感器套件。不过特斯拉多年承诺的全自动驾驶尚未大规模落地，奥斯汀车队规模时增时减，且发生过多起轻微碰撞。"
+      ],
+      "pullquote": null,
+      "ai_impact": "去掉方向盘和踏板，是Robotaxi从“带安全员的辅助”迈向真正无人商业化的关键一步，而NHTSA拟取消刹车踏板强制要求，正为这类车型扫清最大的监管障碍。特斯拉的赌注是纯视觉加自研整车带来的成本优势——若能跑通，单车经济性会明显好于Waymo的重传感器方案，这也是它敢于承诺快速扩张的底气。但纯摄像头路线的可靠性尚未在规模化运营中被证明，金色两座Cybercab上路只会让特斯拉的每一次失误都更显眼，安全记录与监管落地仍是能否真正放量的决定因素。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/06/30/tesla-starts-testing-cybercab-without-pedals-or-a-steering-wheel-in-austin"
+        }
+      ],
+      "relevance_score": 82,
+      "importance_score": 80
+    }
+  ],
+  "briefs": [
+    {
+      "source_item_ids": [
+        "111e400359e44066"
+      ],
+      "title_zh": "AWS成立10亿美元AI“前沿部署工程师”组织",
+      "summary_zh": "亚马逊云科技（AWS）成立一个面向AI的“前沿部署工程师”（FDE）新组织，工程师将进驻客户企业内部，帮助其部署定制化AI Agent，强调快速交付和让客户具备自主能力。AWS称将为该组织投入10亿美元，但这笔资金来自亚马逊内部资源，而非合资或常规投资。FDE模式由Palantir开创，近来成为管理AI落地的热门方式；此前OpenAI和Anthropic也分别成立了估值40亿和15亿美元的FDE合资公司，并各自搭配了私募股权机构。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/06/30/amazon-launches-new-1-billion-fde-org-following-openai-and-anthropic"
+        }
+      ],
+      "relevance_score": 76,
+      "importance_score": 72
+    },
+    {
+      "source_item_ids": [
+        "4381b2192ce37f1b"
+      ],
+      "title_zh": "拥有37座数据中心的县要求学校节电，电价涨25%",
+      "summary_zh": "6月26日，弗吉尼亚州亨利科县县长致信数千名县政府员工，呼吁节约用电：从7月1日起，该县政府与学校设施的电价将上涨25%，预计下一财年增加约500万美元支出，未来还会继续上涨。这个约35万人口的县如今已聚集37座数据中心，另有17座在规划中，Meta早在2017年就在此建有数据中心。数据中心用电激增正把成本压力外溢到当地公共部门。",
+      "sources": [
+        {
+          "name": "404 Media",
+          "url": "https://www.404media.co/henrico-virginia-datacenter-energy-cost-email"
+        }
+      ],
+      "relevance_score": 80,
+      "importance_score": 72
+    },
+    {
+      "source_item_ids": [
+        "cb8e5173ff733bac"
+      ],
+      "title_zh": "Anthropic推出Claude Science科研工作台",
+      "summary_zh": "Anthropic发布Claude Science，一款面向科学家的AI科研工作台，把分散的数据库、流程和工具整合到统一环境：连接60多个科学数据库，内置基因组学、蛋白质结构、化学等领域工具箱，由一个主AI助手统筹并派生子助手分工，再由独立的事实核查AI校验引文和计算。Anthropic强调这不是新模型，运行的仍是现有Claude（含Opus 4.8）。产品面向Pro、Max、Team和企业版开放测试，是其从“模型供应商”转向占据行业工作流层的又一步。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/06/30/anthropics-claude-science-bets-on-workflow-not-a-new-model-to-win-over-scientists"
+        }
+      ],
+      "relevance_score": 70,
+      "importance_score": 66
+    },
+    {
+      "source_item_ids": [
+        "a38f401174547917",
+        "7a83a328db1d23e6"
+      ],
+      "title_zh": "谷歌发布更快更便宜的Nano Banana 2 Lite图像模型",
+      "summary_zh": "谷歌发布图像/视频生成模型Nano Banana 2 Lite，主打更快更便宜：延迟大幅降低，约4秒即可生成一张图，每千张图收费0.034美元，面向需要大批量、快速迭代的创作场景。该模型通过Google AI Studio、Gemini API及企业级Agent平台提供，用于取代被归为“旧版”的初代Nano Banana。谷歌同时更大范围地推出视频模型Gemini Omni Flash，每秒视频输出收费0.10美元。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/06/30/google-introduces-a-faster-cheaper-image-generator-with-nano-banana-2-lite"
+        },
+        {
+          "name": "Google DeepMind",
+          "url": "https://deepmind.google/models/gemini-image/flash-lite"
+        }
+      ],
+      "relevance_score": 62,
+      "importance_score": 61
+    },
+    {
+      "source_item_ids": [
+        "07154c2ff517226b"
+      ],
+      "title_zh": "欧洲数字身份钱包依赖谷歌、苹果安全服务引争议",
+      "summary_zh": "欧洲多国正推广数字身份钱包，但它们依赖谷歌的Play Integrity API和苹果的托管设备认证（即“远程证明”）来确认运行钱包的硬件未被篡改。研究机构Waag等批评称，这等于把公共基础设施建立在私营公司之上，会把使用去谷歌化系统（如GrapheneOS）的用户排除在外，并涉嫌违反《数字市场法》。各国做法不一：荷兰、意大利无条件采用Play Integrity，瑞士则改用更开放的安卓硬件认证。",
+      "sources": [
+        {
+          "name": "Waag",
+          "url": "https://waag.org/en/article/european-digital-id-wallets-are-gift-google-and-apple"
+        }
+      ],
+      "relevance_score": 52,
+      "importance_score": 65
+    },
+    {
+      "source_item_ids": [
+        "8649003986825390"
+      ],
+      "title_zh": "苹果就App Store抽成争议上诉至美国最高法院",
+      "summary_zh": "苹果就App Store抽成争议向美国最高法院提起上诉，最高法院已同意受理。此前在Epic Games诉苹果案中，法院要求苹果允许开发者在应用内添加跳转至外部支付的链接，苹果照做却对这类“引流”仍收取27%佣金（其应用内支付原为30%），第九巡回法院据此认定苹果违反了原判令的“精神”并构成藐视法庭。苹果辩称，这一以“精神”定罪的标准与其他巡回法院冲突。",
+      "sources": [
+        {
+          "name": "Ars Technica",
+          "url": "https://arstechnica.com/tech-policy/2026/06/apple-takes-epic-fight-over-app-store-fees-to-the-supreme-court"
+        }
+      ],
+      "relevance_score": 58,
+      "importance_score": 70
+    },
+    {
+      "source_item_ids": [
+        "23eaf59c6ac75670"
+      ],
+      "title_zh": "新攻击揭示AI浏览器安全护栏可被“虚构世界”绕过",
+      "summary_zh": "安全公司LayerX的新研究显示，恶意网站可把AI浏览器诱入一个“安全护栏不再适用”的虚构世界：概念验证中，网页用一个奖励错误答案（如2+2=5）的谜题，让浏览器内嵌的大模型进入“妄想”状态，此后攻击者可诱导它从私有代码库提取代码、从密码管理器窃取凭据。研究者指出，现有护栏只是被动地治标，未解决根因，这也是AI浏览器落地的安全隐患。",
+      "sources": [
+        {
+          "name": "Ars Technica",
+          "url": "https://arstechnica.com/security/2026/06/ai-browsers-can-be-lulled-into-a-dream-world-where-guardrails-no-longer-apply"
+        }
+      ],
+      "relevance_score": 61,
+      "importance_score": 60
+    },
+    {
+      "source_item_ids": [
+        "85ae8f4911589bba"
+      ],
+      "title_zh": "美国解除对Anthropic模型Fable 5的出口管制",
+      "summary_zh": "美国商务部解除了对Anthropic旗下Claude Fable 5和Mythos 5模型的出口管制，Anthropic表示将开始恢复访问。6月初，特朗普政府以担心模型被越狱为由突然下达出口管制，禁止外国公民——包括企业客户的非美籍成员乃至Anthropic自己的外籍员工——使用这两款模型。此前Mythos 5已获准向预先批准的机构恢复。事件发生在Anthropic筹备IPO的关键期。",
+      "sources": [
+        {
+          "name": "The Verge",
+          "url": "https://www.theverge.com/ai-artificial-intelligence/958964/anthropic-claude-fable-5-is-back"
+        }
+      ],
+      "relevance_score": 65,
+      "importance_score": 63
+    },
+    {
+      "source_item_ids": [
+        "5e5852a7465ad77e"
+      ],
+      "title_zh": "谷歌NotebookLM可把资料生成TikTok式短视频",
+      "summary_zh": "谷歌的NotebookLM新增一种“刷短视频式”的研究摘要功能：可根据用户上传的资料生成60秒竖版AI视频，配以AI生成的图像和旁白。该功能面向AI Ultra和Pro订阅用户推出，目前仅支持英语，免费用户“稍后”开放。它是继AI播客、电影式视频、可视化讲解之后，NotebookLM又一种消化资料的形式。",
+      "sources": [
+        {
+          "name": "The Verge",
+          "url": "https://www.theverge.com/tech/959778/google-notebooklm-ai-clips"
+        }
+      ],
+      "relevance_score": 55,
+      "importance_score": 55
+    },
+    {
+      "source_item_ids": [
+        "ebf984e76c332edf"
+      ],
+      "title_zh": "开源AI Agent项目OpenClaw登陆iOS和安卓",
+      "summary_zh": "今年走红的免费开源AI Agent项目OpenClaw现已上线iOS和安卓App。用户可将手机与“OpenClaw Gateway”配对，这一路由层负责把请求连接到各个AI Agent及其可调用的工具和技能，从而在手机上运行自己的Agent。OpenClaw此前因“全部由Agent组成”的社交站MoltBook而爆火，其创造者Peter Steinberger已于2月加入OpenAI。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/06/30/openclaw-is-finally-available-on-android-and-ios"
+        }
+      ],
+      "relevance_score": 60,
+      "importance_score": 55
+    },
+    {
+      "source_item_ids": [
+        "a7e84b77e9a01a11"
+      ],
+      "title_zh": "X推出托管MCP服务器，方便AI工具接入其API",
+      "summary_zh": "X推出托管版MCP服务器，让Claude、Cursor、Grok Build等支持MCP的AI工具用用户自己的账号权限直接接入X的API。MCP是一套让AI模型对接外部工具和服务的开放标准；过去开发者需自建并托管服务器，如今由X代管。该服务不新增能力，也不兼容发帖用的Write接口，因此无法用于自动发帖。X由此加入GitHub、Slack、Notion、Stripe、Salesforce等提供官方MCP的行列。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/06/30/x-now-offers-an-mcp-server-to-make-its-platform-easier-for-ai-tools-to-use"
+        }
+      ],
+      "relevance_score": 52,
+      "importance_score": 50
+    },
+    {
+      "source_item_ids": [
+        "96a1ee91ad2988f2"
+      ],
+      "title_zh": "苹果游说采购长鑫内存，库克称涨价传导已不可持续",
+      "summary_zh": "爱范儿报道，苹果上周上调了除iPhone和Apple Watch外几乎所有产品线（iPad、Mac、智能家居）的价格。据《金融时报》，苹果正游说美国政府，希望获准从中国厂商长鑫存储采购内存以缓解压力——苹果本就混用三星、SK海力士和美光三家的运行内存以分散风险。CEO库克称供应链涨价传导已“变得不可持续”，英特尔CEO陈立武则判断内存短缺或将持续至2028年前后。",
+      "sources": [
+        {
+          "name": "爱范儿",
+          "url": "https://www.ifanr.com/1670412"
+        }
+      ],
+      "relevance_score": 78,
+      "importance_score": 68
+    },
+    {
+      "source_item_ids": [
+        "3d408b39c26d5e76"
+      ],
+      "title_zh": "IEA预计2026年电动车将占全球新车销量近30%",
+      "summary_zh": "国际能源署《全球电动汽车展望2026》预计，2026年全球电动汽车销量将达2300万辆，约占全球新车销量的30%，而五六年前这一比例仅约5%。分地区看，欧洲市场增幅约20%，除中国外的亚太国家增长超50%，拉美增长45%。国际能源署署长法提赫·比罗尔表示，全球电动汽车市场已进入加速增长的新阶段。",
+      "sources": [
+        {
+          "name": "36氪",
+          "url": "https://36kr.com/newsflashes/3876372206252038?f=rss"
+        }
+      ],
+      "relevance_score": 45,
+      "importance_score": 60
+    },
+    {
+      "source_item_ids": [
+        "30a2033ab306961e"
+      ],
+      "title_zh": "Realta Fusion称首次直接从聚变反应发电点亮灯泡",
+      "summary_zh": "美国核聚变初创公司Realta Fusion称，其6月19日的实验用直接从WHAM演示装置的聚变反应中提取的电力点亮了灯泡，并认为自己是首家公开演示这种“直接能量转换”的私营公司。CEO表示，直接转换效率约90%，远高于当前蒸汽轮机约33%的水平，未来商用电站或可借此把总输出提升20%—30%。公司2025年完成3600万美元A轮融资，目前正进行新一轮募资。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/06/30/realta-fusion-generates-electricity-directly-from-a-fusion-reaction-an-apparent-first"
+        }
+      ],
+      "relevance_score": 35,
+      "importance_score": 58
+    }
+  ],
+  "discarded": [
+    {
+      "source_item_ids": [
+        "835450a1a4b18d27"
+      ],
+      "reason": "小公司天使轮融资且概念包装偏重，缺少清晰商业化、客户或产业链影响，命中避免项“小公司融资”。",
+      "relevance_score": 25,
+      "importance_score": 32
+    },
+    {
+      "source_item_ids": [
+        "33f119a565e583a9"
+      ],
+      "reason": "Meta智能眼镜限额和软付费墙更偏消费硬件定价争议，缺少AI能力、供应链或行业格局变化信号。",
+      "relevance_score": 30,
+      "importance_score": 38
+    },
+    {
+      "source_item_ids": [
+        "2fc28113a7b7ec7d"
+      ],
+      "reason": "小米汽车月交付量快讯只有单一销量数字，未体现自动驾驶、核心技术或产业链拐点。",
+      "relevance_score": 22,
+      "importance_score": 35
+    }
+  ],
+  "merged_sources": [
+    {
+      "source_item_ids": [
+        "5b8d2a0c4a89eac7",
+        "0e4f614562818d3c"
+      ],
+      "reason": "同一Kimi估值、ARR和API收入进展在两条聚合稿中重复出现"
+    },
+    {
+      "source_item_ids": [
+        "cda2d076f633e18b",
+        "2c35ae22493da13c"
+      ],
+      "reason": "同一Claude Sonnet 5发布事件，媒体报道与官方发布相互印证"
+    },
+    {
+      "source_item_ids": [
+        "a38f401174547917",
+        "7a83a328db1d23e6"
+      ],
+      "reason": "同一Google Nano Banana 2 Lite发布事件"
+    }
+  ]
+}
