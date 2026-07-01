@@ -57,6 +57,19 @@ def test_score_penalizes_aggregate_news() -> None:
     candidate = score_item(item, section)
 
     assert "聚合/快讯降权" in candidate.reason
+    assert candidate.score <= 35
+
+
+def test_score_caps_keyword_stuffed_aggregate_news() -> None:
+    section = load_section("tech")
+    item = _item(
+        "8点1氪丨三星、SK海力士、美光、英伟达、苹果、OpenAI、特斯拉最新消息",
+        "今日热点导览聚合半导体、AI芯片、大模型、自动驾驶、数据中心等多条旧闻。",
+    )
+
+    candidate = score_item(item, section)
+
+    assert candidate.score <= 35
 
 
 def test_score_penalizes_consumer_deals() -> None:

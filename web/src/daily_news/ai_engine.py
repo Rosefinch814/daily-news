@@ -359,14 +359,29 @@ JSON schema 形状：
 def build_selection_file_prompt(
     section: SectionConfig,
     enriched_candidates_path: Path,
+    history_index_path: Path | None = None,
     taste_profile_path: Path | None = None,
 ) -> str:
     payload = _section_payload(section, taste_profile_path=taste_profile_path)
+    history_block = ""
+    if history_index_path is not None:
+        history_block = f"""
+
+最近已发布日报索引：
+{history_index_path}
+
+历史索引用法：
+- 这是最近几天最终发布过的头条/速览的极简索引，只包含日期、层级、标题和来源，不包含历史正文。
+- 如果候选只是历史索引中已讲过事件的换源转述、聚合合集、无新增事实重复，不得选为头条；优先丢弃，必要时只放速览。
+- 如果候选确有新增事实，必须在 reason 中说明“新增事实是什么”，并按跟进处理，不要把昨天已讲过的主体重新包装成新头条。
+- 聚合稿、早报、晚报、8点1氪、热点导览类候选默认不能做头条，除非其中包含重大且历史索引未覆盖的新事实。
+""".rstrip()
     return f"""
 你是《我的日报·科技》的主编。请读取本地 JSON 文件，并基于已补全文的候选新闻做最终选题和分层，输出严格 JSON。
 
 输入文件：
 {enriched_candidates_path}
+{history_block}
 
 板块和关注配置：
 {json.dumps(payload, ensure_ascii=False, indent=2)}
@@ -378,6 +393,7 @@ def build_selection_file_prompt(
 4. 丢弃项必须给出中文原因。
 5. relevance_score 表示与用户关注点相关度，importance_score 表示事件本身重要度。
 6. 如果板块配置里包含 taste_profile，它是用户反馈沉淀出的软偏好：多看的主题可适度提权，少看的主题可适度降权；但 interests.avoid 仍是硬边界，不能被 taste_profile 翻盘。
+7. 不要把多个历史旧闻揉成一个新头条；合集如果没有新增事实，应丢弃或降为速览。
 
 输出要求：
 - 只输出一个 JSON 对象，不要 Markdown，不要解释。

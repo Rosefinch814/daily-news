@@ -26,3 +26,7 @@ logging:
 dedupe:
   history_lookback_days: 7
   title_hash_enabled: true
+selection_history:
+  enabled: true
+  lookback_days: 3
+  max_items: 40

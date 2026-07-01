@@ -374,6 +374,7 @@ def test_ai_select_reads_enriched_candidate_file_path(tmp_path: Path, monkeypatc
     def fake_run_ai_task(*, prompt: str, use_output_schema: bool, **kwargs):  # noqa: ANN003
         assert use_output_schema is False
         assert str((tmp_path / run_id / "outputs" / "03_enriched_candidates.json").resolve()) in prompt
+        assert str((tmp_path / run_id / "outputs" / "04_history_index.json").resolve()) in prompt
         assert "Title item-0" not in prompt
         now = datetime.now(timezone.utc)
         return selection, AIRunRecord(
@@ -398,6 +399,7 @@ def test_ai_select_reads_enriched_candidate_file_path(tmp_path: Path, monkeypatc
     assert ai_select(args) == 0
 
     assert (tmp_path / run_id / "outputs" / "04_selection.json").exists()
+    assert (tmp_path / run_id / "outputs" / "04_history_index.json").exists()
     assert (tmp_path / "logs" / run_id / "ai" / "04_ai_selection_prompt.md").exists()
 
 
@@ -654,6 +656,48 @@ def test_load_recent_issue_history_filters_by_window_and_section(
     assert history.issue_ids == [in_window.id]
     assert "https://example.com/nvidia" in history.urls
     assert history.title_hashes
+
+
+def test_load_recent_issue_selection_index_is_bounded_and_lightweight(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(local_storage, "RUNS_DIR", tmp_path / "runs")
+    fixture = Path(__file__).parent / "fixtures" / "sample_ai_output.json"
+    issue_output = AIIssueOutput.model_validate_json(fixture.read_text(encoding="utf-8"))
+    in_window = make_issue(
+        issue_output,
+        section_slug="tech",
+        publication_name="我的日报·科技",
+        issue_date=datetime(2026, 6, 29, tzinfo=timezone.utc).date(),
+        volume=1,
+        number=8,
+    )
+    outside_window = make_issue(
+        issue_output,
+        section_slug="tech",
+        publication_name="我的日报·科技",
+        issue_date=datetime(2026, 6, 20, tzinfo=timezone.utc).date(),
+        volume=1,
+        number=7,
+    )
+    local_storage.save_issue("run-in-window", in_window)
+    local_storage.save_issue("run-outside-window", outside_window)
+
+    index = local_storage.load_recent_issue_selection_index(
+        section_slug="tech",
+        before_date=datetime(2026, 7, 1, tzinfo=timezone.utc).date(),
+        lookback_days=3,
+        max_items=2,
+    )
+
+    assert len(index) == 2
+    assert index[0]["issue_id"] == in_window.id
+    assert index[0]["level"] == "headline"
+    assert "title_zh" in index[0]
+    assert "source_urls" in index[0]
+    assert "summary_zh" not in index[0]
+    assert "read_body_zh" not in index[0]
 
 
 def test_run_pipeline_stops_after_ai_shortlist(

@@ -51,6 +51,7 @@ from daily_news.storage.local import (
     load_issue_from_run,
     load_profiles,
     load_recent_issue_history,
+    load_recent_issue_selection_index,
     load_raw_items,
     load_selection,
     load_shortlist,
@@ -61,6 +62,7 @@ from daily_news.storage.local import (
     save_enriched_candidates,
     save_issue,
     save_selection,
+    save_selection_history_index,
     save_raw_items,
     snapshot_profiles,
     output_dir,
@@ -212,6 +214,17 @@ def summarize_prefilter_history(history: Any, *, lookback_days: int, title_hash_
         f"历史期 {len(history.issue_ids)} 个；"
         f"URL {len(history.urls)} 个；"
         f"标题 hash {len(history.title_hashes) if title_hash_enabled else 0} 个"
+    )
+
+
+def build_selection_history_index(*, section_slug: str, issue_date: date, config: PipelineConfig) -> list[dict[str, Any]]:
+    if not config.selection_history.enabled:
+        return []
+    return load_recent_issue_selection_index(
+        section_slug=section_slug,
+        before_date=issue_date,
+        lookback_days=config.selection_history.lookback_days,
+        max_items=config.selection_history.max_items,
     )
 
 
@@ -522,10 +535,16 @@ def run_ai_select_stage(
 ) -> tuple[CodexSelectionOutput, Path, Path]:
     candidates = load_enriched_candidates(run_id)
     enriched_candidates_path = artifact_path(run_id, "03_enriched_candidates.json").resolve()
+    issue_date = date_from_run_id(run_id, section.slug)
+    history_index = build_selection_history_index(section_slug=section.slug, issue_date=issue_date, config=config)
+    history_index_path: Path | None = None
+    if config.selection_history.enabled:
+        history_index_path = save_selection_history_index(run_id, history_index).resolve()
     taste_profile_path = WEB_DIR / "profiles" / section.slug / "taste.md"
     prompt = build_selection_file_prompt(
         section,
         enriched_candidates_path,
+        history_index_path=history_index_path,
         taste_profile_path=taste_profile_path if taste_profile_path.exists() else None,
     )
     try:
@@ -1358,14 +1377,19 @@ class PipelineRunner:
                 provider=provider,
             )
             summarize_selection(selection)
+            history_index_path = artifact_path(self.run_id, "04_history_index.json")
+            inputs = [artifact_path(self.run_id, "03_enriched_candidates.json")]
+            if history_index_path.exists():
+                inputs.append(history_index_path)
             return {
-                "inputs": [artifact_path(self.run_id, "03_enriched_candidates.json")],
+                "inputs": inputs,
                 "outputs": [saved_output_path, debug_path],
                 "metadata": {
                     "provider": provider,
                     "headlines": len(selection.headlines),
                     "briefs": len(selection.briefs),
                     "discarded": len(selection.discarded),
+                    "history_index_enabled": self.config.selection_history.enabled,
                 },
             }
 

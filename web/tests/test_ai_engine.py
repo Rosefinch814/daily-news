@@ -117,6 +117,20 @@ def test_build_selection_file_prompt_uses_path_without_candidates() -> None:
     assert "Nvidia AI chip news" not in prompt
 
 
+def test_build_selection_file_prompt_includes_history_index_path() -> None:
+    section = load_section("tech")
+    prompt = build_selection_file_prompt(
+        section,
+        Path("/tmp/03_enriched_candidates.json"),
+        history_index_path=Path("/tmp/04_history_index.json"),
+    )
+
+    assert "/tmp/04_history_index.json" in prompt
+    assert "最近已发布日报索引" in prompt
+    assert "不包含历史正文" in prompt
+    assert "不得选为头条" in prompt
+
+
 def test_file_prompts_include_taste_profile_when_present(tmp_path: Path) -> None:
     section = load_section("tech")
     taste_path = tmp_path / "taste.md"

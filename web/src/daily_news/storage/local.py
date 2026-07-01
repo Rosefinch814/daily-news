@@ -162,6 +162,12 @@ def save_selection(run_id: str, selection: CodexSelectionOutput) -> Path:
     return path
 
 
+def save_selection_history_index(run_id: str, history_index: list[dict[str, Any]]) -> Path:
+    path = output_path(run_id, "04_history_index.json")
+    _write_json(path, history_index)
+    return path
+
+
 def save_ai_task_run(
     run_id: str,
     stage: str,
@@ -329,3 +335,50 @@ def load_recent_issue_history(
                 if title_hash:
                     title_hashes.add(title_hash)
     return IssueHistory(urls=urls, title_hashes=title_hashes, issue_ids=issue_ids)
+
+
+def load_recent_issue_selection_index(
+    *,
+    section_slug: str,
+    before_date: date,
+    lookback_days: int,
+    max_items: int,
+) -> list[dict[str, Any]]:
+    if lookback_days <= 0 or max_items <= 0:
+        return []
+
+    issues_dir = RUNS_DIR / "issues"
+    if not issues_dir.exists():
+        return []
+
+    start_date = before_date - timedelta(days=lookback_days)
+    entries: list[dict[str, Any]] = []
+    for path in sorted(issues_dir.glob("*.json"), reverse=True):
+        issue = Issue.model_validate_json(path.read_text(encoding="utf-8"))
+        if issue.section_slug != section_slug:
+            continue
+        if not (start_date <= issue.issue_date < before_date):
+            continue
+        for level, articles in [("headline", issue.headlines), ("brief", issue.briefs)]:
+            for index, article in enumerate(articles, start=1):
+                entries.append(
+                    {
+                        "issue_date": issue.issue_date.isoformat(),
+                        "issue_id": issue.id,
+                        "level": level,
+                        "index": index,
+                        "title_zh": article.title_zh,
+                        "source_names": [source.name for source in article.sources],
+                        "source_urls": [source.url for source in article.sources],
+                    }
+                )
+
+    entries.sort(
+        key=lambda item: (
+            item["issue_date"],
+            1 if item["level"] == "headline" else 0,
+            -item["index"],
+        ),
+        reverse=True,
+    )
+    return entries[:max_items]

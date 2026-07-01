@@ -19,3 +19,6 @@ def test_load_pipeline_config() -> None:
     assert config.ai.codex.command.endswith("codex exec")
     assert config.ai.claude.command == "claude -p"
     assert config.prompt.max_candidates == 60
+    assert config.selection_history.enabled is True
+    assert config.selection_history.lookback_days == 3
+    assert config.selection_history.max_items == 40

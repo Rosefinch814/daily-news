@@ -62,6 +62,11 @@ AGGREGATE_NOISE_TERMS = [
     "晚报",
     "8点1氪",
     "氪星晚报",
+    "今日热点导览",
+    "热点导览",
+    "TOP 3大新闻",
+    "TOP 3",
+    "快讯",
     "收跌",
     "收涨",
     "涨超",
@@ -78,6 +83,8 @@ HEAVY_NOISE_TERMS = [
     "晚报",
     "8点1氪",
     "氪星晚报",
+    "今日热点导览",
+    "热点导览",
 ]
 
 CONSUMER_NOISE_TERMS = [
@@ -169,8 +176,8 @@ def score_item(item: RawItem, section: SectionConfig) -> CandidateItem:
     score = 5.0 * source_weight
     score += len(matched) * 18.0
     score -= len(avoided) * 30.0
-    score -= len(aggregate_noise) * 12.0
-    score -= len(heavy_noise) * 20.0
+    score -= len(aggregate_noise) * 18.0
+    score -= len(heavy_noise) * 30.0
     score -= len(consumer_noise) * 18.0
     score += min(len(high_value), 4) * 8.0
     if item.summary:
@@ -181,6 +188,10 @@ def score_item(item: RawItem, section: SectionConfig) -> CandidateItem:
         score += 8.0
     if item.fetch_status == "failed":
         score -= 20.0
+    if heavy_noise:
+        score = min(score, 35.0)
+    elif aggregate_noise:
+        score = min(score, 50.0)
 
     reason_parts: list[str] = []
     if matched:
