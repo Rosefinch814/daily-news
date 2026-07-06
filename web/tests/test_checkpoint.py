@@ -1,5 +1,6 @@
 import asyncio
 import json
+import os
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -17,6 +18,7 @@ from daily_news.main import (
     merge_enriched_candidates,
     resolve_stage_provider,
     run_pipeline,
+    temporary_feedback_mode,
     validate_selection_ids,
     validate_shortlist_ids,
 )
@@ -98,13 +100,31 @@ def test_checkpoint_commands_are_registered() -> None:
         ["ai-file-read-test", "--provider", "codex"],
         ["render-mvp", "--run-id", "tech-2026-06-23-000000"],
         ["sync", "--run-id", "tech-2026-06-23-000000"],
-        ["run-pipeline", "--date", "2026-06-24", "--ai-compose-provider", "claude"],
+        ["run-pipeline", "--date", "2026-06-24", "--ai-compose-provider", "claude", "--render-owner"],
         ["digest-feedback", "--section", "tech", "--provider", "codex"],
         ["clean-run", "--run-id", "tech-2026-06-23-000000", "--pack-logs"],
     ]
     for argv in commands:
         parsed = parser.parse_args(argv)
         assert parsed.command == argv[0]
+
+
+def test_temporary_feedback_mode_restores_environment(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("FEEDBACK_MODE", "owner")
+
+    with temporary_feedback_mode("reader"):
+        assert os.environ["FEEDBACK_MODE"] == "reader"
+
+    assert os.environ["FEEDBACK_MODE"] == "owner"
+
+
+def test_temporary_feedback_mode_removes_missing_environment(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("FEEDBACK_MODE", raising=False)
+
+    with temporary_feedback_mode("owner"):
+        assert os.environ["FEEDBACK_MODE"] == "owner"
+
+    assert "FEEDBACK_MODE" not in os.environ
 
 
 def test_save_ai_task_run_writes_monitoring_logs(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -619,7 +639,7 @@ def test_digest_feedback_skips_without_owner_token(
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
 ) -> None:
-    monkeypatch.delenv("OWNER_FEEDBACK_TOKEN", raising=False)
+    monkeypatch.setenv("OWNER_FEEDBACK_TOKEN", "")
 
     class FakeStore:
         def fetch_undigested_feedback(self, *args, **kwargs):  # noqa: ANN002, ANN003

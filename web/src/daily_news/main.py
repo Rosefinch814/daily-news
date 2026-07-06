@@ -9,6 +9,7 @@ import shutil
 import sys
 import tarfile
 import traceback
+from contextlib import contextmanager
 from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Any, Literal
@@ -38,7 +39,7 @@ from daily_news.models import (
     Issue,
     RawItem,
 )
-from daily_news.paths import DIST_DIR, WEB_DIR
+from daily_news.paths import DIST_DIR, DIST_OWNER_DIR, WEB_DIR
 from daily_news.render import build_frontend_app
 from daily_news.scoring import rank_candidates
 from daily_news.storage.local import (
@@ -97,6 +98,19 @@ PIPELINE_STAGES: list[PipelineStage] = [
     "ai_compose",
     "publish_frontend",
 ]
+
+
+@contextmanager
+def temporary_feedback_mode(mode: Literal["reader", "owner"]):
+    previous = os.environ.get("FEEDBACK_MODE")
+    os.environ["FEEDBACK_MODE"] = mode
+    try:
+        yield
+    finally:
+        if previous is None:
+            os.environ.pop("FEEDBACK_MODE", None)
+        else:
+            os.environ["FEEDBACK_MODE"] = previous
 
 
 def date_cn(value: date) -> str:
@@ -1425,11 +1439,21 @@ class PipelineRunner:
         if stage == "publish_frontend":
             issue = load_issue_from_run(self.run_id)
             validate_issue_content(issue)
-            outputs = build_frontend_app(issue)
+            with temporary_feedback_mode("reader"):
+                outputs = build_frontend_app(issue)
+            owner_outputs: dict[str, Path] = {}
+            if self.args.render_owner:
+                with temporary_feedback_mode("owner"):
+                    owner_outputs = build_frontend_app(issue)
+                print(f"Generated owner app: {owner_outputs['index']}")
             return {
                 "inputs": [artifact_path(self.run_id, "05_issue.json")],
-                "outputs": list(outputs.values()),
-                "metadata": {"issue_id": issue.id, "issue_date": issue.issue_date.isoformat()},
+                "outputs": list(outputs.values()) + list(owner_outputs.values()),
+                "metadata": {
+                    "issue_id": issue.id,
+                    "issue_date": issue.issue_date.isoformat(),
+                    "owner_rendered": bool(owner_outputs),
+                },
             }
 
         raise ValueError(f"Unknown pipeline stage: {stage}")
@@ -1461,7 +1485,13 @@ class PipelineRunner:
             issue = load_issue_from_run(self.run_id)
             data_path = DIST_DIR / "data" / "issues" / f"{issue.issue_date.isoformat()}.json"
             route_path = DIST_DIR / "issues" / f"{issue.issue_date.isoformat()}.html"
-            return data_path.exists() and route_path.exists()
+            if not (data_path.exists() and route_path.exists()):
+                return False
+            if self.args.render_owner:
+                owner_data_path = DIST_OWNER_DIR / "data" / "issues" / f"{issue.issue_date.isoformat()}.json"
+                owner_route_path = DIST_OWNER_DIR / "issues" / f"{issue.issue_date.isoformat()}.html"
+                return owner_data_path.exists() and owner_route_path.exists()
+            return True
         raise ValueError(f"Unknown pipeline stage: {stage}")
 
 
@@ -1658,6 +1688,11 @@ def build_parser() -> argparse.ArgumentParser:
     run_pipeline_parser.add_argument("--ai-shortlist-provider", choices=["claude", "codex"])
     run_pipeline_parser.add_argument("--ai-select-provider", choices=["claude", "codex"])
     run_pipeline_parser.add_argument("--ai-compose-provider", choices=["claude", "codex"])
+    run_pipeline_parser.add_argument(
+        "--render-owner",
+        action="store_true",
+        help="Also render the local owner feedback app to web/dist-owner after the public app",
+    )
     run_pipeline_parser.set_defaults(func=lambda args: asyncio.run(run_pipeline(args)))
 
     digest_parser = subparsers.add_parser("digest-feedback", help="Digest Supabase feedback into local taste/style profiles")
