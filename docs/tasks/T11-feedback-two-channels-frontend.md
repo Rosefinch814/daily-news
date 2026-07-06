@@ -1,7 +1,7 @@
 ---
 id: T11
 title: 反馈两通道·前端与渲染（公开=读者留言箱只读、主人版=完整口味 UI）
-status: todo
+status: done
 依赖: [T10]
 里程碑: M2
 ---
@@ -59,3 +59,5 @@ status: todo
 - 读者留言框的视觉细节（是否复用现有整期留言框样式去掉计数）——按设计规范落，必要时回产品对话确认。
 
 ## 完成说明（开发填）
+
+已完成 reader/owner 双渲染模式：公开版只写 `product_feedback`，主人版输出到 `web/dist-owner/` 并携带 `owner_token` 写入口味反馈。

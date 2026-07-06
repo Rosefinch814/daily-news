@@ -511,6 +511,7 @@ def test_digest_feedback_writes_profiles_and_marks_rows(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    monkeypatch.setenv("OWNER_FEEDBACK_TOKEN", "owner-secret")
     monkeypatch.setattr(local_storage, "RUNS_DIR", tmp_path / "runs")
     monkeypatch.setattr(local_storage, "LOGS_DIR", tmp_path / "logs")
     monkeypatch.setattr(local_storage, "PROFILES_DIR", tmp_path / "profiles")
@@ -529,8 +530,10 @@ def test_digest_feedback_writes_profiles_and_marks_rows(
     class FakeStore:
         def __init__(self) -> None:
             self.marked: list[str] = []
+            self.owner_token: str | None = None
 
         def fetch_undigested_feedback(self, *args, **kwargs):  # noqa: ANN002, ANN003
+            self.owner_token = kwargs.get("owner_token")
             return [
                 {
                     "id": "fb-1",
@@ -599,6 +602,7 @@ def test_digest_feedback_writes_profiles_and_marks_rows(
     )
 
     assert digest_feedback(args) == 0
+    assert fake_store.owner_token == "owner-secret"
     assert fake_store.marked == ["fb-1", "fb-2"]
     assert "AI 芯片供应链" in (tmp_path / "profiles" / "tech" / "taste.md").read_text(encoding="utf-8")
     assert "专业简报体" in (tmp_path / "profiles" / "tech" / "style.md").read_text(encoding="utf-8")
@@ -609,6 +613,23 @@ def test_digest_feedback_writes_profiles_and_marks_rows(
     assert profile_update["snapshot_dir"].endswith("profiles/tech/history/digest-test")
     assert profile_update["limits"]["taste_chars_max"] == 6000
     assert (tmp_path / "logs" / "digest-test" / "ai" / "06_ai_digest_run.json").exists()
+
+
+def test_digest_feedback_skips_without_owner_token(
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    monkeypatch.delenv("OWNER_FEEDBACK_TOKEN", raising=False)
+
+    class FakeStore:
+        def fetch_undigested_feedback(self, *args, **kwargs):  # noqa: ANN002, ANN003
+            raise AssertionError("digest must not read feedback without OWNER_FEEDBACK_TOKEN")
+
+    monkeypatch.setattr("daily_news.main.SupabaseStore.from_env", lambda: FakeStore())
+    args = build_parser().parse_args(["digest-feedback", "--section", "tech", "--provider", "codex"])
+
+    assert digest_feedback(args) == 0
+    assert "OWNER_FEEDBACK_TOKEN is not configured" in capsys.readouterr().out
 
 
 def test_load_recent_issue_history_filters_by_window_and_section(

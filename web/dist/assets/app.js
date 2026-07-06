@@ -67,9 +67,22 @@
     return (window.DAILY_NEWS_MANIFEST && window.DAILY_NEWS_MANIFEST.public_config) || {};
   }
 
+  function feedbackMode(){
+    return feedbackPublicConfig().feedback_mode === "owner" ? "owner" : "reader";
+  }
+
+  function ownerTokenKey(){
+    return ["owner", "token"].join("_");
+  }
+
   function feedbackEnabled(){
     var config = feedbackPublicConfig();
     return Boolean(config.supabase_url && config.supabase_anon_key);
+  }
+
+  function ownerFeedbackEnabled(){
+    var config = feedbackPublicConfig();
+    return feedbackEnabled() && feedbackMode() === "owner" && Boolean(config[ownerTokenKey()]);
   }
 
   function feedbackQueueKey(){
@@ -90,10 +103,10 @@
     }catch(error){}
   }
 
-  async function postFeedback(payload){
+  async function postFeedback(table, payload){
     var config = feedbackPublicConfig();
     if(!config.supabase_url || !config.supabase_anon_key) throw new Error("反馈功能未配置");
-    var response = await fetch(config.supabase_url.replace(/\/$/, "") + "/rest/v1/feedback", {
+    var response = await fetch(config.supabase_url.replace(/\/$/, "") + "/rest/v1/" + table, {
       method:"POST",
       headers:{
         "apikey":config.supabase_anon_key,
@@ -113,7 +126,9 @@
     var remaining = [];
     for(var i=0;i<queue.length;i++){
       try{
-        await postFeedback(queue[i]);
+        var item = queue[i];
+        if(!item.table && feedbackMode() !== "owner") continue;
+        await postFeedback(item.table || "feedback", item.payload || item);
       }catch(error){
         remaining.push(queue[i]);
       }
@@ -121,15 +136,16 @@
     saveFeedbackQueue(remaining);
   }
 
-  function queueFeedback(payload){
+  function queueFeedback(table, payload){
     var queue = queuedFeedback();
-    queue.push(payload);
+    queue.push({table:table, payload:payload});
     saveFeedbackQueue(queue);
   }
 
   function feedbackPayload(issue, scope, options){
     options = options || {};
-    return {
+    var config = feedbackPublicConfig();
+    var payload = {
       issue_id: issue.id,
       issue_date: issue.issue_date,
       section_slug: issue.section_slug,
@@ -139,6 +155,17 @@
       source_item_ids: options.sourceItemIds || [],
       signal: options.signal || null,
       note: options.note || null
+    };
+    if(config[ownerTokenKey()]) payload[ownerTokenKey()] = config[ownerTokenKey()];
+    return payload;
+  }
+
+  function productFeedbackPayload(issue, note){
+    return {
+      issue_id: issue.id,
+      issue_date: issue.issue_date,
+      section_slug: issue.section_slug,
+      note: note
     };
   }
 
@@ -159,13 +186,13 @@
     }
   }
 
-  async function submitFeedback(payload, statusNode){
+  async function submitFeedback(table, payload, statusNode, successText){
     try{
       await flushFeedbackQueue();
-      await postFeedback(payload);
-      setFeedbackStatus(statusNode, "已记下 · 调整下一期");
+      await postFeedback(table, payload);
+      setFeedbackStatus(statusNode, successText || "已记下");
     }catch(error){
-      queueFeedback(payload);
+      queueFeedback(table, payload);
       setFeedbackStatus(statusNode, "已暂存 · 联网后重试");
     }
   }
@@ -178,7 +205,7 @@
   }
 
   function renderArticleFeedback(issue, article, options){
-    if(!feedbackEnabled()) return null;
+    if(!ownerFeedbackEnabled()) return null;
     var key = articleFeedbackKey(issue, options.level, options.index);
     articleFeedbackState[key] = articleFeedbackState[key] || {signal:null, note:""};
     var box = el("span", "feedback-inline");
@@ -212,13 +239,13 @@
       window.clearTimeout(articleFeedbackTimers[key]);
       articleFeedbackTimers[key] = window.setTimeout(function(){
         var state = articleFeedbackState[key];
-        submitFeedback(feedbackPayload(issue, "article", {
+        submitFeedback("feedback", feedbackPayload(issue, "article", {
           articleLevel: options.level,
           articleIndex: options.index,
           sourceItemIds: article.source_item_ids || [],
           signal: state.signal,
           note: state.note || null
-        }), status);
+        }), status, "已记下 · 调整下一期");
       }, 1000);
     }
 
@@ -280,7 +307,7 @@
     p.appendChild(document.createTextNode("综合 " + names + " · "));
     if(article.sources && article.sources[0]) p.appendChild(link("ul", article.sources[0].url, "原文 ↗"));
     var noteRow = null;
-    if(options && options.allowNote){
+    if(options && options.allowNote && ownerFeedbackEnabled()){
       noteRow = el("div", "feedback-note");
       noteRow.hidden = true;
       var input = document.createElement("input");
@@ -298,13 +325,13 @@
         if(!note) return;
         state.note = note;
         articleFeedbackState[key] = state;
-        submitFeedback(feedbackPayload(issue, "article", {
+        submitFeedback("feedback", feedbackPayload(issue, "article", {
           articleLevel: options.level,
           articleIndex: options.index,
           sourceItemIds: article.source_item_ids || [],
           signal: state.signal,
           note: note
-        }), noteRow.querySelector(".fb-status"));
+        }), noteRow.querySelector(".fb-status"), "已记下 · 调整下一期");
       });
       input.addEventListener("keydown", function(event){
         if(event.key === "Enter"){
@@ -382,23 +409,34 @@
   function renderIssueFeedback(issue){
     if(!feedbackEnabled()) return null;
     var section = el("section", "issue-feedback");
-    append(section, sectionLabel("本期反馈", "只影响下一期"));
-    var review = el("p", "issue-feedback-review", "本期已标记：0 条好，0 条不好。");
+    var isOwner = ownerFeedbackEnabled();
+    append(section, sectionLabel(isOwner ? "本期反馈" : "读者反馈", isOwner ? "只影响下一期" : "留言箱"));
+    var review = isOwner ? el("p", "issue-feedback-review", "本期已标记：0 条好，0 条不好。") : null;
     var textarea = document.createElement("textarea");
     textarea.maxLength = 2000;
     textarea.rows = 4;
-    textarea.placeholder = "对这一期整体有什么想补充的？";
+    textarea.placeholder = isOwner ? "对这一期整体有什么想补充的？" : "对这份日报有什么想说的？";
     var button = document.createElement("button");
     button.type = "button";
     button.className = "issue-feedback-submit";
-    button.textContent = "记下本期";
+    button.textContent = isOwner ? "记下本期" : "记下";
     var status = el("span", "fb-status");
     button.addEventListener("click", function(){
       var note = textarea.value.trim();
       if(!note) return;
-      submitFeedback(feedbackPayload(issue, "issue", {note:note}), status);
+      if(isOwner){
+        submitFeedback("feedback", feedbackPayload(issue, "issue", {note:note}), status, "已记下 · 调整下一期");
+      }else{
+        submitFeedback("product_feedback", productFeedbackPayload(issue, note), status, "已记下");
+      }
     });
-    append(section, review, textarea, append(el("div", "issue-feedback-actions"), button, status), el("p", "feedback-hint", "反馈不会改变本期内容，只会用于调整下一期。"));
+    append(
+      section,
+      review,
+      textarea,
+      append(el("div", "issue-feedback-actions"), button, status),
+      el("p", "feedback-hint", isOwner ? "反馈不会改变本期内容，只会用于调整下一期。" : "你的建议我会看到。")
+    );
     return section;
   }
 

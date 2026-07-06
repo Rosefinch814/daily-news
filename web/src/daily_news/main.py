@@ -1017,12 +1017,17 @@ def digest_feedback(args: argparse.Namespace) -> int:
     config = load_pipeline_config(Path(args.config) if args.config else None)
     provider = args.provider or resolve_stage_provider(config, "digest_feedback")
     run_id = args.run_id or f"digest-{section.slug}-{datetime.now().strftime('%Y%m%d-%H%M%S')}"
+    owner_token = os.getenv("OWNER_FEEDBACK_TOKEN", "").strip()
+    if not owner_token:
+        print("OWNER_FEEDBACK_TOKEN is not configured. Skipping taste feedback digestion.")
+        return 0
     store = SupabaseStore.from_env()
     rows = store.fetch_undigested_feedback(
         section.slug,
         from_date=args.from_date,
         to_date=args.to_date,
         include_digested=args.redigest,
+        owner_token=owner_token,
     )
     if not rows:
         print("No feedback to digest.")
@@ -1471,8 +1476,9 @@ def render_mvp(args: argparse.Namespace) -> int:
     outputs = build_frontend_app(issue)
     issue_html = outputs["issue"].read_text(encoding="utf-8")
     issue_data = outputs["data"].read_text(encoding="utf-8")
-    css = (DIST_DIR / "assets" / "app.css").read_text(encoding="utf-8")
-    js = (DIST_DIR / "assets" / "app.js").read_text(encoding="utf-8")
+    dist_dir = outputs["index"].parent
+    css = (dist_dir / "assets" / "app.css").read_text(encoding="utf-8")
+    js = (dist_dir / "assets" / "app.js").read_text(encoding="utf-8")
     checks = {
         "viewport": 'name="viewport"' in issue_html,
         "app_root": 'id="app"' in issue_html,

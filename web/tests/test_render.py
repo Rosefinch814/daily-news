@@ -12,6 +12,8 @@ def test_build_frontend_app(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> 
     monkeypatch.setenv("SUPABASE_URL", "https://example.supabase.co")
     monkeypatch.setenv("SUPABASE_ANON_KEY", "anon-public-key")
     monkeypatch.setenv("SUPABASE_SERVICE_ROLE_KEY", "service-secret-key")
+    monkeypatch.delenv("FEEDBACK_MODE", raising=False)
+    monkeypatch.setenv("OWNER_FEEDBACK_TOKEN", "owner-secret-token")
     fixture = Path(__file__).parent / "fixtures" / "sample_ai_output.json"
     output = AIIssueOutput.model_validate_json(fixture.read_text(encoding="utf-8"))
     issue = make_issue(
@@ -47,5 +49,35 @@ def test_build_frontend_app(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> 
     assert '"latest_issue_date": "2026-06-23"' in manifest
     assert '"supabase_url": "https://example.supabase.co"' in manifest
     assert '"supabase_anon_key": "anon-public-key"' in manifest
+    assert '"feedback_mode": "reader"' in manifest
+    assert "owner-secret-token" not in manifest
     assert "service-secret-key" not in manifest
     assert "service-secret-key" not in (tmp_path / "data" / "manifest.js").read_text(encoding="utf-8")
+
+
+def test_build_frontend_app_owner_mode_uses_owner_dist(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("SUPABASE_URL", "https://example.supabase.co")
+    monkeypatch.setenv("SUPABASE_ANON_KEY", "anon-public-key")
+    monkeypatch.setenv("FEEDBACK_MODE", "owner")
+    monkeypatch.setenv("OWNER_FEEDBACK_TOKEN", "owner-secret-token")
+    monkeypatch.setattr("daily_news.render.DIST_OWNER_DIR", tmp_path / "dist-owner")
+    fixture = Path(__file__).parent / "fixtures" / "sample_ai_output.json"
+    output = AIIssueOutput.model_validate_json(fixture.read_text(encoding="utf-8"))
+    issue = make_issue(
+        output,
+        section_slug="tech",
+        publication_name="我的日报·科技",
+        issue_date=date(2026, 6, 23),
+        volume=1,
+        number=7,
+    )
+
+    outputs = build_frontend_app(issue)
+    manifest = (tmp_path / "dist-owner" / "data" / "manifest.json").read_text(encoding="utf-8")
+
+    assert outputs["index"] == tmp_path / "dist-owner" / "index.html"
+    assert '"feedback_mode": "owner"' in manifest
+    assert '"owner_token": "owner-secret-token"' in manifest

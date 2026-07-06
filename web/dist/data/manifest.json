@@ -76,6 +76,7 @@
   ],
   "public_config": {
     "supabase_url": "https://hwsrxtasvylvbhqzgfny.supabase.co",
-    "supabase_anon_key": "sb_publishable_f0-KQUWGpjQLGQxUOXMfZQ_osD5cuzP"
+    "supabase_anon_key": "sb_publishable_f0-KQUWGpjQLGQxUOXMfZQ_osD5cuzP",
+    "feedback_mode": "reader"
   }
 }

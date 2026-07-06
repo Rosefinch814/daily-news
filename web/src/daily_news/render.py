@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from daily_news.models import Issue
-from daily_news.paths import DIST_DIR, FRONTEND_DIR, WEB_DIR
+from daily_news.paths import DIST_DIR, DIST_OWNER_DIR, FRONTEND_DIR, WEB_DIR
 
 
 def _frontend_env() -> Environment:
@@ -38,16 +38,28 @@ def _read_manifest(manifest_path: Path) -> dict:
     return json.loads(manifest_path.read_text(encoding="utf-8"))
 
 
+def _feedback_mode() -> str:
+    mode = os.getenv("FEEDBACK_MODE", "reader").strip().lower()
+    return "owner" if mode == "owner" else "reader"
+
+
 def _public_config() -> dict[str, str]:
     load_dotenv(WEB_DIR / ".env")
     supabase_url = os.getenv("SUPABASE_URL", "").rstrip("/")
     supabase_anon_key = os.getenv("SUPABASE_ANON_KEY") or os.getenv("SUPABASE_PUBLISHABLE_KEY") or ""
     if not supabase_url or not supabase_anon_key:
         return {}
-    return {
+    mode = _feedback_mode()
+    config = {
         "supabase_url": supabase_url,
         "supabase_anon_key": supabase_anon_key,
+        "feedback_mode": mode,
     }
+    if mode == "owner":
+        owner_token = os.getenv("OWNER_FEEDBACK_TOKEN", "").strip()
+        if owner_token:
+            config["owner_token"] = owner_token
+    return config
 
 
 def _issue_manifest_entry(issue: Issue) -> dict:
@@ -100,6 +112,8 @@ def _render_app_shell(output_path: Path, *, asset_prefix: str) -> Path:
 
 
 def build_frontend_app(issue: Issue, *, dist_dir: Path = DIST_DIR) -> dict[str, Path]:
+    if dist_dir == DIST_DIR and _feedback_mode() == "owner":
+        dist_dir = DIST_OWNER_DIR
     dist_dir.mkdir(parents=True, exist_ok=True)
     data_path = export_issue_data(issue, dist_dir=dist_dir)
     assets_src = FRONTEND_DIR / "assets"
@@ -117,3 +131,7 @@ def build_frontend_app(issue: Issue, *, dist_dir: Path = DIST_DIR) -> dict[str, 
         "issue": issue_path,
         "data": data_path,
     }
+
+
+def owner_dist_dir() -> Path:
+    return DIST_OWNER_DIR

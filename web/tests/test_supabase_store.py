@@ -83,6 +83,7 @@ def test_insert_feedback_writes_expected_payload() -> None:
         source_item_ids=["item-1"],
         signal="up",
         note="多看这类芯片供应链新闻",
+        owner_token="owner-secret",
     )
 
     assert result == {"id": "feedback-1"}
@@ -93,6 +94,31 @@ def test_insert_feedback_writes_expected_payload() -> None:
     assert payload["issue_date"] == "2026-06-25"
     assert payload["article_index"] == 1
     assert payload["source_item_ids"] == ["item-1"]
+    assert payload["owner_token"] == "owner-secret"
+
+
+def test_insert_product_feedback_writes_expected_payload() -> None:
+    client = FakeClient([{"id": "product-feedback-1"}])
+    store = SupabaseStore(client=client)  # type: ignore[arg-type]
+
+    result = store.insert_product_feedback(
+        issue_id="tech-2026-06-25",
+        issue_date=date(2026, 6, 25),
+        section_slug="tech",
+        note="公开读者留言",
+    )
+
+    assert result == {"id": "product-feedback-1"}
+    query = client.queries[0]
+    assert query.table_name == "product_feedback"
+    assert query.operations[0][0] == "insert"
+    payload = query.operations[0][1]
+    assert payload == {
+        "issue_id": "tech-2026-06-25",
+        "issue_date": "2026-06-25",
+        "section_slug": "tech",
+        "note": "公开读者留言",
+    }
 
 
 def test_fetch_undigested_feedback_filters_by_section_and_date_range() -> None:
@@ -112,6 +138,18 @@ def test_fetch_undigested_feedback_filters_by_section_and_date_range() -> None:
     assert ("is", ("digested_at", "null")) in operations
     assert ("gte", ("issue_date", "2026-06-24")) in operations
     assert ("lte", ("issue_date", "2026-06-25")) in operations
+
+
+def test_fetch_undigested_feedback_filters_by_owner_token() -> None:
+    client = FakeClient([{"id": "feedback-1"}])
+    store = SupabaseStore(client=client)  # type: ignore[arg-type]
+
+    rows = store.fetch_undigested_feedback("tech", owner_token="owner-a")
+
+    assert rows == [{"id": "feedback-1"}]
+    operations = client.queries[0].operations
+    assert ("eq", ("section_slug", "tech")) in operations
+    assert ("eq", ("owner_token", "owner-a")) in operations
 
 
 def test_fetch_undigested_feedback_can_include_digested_rows() -> None:
@@ -148,4 +186,5 @@ def test_feedback_methods_noop_without_client() -> None:
         scope="issue",
     ) is None
     assert store.fetch_undigested_feedback("tech") == []
+    assert store.insert_product_feedback(note="公开读者留言") is None
     store.mark_feedback_digested(["feedback-1"])

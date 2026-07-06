@@ -106,6 +106,7 @@ create table if not exists feedback (
   source_item_ids text[] not null default '{}',
   signal text check (signal in ('up', 'down')),
   note text check (note is null or char_length(note) <= 2000),
+  owner_token text,
   created_at timestamptz not null default now(),
   digested_at timestamptz,
   check (cardinality(source_item_ids) <= 20),
@@ -116,9 +117,20 @@ create table if not exists feedback (
   )
 );
 
+alter table feedback add column if not exists owner_token text;
+
 create index if not exists feedback_undigested_idx
   on feedback (section_slug, issue_date, created_at)
   where digested_at is null;
+
+create table if not exists product_feedback (
+  id uuid primary key default gen_random_uuid(),
+  issue_id text,
+  issue_date date,
+  section_slug text,
+  note text not null check (char_length(note) <= 2000),
+  created_at timestamptz not null default now()
+);
 
 alter table sources enable row level security;
 alter table fetch_runs enable row level security;
@@ -128,11 +140,19 @@ alter table ai_runs enable row level security;
 alter table issues enable row level security;
 alter table issue_articles enable row level security;
 alter table feedback enable row level security;
+alter table product_feedback enable row level security;
 
 grant insert on feedback to anon;
 grant select, insert, update on feedback to service_role;
+grant insert on product_feedback to anon;
+grant select, insert, update on product_feedback to service_role;
 
 drop policy if exists feedback_anon_insert on feedback;
 create policy feedback_anon_insert on feedback
+  for insert to anon
+  with check (true);
+
+drop policy if exists product_feedback_anon_insert on product_feedback;
+create policy product_feedback_anon_insert on product_feedback
   for insert to anon
   with check (true);

@@ -26,6 +26,7 @@ env/
 web/issues/
 web/runs/
 web/profiles/
+web/dist-owner/
 
 # 临时文件
 *.log

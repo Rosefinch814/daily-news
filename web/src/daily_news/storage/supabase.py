@@ -132,6 +132,7 @@ class SupabaseStore:
         source_item_ids: list[str] | None = None,
         signal: str | None = None,
         note: str | None = None,
+        owner_token: str | None = None,
     ) -> dict[str, Any] | None:
         if not self.client:
             return None
@@ -145,8 +146,31 @@ class SupabaseStore:
             "source_item_ids": source_item_ids or [],
             "signal": signal,
             "note": note,
+            "owner_token": owner_token,
         }
         result = self.client.table("feedback").insert(row).execute()
+        data = getattr(result, "data", None)
+        if isinstance(data, list) and data:
+            return data[0]
+        return None
+
+    def insert_product_feedback(
+        self,
+        *,
+        issue_id: str | None = None,
+        issue_date: str | date | None = None,
+        section_slug: str | None = None,
+        note: str,
+    ) -> dict[str, Any] | None:
+        if not self.client:
+            return None
+        row = {
+            "issue_id": issue_id,
+            "issue_date": issue_date.isoformat() if isinstance(issue_date, date) else issue_date,
+            "section_slug": section_slug,
+            "note": note,
+        }
+        result = self.client.table("product_feedback").insert(row).execute()
         data = getattr(result, "data", None)
         if isinstance(data, list) and data:
             return data[0]
@@ -159,10 +183,13 @@ class SupabaseStore:
         from_date: str | date | None = None,
         to_date: str | date | None = None,
         include_digested: bool = False,
+        owner_token: str | None = None,
     ) -> list[dict[str, Any]]:
         if not self.client:
             return []
         query = self.client.table("feedback").select("*").eq("section_slug", section_slug)
+        if owner_token is not None:
+            query = query.eq("owner_token", owner_token)
         if not include_digested:
             query = query.is_("digested_at", "null")
         if from_date:

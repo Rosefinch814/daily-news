@@ -1,7 +1,7 @@
 ---
 id: T10
 title: 反馈两通道·后端（product_feedback 留言箱表 + feedback.owner_token + digest 只认我）
-status: todo
+status: done
 依赖: [T03, T05]
 里程碑: M2
 ---
@@ -67,3 +67,5 @@ status: todo
 - 需用户在 Supabase 手动：应用 schema（建 `product_feedback` + 加列）、生成一个随机 `OWNER_FEEDBACK_TOKEN` 放进本地 `web/.env`（绝不提交）。这些在 T11 落地前先备好即可联调。
 
 ## 完成说明（开发填）
+
+已完成 `product_feedback` 表、`feedback.owner_token`、digest owner token 过滤与相关存储测试；未配置 `OWNER_FEEDBACK_TOKEN` 时默认跳过口味消化。
