@@ -70,6 +70,7 @@ from daily_news.storage.local import (
     write_profiles,
 )
 from daily_news.storage.supabase import SupabaseStore
+from daily_news.xhs_export import export_xhs_issue, load_issue_for_xhs
 
 
 WEEKDAYS_CN = ["周一", "周二", "周三", "周四", "周五", "周六", "周日"]
@@ -1666,6 +1667,17 @@ def clean_run(args: argparse.Namespace) -> int:
     return 0
 
 
+def export_xhs(args: argparse.Namespace) -> int:
+    issue = load_issue_for_xhs(args.date)
+    output_dir = Path(args.output_dir) if args.output_dir else None
+    result = export_xhs_issue(issue, output_dir=output_dir)
+    print(f"小红书日报图组已导出：{result.output_dir}")
+    for path in result.image_paths:
+        print(f"- {path}")
+    print(f"- {result.caption_path}")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="daily-news")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -1783,6 +1795,11 @@ def build_parser() -> argparse.ArgumentParser:
     render_parser.add_argument("--issue-id", required=True)
     render_parser.add_argument("--output-dir")
     render_parser.set_defaults(func=render_existing)
+
+    export_xhs_parser = subparsers.add_parser("export-xhs", help="Export a daily issue as Xiaohongshu image cards")
+    export_xhs_parser.add_argument("--date", required=True, help="Issue date in YYYY-MM-DD format")
+    export_xhs_parser.add_argument("--output-dir", help="Override output directory; defaults to web/runs/xhs/<date>")
+    export_xhs_parser.set_defaults(func=export_xhs)
 
     validate_parser = subparsers.add_parser("validate-config", help="Validate section config")
     validate_parser.set_defaults(func=validate_config)
