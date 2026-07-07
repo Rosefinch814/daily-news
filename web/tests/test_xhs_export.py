@@ -1,18 +1,33 @@
 from datetime import date
 from pathlib import Path
 
+from daily_news.ai_engine import AIEngineError
+from daily_news.config import PipelineConfig
 from daily_news.main import make_issue
 from daily_news.models import AIIssueOutput
 from daily_news.xhs_export import (
     BRIEF_PAGE_MAX_ITEMS,
+    CondenseRequest,
     SLOT_RANGES,
     XHS_PUBLICATION_NAME,
+    XHSCondenser,
     build_caption,
     build_cards,
     condense_slot,
     paginate_briefs,
     render_cards_html,
 )
+
+
+class FakeCondenser:
+    def __init__(self, text: str) -> None:
+        self.text = text
+        self.requests: list[CondenseRequest] = []
+
+    def condense(self, request: CondenseRequest, fallback: str) -> str:
+        self.requests.append(request)
+        assert fallback
+        return self.text
 
 
 def sample_issue():
@@ -72,6 +87,43 @@ def test_condense_slot_returns_in_range_text_without_rewrite() -> None:
     min_chars, max_chars = SLOT_RANGES["brief_summary"]
 
     assert condense_slot(text, slot_type="brief_summary", min_chars=min_chars, max_chars=max_chars) == text
+
+
+def test_condense_slot_uses_ai_condenser_seam() -> None:
+    min_chars, max_chars = SLOT_RANGES["brief_summary"]
+    condenser = FakeCondenser("苹果启用 Siri 语速和表达度调节。")
+
+    result = condense_slot(
+        "苹果在最新开发者测试版中启用了此前标注即将推出的 Siri 语速和表达度两项语音控制，用户可以用滑块调节 Siri 说话的快慢和情感丰富程度。",
+        slot_type="brief_summary",
+        min_chars=min_chars,
+        max_chars=max_chars,
+        title="苹果 iOS 27 beta 开放 Siri 语速与表达度调节",
+        condenser=condenser,  # type: ignore[arg-type]
+    )
+
+    assert result == "苹果启用 Siri 语速和表达度调节。"
+    assert condenser.requests[0].slot_type == "brief_summary"
+    assert condenser.requests[0].title.startswith("苹果 iOS")
+
+
+def test_xhs_condenser_falls_back_when_ai_provider_fails(monkeypatch) -> None:
+    issue = sample_issue()
+    condenser = XHSCondenser(issue, config=PipelineConfig())
+    request = CondenseRequest(
+        slot_type="brief_summary",
+        title="测试标题",
+        original_text="这是一段超过目标长度的原始文本，用来验证 AI provider 失败时导出仍然可以回落到确定性兜底，不会崩溃。",
+        min_chars=22,
+        max_chars=52,
+    )
+
+    def fail_run_ai_task(**kwargs):  # noqa: ANN001
+        raise AIEngineError("provider unavailable")
+
+    monkeypatch.setattr("daily_news.xhs_export.run_ai_task", fail_run_ai_task)
+
+    assert condenser.condense(request, "确定性兜底文本。") == "确定性兜底文本。"
 
 
 def test_render_xhs_cards_html_contains_fixed_card_size_and_prototype_classes() -> None:

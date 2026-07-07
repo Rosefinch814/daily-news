@@ -1670,7 +1670,15 @@ def clean_run(args: argparse.Namespace) -> int:
 def export_xhs(args: argparse.Namespace) -> int:
     issue = load_issue_for_xhs(args.date)
     output_dir = Path(args.output_dir) if args.output_dir else None
-    result = export_xhs_issue(issue, output_dir=output_dir)
+    config = load_pipeline_config(Path(args.config) if args.config else None)
+    provider = args.provider or config.ai.stage_providers.get("xhs_condense") or config.ai.default_provider
+    result = export_xhs_issue(
+        issue,
+        output_dir=output_dir,
+        config=config,
+        ai_condense=not args.no_ai_condense,
+        provider=provider,
+    )
     print(f"小红书日报图组已导出：{result.output_dir}")
     for path in result.image_paths:
         print(f"- {path}")
@@ -1799,6 +1807,9 @@ def build_parser() -> argparse.ArgumentParser:
     export_xhs_parser = subparsers.add_parser("export-xhs", help="Export a daily issue as Xiaohongshu image cards")
     export_xhs_parser.add_argument("--date", required=True, help="Issue date in YYYY-MM-DD format")
     export_xhs_parser.add_argument("--output-dir", help="Override output directory; defaults to web/runs/xhs/<date>")
+    export_xhs_parser.add_argument("--config", help="Pipeline config path; defaults to web/config/pipeline.yaml")
+    export_xhs_parser.add_argument("--provider", choices=["claude", "codex"], help="Override xhs_condense provider")
+    export_xhs_parser.add_argument("--no-ai-condense", action="store_true", help="Use deterministic card text fallback only")
     export_xhs_parser.set_defaults(func=export_xhs)
 
     validate_parser = subparsers.add_parser("validate-config", help="Validate section config")

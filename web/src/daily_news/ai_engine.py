@@ -57,6 +57,10 @@ class ProviderRunResult:
     extra: dict[str, Any] = field(default_factory=dict)
 
 
+class XHSCondenseOutput(BaseModel):
+    text: str
+
+
 def extract_json_object(output: str) -> dict[str, Any]:
     stripped = output.strip()
     try:
@@ -565,6 +569,33 @@ JSON schema 形状：
   "seed_suggestions_append": "- 建议关注清单新增：...",
   "changes": ["提高 AI 芯片供应链新闻权重", "降低发布会通稿权重"]
 }}
+""".strip()
+
+
+def build_xhs_condense_prompt(payload: dict[str, Any]) -> str:
+    return f"""
+你是《AI科技日报》的小红书卡片文案收敛助手。请只基于输入文本，把指定槽位轻度压缩到目标字数区间，输出严格 JSON。
+
+任务输入字段：
+- slot_type：headline_summary / headline_impact / brief_summary
+- title：该新闻标题，用于理解上下文，不得引入标题以外的新事实
+- original_text：日报原文槽位文本
+- target_min / target_max：目标字数区间
+
+反漂移铁律：
+1. 只压缩、只删除次要信息，不得新增、改写、推断任何事实、数字、主体、时间、来源。
+2. 来源署名、关键数字、主体公司/人物不可动。
+3. 必须完整句收尾，禁止输出省略号（… 或 ...）。
+4. 如果 original_text 已经落在 target_min 到 target_max 内，原样返回。
+5. 如果无法同时满足区间和完整表达，宁可略短，不许编内容凑字。
+6. slot_type=headline_impact 时，内容仍然是分析判断，不要改写成事实摘要。
+
+输出要求：
+- 只输出一个 JSON 对象，不要 Markdown，不要解释。
+- JSON schema：{{"text": "收敛后的中文文本"}}
+
+输入：
+{json.dumps(payload, ensure_ascii=False, indent=2)}
 """.strip()
 
 

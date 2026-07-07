@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import html
+import logging
 import math
 import re
 import shutil
@@ -8,8 +9,17 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Literal, Sequence
 
+from daily_news.ai_engine import (
+    AIEngineError,
+    ProviderName,
+    XHSCondenseOutput,
+    build_xhs_condense_prompt,
+    run_ai_task,
+)
+from daily_news.config import PipelineConfig
 from daily_news.models import BriefArticle, HeadlineArticle, Issue
 from daily_news.paths import DIST_DIR, RUNS_DIR
+from daily_news.storage.local import save_ai_task_run
 
 
 CARD_WIDTH = 1080
@@ -21,6 +31,7 @@ BRIEF_LIST_HEIGHT_LIMIT = 1080
 BRIEF_ITEM_SOFT_LIMIT = 260
 HASHTAGS = f"#{XHS_PUBLICATION_NAME} #科技日报 #AI日报 #人工智能 #科技资讯"
 WEEKDAYS_CN = ["周一", "周二", "周三", "周四", "周五", "周六", "周日"]
+LOGGER = logging.getLogger(__name__)
 
 SlotType = Literal["headline_summary", "headline_impact", "brief_summary"]
 SLOT_RANGES: dict[SlotType, tuple[int, int]] = {
@@ -44,6 +55,77 @@ class Card:
     html_body: str
 
 
+@dataclass(frozen=True)
+class CondenseRequest:
+    slot_type: SlotType
+    title: str
+    original_text: str
+    min_chars: int
+    max_chars: int
+
+
+class XHSCondenser:
+    def __init__(self, issue: Issue, *, config: PipelineConfig, provider: ProviderName | None = None) -> None:
+        self.config = config
+        self.provider: ProviderName = provider or config.ai.stage_providers.get("xhs_condense") or config.ai.default_provider
+        self.run_id = f"xhs-{issue.issue_date.isoformat()}"
+        self.cache: dict[CondenseRequest, str] = {}
+        self.sequence = 0
+
+    def condense(self, request: CondenseRequest, fallback: str) -> str:
+        if request in self.cache:
+            return self.cache[request]
+        if original_text_is_in_range(request.original_text, request.min_chars, request.max_chars):
+            self.cache[request] = finish_complete_text(compact_text(request.original_text))
+            return self.cache[request]
+
+        payload = {
+            "slot_type": request.slot_type,
+            "title": request.title,
+            "original_text": compact_text(request.original_text),
+            "target_min": request.min_chars,
+            "target_max": request.max_chars,
+        }
+        self.sequence += 1
+        stage = f"xhs_condense_{self.sequence:02d}"
+        try:
+            output, ai_run = run_ai_task(
+                task_type="xhs_condense",
+                prompt=build_xhs_condense_prompt(payload),
+                output_model=XHSCondenseOutput,
+                provider=self.provider,
+                config=self.config,
+            )
+            save_ai_task_run(
+                self.run_id,
+                stage,
+                ai_run,
+                save_attempts=self.config.logging.save_attempts,
+                save_provider_events=self.config.logging.save_provider_events,
+                append_metrics_jsonl=self.config.logging.append_metrics_jsonl,
+            )
+            candidate = finish_complete_text(compact_text(output.text))
+            if is_valid_condensed_text(candidate, request):
+                self.cache[request] = candidate
+                return candidate
+            LOGGER.warning("xhs_condense output rejected for %s: %s", request.slot_type, candidate)
+        except AIEngineError as exc:
+            if exc.record is not None:
+                failed_record = exc.record
+                save_ai_task_run(
+                    self.run_id,
+                    stage,
+                    failed_record,
+                    save_attempts=self.config.logging.save_attempts,
+                    save_provider_events=self.config.logging.save_provider_events,
+                    append_metrics_jsonl=self.config.logging.append_metrics_jsonl,
+                )
+            LOGGER.warning("xhs_condense failed for %s: %s", request.slot_type, exc)
+
+        self.cache[request] = fallback
+        return fallback
+
+
 def load_issue_for_xhs(issue_date: str, *, dist_dir: Path = DIST_DIR) -> Issue:
     issue_path = dist_dir / "data" / "issues" / f"{issue_date}.json"
     if not issue_path.exists():
@@ -55,13 +137,17 @@ def export_xhs_issue(
     issue: Issue,
     *,
     output_dir: Path | None = None,
+    config: PipelineConfig | None = None,
+    ai_condense: bool = False,
+    provider: ProviderName | None = None,
 ) -> XHSExportResult:
     out_dir = output_dir or RUNS_DIR / "xhs" / issue.issue_date.isoformat()
     out_dir.mkdir(parents=True, exist_ok=True)
     for old in out_dir.glob("*.png"):
         old.unlink()
 
-    cards = build_cards(issue)
+    condenser = XHSCondenser(issue, config=config, provider=provider) if ai_condense and config else None
+    cards = build_cards(issue, condenser=condenser)
     html_path = out_dir / "cards.html"
     html_path.write_text(render_cards_html(issue, cards), encoding="utf-8")
     caption_path = out_dir / "caption.txt"
@@ -75,11 +161,11 @@ def export_xhs_issue(
     )
 
 
-def build_cards(issue: Issue) -> list[Card]:
+def build_cards(issue: Issue, *, condenser: XHSCondenser | None = None) -> list[Card]:
     cards = [cover_card(issue)]
     for index, article in enumerate(issue.headlines[:MAX_HEADLINE_CARDS], start=1):
-        cards.append(headline_card(issue, article, index))
-    cards.extend(brief_cards(issue))
+        cards.append(headline_card(issue, article, index, condenser=condenser))
+    cards.extend(brief_cards(issue, condenser=condenser))
     return cards
 
 
@@ -115,7 +201,13 @@ def cover_card(issue: Issue) -> Card:
     return Card(kind="cover", html_body=body)
 
 
-def headline_card(issue: Issue, article: HeadlineArticle, index: int) -> Card:
+def headline_card(
+    issue: Issue,
+    article: HeadlineArticle,
+    index: int,
+    *,
+    condenser: XHSCondenser | None = None,
+) -> Card:
     total = min(len(issue.headlines), MAX_HEADLINE_CARDS)
     summary_min, summary_max = SLOT_RANGES["headline_summary"]
     impact_min, impact_max = SLOT_RANGES["headline_impact"]
@@ -127,11 +219,11 @@ def headline_card(issue: Issue, article: HeadlineArticle, index: int) -> Card:
         <h2>{escape(article.title_zh)}</h2>
         <div class="fact">
           <div class="label">发生了什么</div>
-          <p>{escape(condense_slot(article.summary_zh, slot_type="headline_summary", min_chars=summary_min, max_chars=summary_max))}</p>
+          <p>{escape(condense_slot(article.summary_zh, slot_type="headline_summary", min_chars=summary_min, max_chars=summary_max, title=article.title_zh, condenser=condenser))}</p>
         </div>
         <div class="impact">
           <div class="label"><span class="chip">AI</span>为什么重要 · AI 分析</div>
-          <p>{escape(condense_slot(article.ai_impact, slot_type="headline_impact", min_chars=impact_min, max_chars=impact_max))}</p>
+          <p>{escape(condense_slot(article.ai_impact, slot_type="headline_impact", min_chars=impact_min, max_chars=impact_max, title=article.title_zh, condenser=condenser))}</p>
         </div>
         <div class="src">来源 · {escape(source_names(article.sources))}</div>
       </div>
@@ -140,13 +232,13 @@ def headline_card(issue: Issue, article: HeadlineArticle, index: int) -> Card:
     return Card(kind="headline", html_body=body)
 
 
-def brief_cards(issue: Issue) -> list[Card]:
-    pages = paginate_briefs(issue.briefs)
+def brief_cards(issue: Issue, *, condenser: XHSCondenser | None = None) -> list[Card]:
+    pages = paginate_briefs(issue.briefs, condenser=condenser)
     cards: list[Card] = []
     start_no = 1
     for page_index, page_items in enumerate(pages, start=1):
         items_html = "\n".join(
-            brief_item_html(article, start_no + offset)
+            brief_item_html(article, start_no + offset, condenser=condenser)
             for offset, article in enumerate(page_items)
         )
         body = f"""
@@ -162,13 +254,15 @@ def brief_cards(issue: Issue) -> list[Card]:
     return cards
 
 
-def brief_item_html(article: BriefArticle, number: int) -> str:
+def brief_item_html(article: BriefArticle, number: int, *, condenser: XHSCondenser | None = None) -> str:
     min_chars, max_chars = SLOT_RANGES["brief_summary"]
     summary = condense_slot(
         article.summary_zh,
         slot_type="brief_summary",
         min_chars=min_chars,
         max_chars=max_chars,
+        title=article.title_zh,
+        condenser=condenser,
     )
     return f"""
       <div class="brief-item">
@@ -250,12 +344,12 @@ def render_card_images(html_path: Path, output_dir: Path, count: int) -> list[Pa
     return image_paths
 
 
-def paginate_briefs(items: Sequence[BriefArticle]) -> list[list[BriefArticle]]:
+def paginate_briefs(items: Sequence[BriefArticle], *, condenser: XHSCondenser | None = None) -> list[list[BriefArticle]]:
     pages: list[list[BriefArticle]] = []
     current: list[BriefArticle] = []
     current_height = 0
     for item in items:
-        height = estimate_brief_item_height(item)
+        height = estimate_brief_item_height(item, condenser=condenser)
         should_break = (
             current
             and (
@@ -275,13 +369,15 @@ def paginate_briefs(items: Sequence[BriefArticle]) -> list[list[BriefArticle]]:
     return pages
 
 
-def estimate_brief_item_height(article: BriefArticle) -> int:
+def estimate_brief_item_height(article: BriefArticle, *, condenser: XHSCondenser | None = None) -> int:
     min_chars, max_chars = SLOT_RANGES["brief_summary"]
     summary = condense_slot(
         article.summary_zh,
         slot_type="brief_summary",
         min_chars=min_chars,
         max_chars=max_chars,
+        title=article.title_zh,
+        condenser=condenser,
     )
     title_lines = max(1, math.ceil(len(article.title_zh) / 22))
     summary_lines = max(1, math.ceil(len(summary) / 27))
@@ -292,7 +388,29 @@ def estimate_brief_item_height(article: BriefArticle) -> int:
     return title_height + summary_height + source_height + vertical_padding_and_margins
 
 
-def condense_slot(text: str, *, slot_type: SlotType, min_chars: int, max_chars: int) -> str:
+def condense_slot(
+    text: str,
+    *,
+    slot_type: SlotType,
+    min_chars: int,
+    max_chars: int,
+    title: str = "",
+    condenser: XHSCondenser | None = None,
+) -> str:
+    fallback = fallback_condense_slot(text, slot_type=slot_type, min_chars=min_chars, max_chars=max_chars)
+    if condenser is None:
+        return fallback
+    request = CondenseRequest(
+        slot_type=slot_type,
+        title=title,
+        original_text=text,
+        min_chars=min_chars,
+        max_chars=max_chars,
+    )
+    return condenser.condense(request, fallback)
+
+
+def fallback_condense_slot(text: str, *, slot_type: SlotType, min_chars: int, max_chars: int) -> str:
     value = compact_text(text)
     if not value:
         return ""
@@ -313,6 +431,27 @@ def condense_slot(text: str, *, slot_type: SlotType, min_chars: int, max_chars: 
         selected.append(unit)
         total = next_total
     return finish_complete_text("".join(selected))
+
+
+def original_text_is_in_range(text: str, min_chars: int, max_chars: int) -> bool:
+    value = compact_text(text)
+    return min_chars <= len(value) <= max_chars and ends_complete(value)
+
+
+def is_valid_condensed_text(text: str, request: CondenseRequest) -> bool:
+    if not text or "…" in text or "..." in text:
+        return False
+    if not ends_complete(text):
+        return False
+    if len(text) > request.max_chars:
+        return False
+    if len(compact_text(request.original_text)) >= request.min_chars and len(text) < request.min_chars:
+        return False
+    return numbers_in_text(text).issubset(numbers_in_text(request.original_text + request.title))
+
+
+def numbers_in_text(text: str) -> set[str]:
+    return set(re.findall(r"\d+(?:\.\d+)?%?", text))
 
 
 def compact_text(text: str) -> str:
