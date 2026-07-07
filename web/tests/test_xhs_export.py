@@ -1,7 +1,13 @@
 from datetime import date
 from pathlib import Path
 
-from daily_news.ai_engine import AIEngineError, XHSCondenseOutput, build_xhs_condense_file_prompt
+from daily_news.ai_engine import (
+    AIEngineError,
+    XHSCondenseOutput,
+    XHSNoteTitleOutput,
+    build_xhs_condense_file_prompt,
+    build_xhs_note_title_prompt,
+)
 from daily_news.config import PipelineConfig
 from daily_news.main import make_issue
 from daily_news.models import AIIssueOutput
@@ -9,13 +15,18 @@ from daily_news.xhs_export import (
     BRIEF_PAGE_MAX_ITEMS,
     CondenseRequest,
     SLOT_RANGES,
+    NOTE_HASHTAGS,
     XHS_PUBLICATION_NAME,
     XHSCondenser,
     build_xhs_condense_input,
+    build_xhs_note_title_input,
     build_caption,
     build_cards,
+    build_note_title,
     collect_condense_slots,
     condense_slot,
+    fallback_note_title,
+    is_valid_note_title,
     paginate_briefs,
     prepare_xhs_condenser,
     render_cards_html,
@@ -134,6 +145,54 @@ def test_xhs_condense_file_prompt_contains_design_contract(tmp_path: Path) -> No
     assert "target_max 是硬上限" in prompt
 
 
+def test_xhs_note_title_prompt_contains_hard_limit_and_input_path(tmp_path: Path) -> None:
+    input_path = tmp_path / "xhs_note_title_input.json"
+    input_path.write_text("{}", encoding="utf-8")
+
+    prompt = build_xhs_note_title_prompt(input_path)
+
+    assert str(input_path) in prompt
+    assert "不超过 20 个中文字符" in prompt
+    assert "忠实、不标题党、不新增事实" in prompt
+    assert '{"title": "不超过20字的中文标题"}' in prompt
+
+
+def test_build_xhs_note_title_input_contains_only_needed_issue_context() -> None:
+    issue = sample_issue()
+
+    payload = build_xhs_note_title_input(issue)
+
+    assert payload["publication_name"] == XHS_PUBLICATION_NAME
+    assert payload["title_max_chars"] == 20
+    assert payload["headlines"][0]["title"] == issue.headlines[0].title_zh
+    assert payload["headlines"][0]["summary_zh"] == issue.headlines[0].summary_zh
+    assert payload["brief_titles"] == [article.title_zh for article in issue.briefs]
+    assert "read_body_zh" not in payload["headlines"][0]
+
+
+def test_note_title_validator_rejects_overlimit_and_new_numbers() -> None:
+    issue = sample_issue()
+
+    assert is_valid_note_title("AI日报今日重点", issue)
+    assert not is_valid_note_title("这是一条明确超过二十个中文字符的小红书标题", issue)
+    assert not is_valid_note_title("新增9999亿订单", issue)
+    assert not is_valid_note_title("AI日报...", issue)
+
+
+def test_build_note_title_falls_back_when_ai_disabled_or_provider_fails(monkeypatch, tmp_path: Path) -> None:
+    issue = sample_issue()
+
+    assert build_note_title(issue, out_dir=tmp_path, config=PipelineConfig(), ai_enabled=False) == fallback_note_title(issue)
+
+    def fail_run_ai_task(**kwargs):  # noqa: ANN001
+        raise AIEngineError("provider unavailable")
+
+    monkeypatch.setattr("daily_news.xhs_export.run_ai_task", fail_run_ai_task)
+
+    assert build_note_title(issue, out_dir=tmp_path, config=PipelineConfig(), ai_enabled=True) == fallback_note_title(issue)
+    assert (tmp_path / "xhs_note_title_input.json").exists()
+
+
 def test_prepare_xhs_condenser_falls_back_when_batch_ai_fails(monkeypatch, tmp_path: Path) -> None:
     issue = sample_issue()
 
@@ -163,6 +222,14 @@ def test_xhs_condense_schema_is_strict_for_codex_response_format() -> None:
     assert schema["properties"]["slots"]["type"] == "array"
 
 
+def test_xhs_note_title_schema_is_strict_for_codex_response_format() -> None:
+    schema = XHSNoteTitleOutput.model_json_schema()
+
+    assert schema["type"] == "object"
+    assert schema["additionalProperties"] is False
+    assert schema["properties"]["title"]["type"] == "string"
+
+
 def test_render_xhs_cards_html_contains_fixed_card_size_and_prototype_classes() -> None:
     issue = sample_issue()
     html = render_cards_html(issue, build_cards(issue))
@@ -180,8 +247,12 @@ def test_build_xhs_caption_uses_xhs_publication_name() -> None:
     issue = sample_issue()
 
     caption = build_caption(issue)
+    lines = caption.splitlines()
 
-    assert f"{XHS_PUBLICATION_NAME}｜2026.06.23" in caption
+    assert lines[0] == "AI科技日报 · 6月23日"
+    assert NOTE_HASHTAGS in caption
     assert "今日头条：" in caption
-    assert issue.headlines[0].title_zh in caption
-    assert f"#{XHS_PUBLICATION_NAME}" in caption
+    for idx, article in enumerate(issue.headlines[:3], start=1):
+        assert f"{idx}. {article.title_zh}" in caption
+    assert "速览还包括" not in caption
+    assert len(caption) <= 1000

@@ -6,6 +6,7 @@ ai:
     issue_compose: codex
     digest_feedback: codex
     xhs_condense: codex
+    xhs_note_title: codex
   timeout_seconds: 900
   repair_attempts: 1
   codex:

@@ -14,7 +14,9 @@ from daily_news.ai_engine import (
     AIEngineError,
     ProviderName,
     XHSCondenseOutput,
+    XHSNoteTitleOutput,
     build_xhs_condense_file_prompt,
+    build_xhs_note_title_prompt,
     run_ai_task,
 )
 from daily_news.config import PipelineConfig
@@ -31,6 +33,8 @@ BRIEF_PAGE_MAX_ITEMS = 5
 BRIEF_LIST_HEIGHT_LIMIT = 1080
 BRIEF_ITEM_SOFT_LIMIT = 260
 HASHTAGS = f"#{XHS_PUBLICATION_NAME} #科技日报 #AI日报 #人工智能 #科技资讯"
+NOTE_HASHTAGS = "#AI日报 #人工智能 #AIGC #科技资讯"
+NOTE_SLOGAN = "看完图组，快速补齐今天最值得关注的 AI 与科技动态。"
 WEEKDAYS_CN = ["周一", "周二", "周三", "周四", "周五", "周六", "周日"]
 LOGGER = logging.getLogger(__name__)
 
@@ -128,7 +132,14 @@ def export_xhs_issue(
     html_path = out_dir / "cards.html"
     html_path.write_text(render_cards_html(issue, cards), encoding="utf-8")
     caption_path = out_dir / "caption.txt"
-    caption_path.write_text(build_caption(issue), encoding="utf-8")
+    note_title = build_note_title(
+        issue,
+        out_dir=out_dir,
+        config=config,
+        provider=provider,
+        ai_enabled=ai_condense and config is not None,
+    )
+    caption_path.write_text(build_caption(issue, title=note_title), encoding="utf-8")
     image_paths = render_card_images(html_path, out_dir, len(cards))
     return XHSExportResult(
         output_dir=out_dir,
@@ -179,6 +190,79 @@ def prepare_xhs_condenser(
         LOGGER.warning("xhs_condense batch failed: %s", exc)
         responses = {}
     return XHSCondenser(responses)
+
+
+def build_note_title(
+    issue: Issue,
+    *,
+    out_dir: Path | None = None,
+    config: PipelineConfig | None = None,
+    provider: ProviderName | None = None,
+    ai_enabled: bool = False,
+) -> str:
+    fallback = fallback_note_title(issue)
+    if not ai_enabled or config is None or out_dir is None:
+        return fallback
+
+    input_path = out_dir / "xhs_note_title_input.json"
+    input_path.write_text(json.dumps(build_xhs_note_title_input(issue), ensure_ascii=False, indent=2), encoding="utf-8")
+    selected_provider: ProviderName = provider or config.ai.stage_providers.get("xhs_note_title") or config.ai.default_provider
+    try:
+        output, ai_run = run_ai_task(
+            task_type="xhs_note_title",
+            prompt=build_xhs_note_title_prompt(input_path.resolve()),
+            output_model=XHSNoteTitleOutput,
+            provider=selected_provider,
+            config=config,
+        )
+        save_ai_task_run(
+            f"xhs-{issue.issue_date.isoformat()}",
+            "xhs_note_title",
+            ai_run,
+            save_attempts=config.logging.save_attempts,
+            save_provider_events=config.logging.save_provider_events,
+            append_metrics_jsonl=config.logging.append_metrics_jsonl,
+        )
+    except AIEngineError as exc:
+        if exc.record is not None:
+            save_ai_task_run(
+                f"xhs-{issue.issue_date.isoformat()}",
+                "xhs_note_title",
+                exc.record,
+                save_attempts=config.logging.save_attempts,
+                save_provider_events=config.logging.save_provider_events,
+                append_metrics_jsonl=config.logging.append_metrics_jsonl,
+            )
+        LOGGER.warning("xhs_note_title failed: %s", exc)
+        return fallback
+
+    title = compact_text(output.title)
+    if is_valid_note_title(title, issue):
+        return title
+
+    LOGGER.warning("xhs_note_title output rejected: %s", title)
+    return fallback
+
+
+def build_xhs_note_title_input(issue: Issue) -> dict[str, object]:
+    return {
+        "publication_name": XHS_PUBLICATION_NAME,
+        "issue_date": issue.issue_date.isoformat(),
+        "date_cn": issue.date_cn,
+        "title_max_chars": 20,
+        "headlines": [
+            {
+                "index": index,
+                "title": article.title_zh,
+                "kicker": article.kicker,
+                "summary_zh": compact_text(article.summary_zh),
+                "ai_impact": compact_text(article.ai_impact),
+                "sources": source_payload(article.sources),
+            }
+            for index, article in enumerate(issue.headlines[:MAX_HEADLINE_CARDS], start=1)
+        ],
+        "brief_titles": [article.title_zh for article in issue.briefs],
+    }
 
 
 def collect_condense_slots(issue: Issue) -> list[XHSCondenseSlot]:
@@ -383,23 +467,62 @@ def brief_item_html(article: BriefArticle, number: int, *, condenser: XHSCondens
     """
 
 
-def build_caption(issue: Issue) -> str:
+def build_caption(issue: Issue, *, title: str | None = None) -> str:
+    note_title = title if title is not None else fallback_note_title(issue)
+    return f"{note_title}\n\n{build_note_body(issue)}\n"
+
+
+def build_note_body(issue: Issue) -> str:
     headline_lines = "\n".join(
         f"{idx}. {article.title_zh}"
         for idx, article in enumerate(issue.headlines[:MAX_HEADLINE_CARDS], start=1)
     )
-    brief_topics = " / ".join(article.title_zh for article in issue.briefs[:5])
     parts = [
-        f"{XHS_PUBLICATION_NAME}｜{date_dot(issue)}",
-        f"今日 {len(issue.headlines) + len(issue.briefs)} 条，约 {estimate_reading_minutes(issue)} 分钟读完。",
+        NOTE_HASHTAGS,
         "",
         "今日头条：",
         headline_lines,
+        "",
+        NOTE_SLOGAN,
     ]
-    if brief_topics:
-        parts.extend(["", f"速览还包括：{brief_topics}"])
-    parts.extend(["", HASHTAGS, ""])
-    return "\n".join(parts)
+    return limit_note_body("\n".join(part for part in parts if part is not None), issue)
+
+
+def limit_note_body(body: str, issue: Issue) -> str:
+    if len(body) <= 1000:
+        return body
+    for headline_count in range(min(len(issue.headlines), MAX_HEADLINE_CARDS) - 1, 0, -1):
+        headline_lines = "\n".join(
+            f"{idx}. {article.title_zh}"
+            for idx, article in enumerate(issue.headlines[:headline_count], start=1)
+        )
+        shorter = "\n".join([NOTE_HASHTAGS, "", "今日头条：", headline_lines, "", NOTE_SLOGAN])
+        if len(shorter) <= 1000:
+            return shorter
+    return finish_complete_text("\n".join([NOTE_HASHTAGS, "", NOTE_SLOGAN])[:1000])
+
+
+def fallback_note_title(issue: Issue) -> str:
+    return f"{XHS_PUBLICATION_NAME} · {issue.issue_date.month}月{issue.issue_date.day}日"
+
+
+def is_valid_note_title(title: str, issue: Issue) -> bool:
+    if not title or len(title) > 20 or "\n" in title or "…" in title or "..." in title:
+        return False
+    allowed_text = " ".join(
+        [
+            XHS_PUBLICATION_NAME,
+            issue.issue_date.isoformat(),
+            issue.date_cn,
+            f"{issue.issue_date.month}月{issue.issue_date.day}日",
+        ]
+        + [
+            f"{article.title_zh} {article.summary_zh} {article.ai_impact}"
+            for article in issue.headlines[:MAX_HEADLINE_CARDS]
+        ]
+        + [article.title_zh for article in issue.briefs]
+    )
+    return numbers_in_text(title).issubset(numbers_in_text(allowed_text))
 
 
 def render_cards_html(issue: Issue, cards: Sequence[Card]) -> str:

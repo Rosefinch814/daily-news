@@ -70,6 +70,12 @@ class XHSCondenseOutput(BaseModel):
     slots: list[XHSCondenseSlotOutput]
 
 
+class XHSNoteTitleOutput(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    title: str
+
+
 def extract_json_object(output: str) -> dict[str, Any]:
     stripped = output.strip()
     try:
@@ -612,6 +618,32 @@ CC 设计规范字数契约：
 - 只输出一个 JSON 对象，不要 Markdown，不要解释。
 - 输出 slots 数组，id 必须逐一对应输入 slots 中的 id；不要新增 id，不要遗漏 id。
 - JSON schema：{{"slots": [{{"id": "headline_01_summary", "text": "收敛后的中文文本"}}]}}
+""".strip()
+
+
+def build_xhs_note_title_prompt(input_path: Path) -> str:
+    return f"""
+你是《AI科技日报》的小红书发布标题助手。请读取本地 JSON 文件，只生成一个适合小红书发布的标题，输出严格 JSON。
+
+输入文件：
+{input_path}
+
+标题铁律：
+1. 标题必须不超过 20 个中文字符；20 是硬上限，超过会被本地拒绝并回退固定标题。
+2. 忠实、不标题党、不新增事实；只能使用输入文件里的日期、刊名、头条标题、摘要、AI 分析和来源信息。
+3. 不得改写关键数字、主体公司/人物、时间、地点；不确定就写更概括的标题。
+4. 标题应该像一个钩子，但只能突出当天最值得看的真实角度，不要夸张、煽动或制造未发生的因果。
+5. 不要使用省略号（… 或 ...）、换行、引号、Markdown。
+
+输入文件字段：
+- publication_name / issue_date / date_cn：本期元数据。
+- title_max_chars：标题硬上限。
+- headlines：当天用于图组的头条，按日报顺序排列。
+- brief_titles：当天速览标题，仅用于理解整体主题，不要编造速览事实。
+
+输出要求：
+- 只输出一个 JSON 对象，不要 Markdown，不要解释。
+- JSON schema：{{"title": "不超过20字的中文标题"}}
 """.strip()
 
 
