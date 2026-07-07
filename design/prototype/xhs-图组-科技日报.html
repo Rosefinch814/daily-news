@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>小红书图组原型 · 科技日报</title>
+<!--
+  小红书图组导出 · 视觉定稿原型（封面 / 头条 / 速览）—— 用户已确认。
+  视觉已回流 design/设计规范.md §12（样式权威）。字数契约/导出行为回 spec §7（产品对话另行定）。
+  基调：design/设计规范.md 的 V1a 报纸感；竖版 1080×1440 为新媒介，允许有意分叉。
+  头条采用【方案 A】：事实=裸通栏正文(主角)，AI 分析=朱红左竖条浅底"批注卡"(从属)。
+  卡内文案已按【草案字数契约】忠实收敛（不漂移、不半句、不省略号），演示定稿版面观感。
+  真实入库前的字数须以 Codex 渲染真图核定，允许 ±3~5 字微调。
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,900&family=JetBrains+Mono:wght@500;700&family=Noto+Serif+SC:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F4EFE3; --ink:#1A1714; --ink-2:#3D372F; --ink-3:#5A5247;
+  --muted:#8E836F; --rule:#D2C8B2; --rule-2:#B7AB90;
+  --seal:#A6342B; --seal-soft:#F0DCD5; --ai-bg:#ECE7DA; --field:#FBF8EF;
+  --sans:"Noto Serif SC","Songti SC",serif;
+  --disp:"Fraunces","Georgia",serif;
+  --mono:"JetBrains Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box;}
+body{
+  margin:0; background:#cfc6b2; color:var(--ink);
+  font-family:var(--sans);
+  padding:44px;
+}
+.page-head{max-width:1400px;margin:0 auto 30px;font-family:var(--mono);color:#4a4234;}
+.page-head h1{font-family:var(--disp);font-weight:900;color:#3a3226;margin:0 0 6px;font-size:26px;}
+.page-head p{margin:2px 0;font-size:13px;line-height:1.6;}
+.page-head .seal{color:var(--seal);font-weight:700;}
+
+.gallery{display:flex;flex-wrap:wrap;gap:48px;justify-content:center;}
+.item{display:flex;flex-direction:column;align-items:center;gap:12px;}
+.item .cap{font-family:var(--mono);font-size:13px;color:#4a4234;}
+.item .cap b{color:var(--seal);}
+/* 缩放取景框：卡片真实 1080×1440，按 0.42 缩小展示 */
+.shrink{width:453.6px;height:604.8px;overflow:hidden;box-shadow:0 18px 46px rgba(40,30,15,.32);}
+.shrink .card{transform:scale(.42);transform-origin:top left;}
+
+/* ============ 卡片基座 ============ */
+.card{
+  width:1080px;height:1440px;background:var(--paper);color:var(--ink);
+  position:relative;overflow:hidden;
+}
+.card .topbar{
+  display:flex;justify-content:space-between;align-items:center;
+  font-family:var(--mono);font-size:22px;letter-spacing:.14em;color:var(--muted);
+}
+.card .topbar .l{color:var(--seal);font-weight:700;}
+.card .foot{
+  position:absolute;left:0;right:0;bottom:0;
+  padding:0 72px 40px;
+  display:flex;justify-content:space-between;align-items:center;
+  font-family:var(--mono);font-size:20px;letter-spacing:.12em;color:var(--muted);
+}
+.card .foot .pg{color:var(--seal);font-weight:700;}
+
+/* ============ 封面 ============ */
+.cover{padding:88px 84px;}
+.cover .cv-top{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:14px;margin-bottom:48px;}
+.pill{
+  font-family:var(--mono);font-weight:700;font-size:22px;letter-spacing:.06em;
+  color:var(--seal);background:var(--seal-soft);
+  border:1.5px solid var(--seal);border-radius:999px;padding:11px 22px;white-space:nowrap;
+}
+.cover .datewrap{display:flex;align-items:center;gap:24px;margin-bottom:28px;}
+.cover .date{
+  font-family:var(--mono);font-weight:700;font-size:82px;letter-spacing:.01em;
+  color:var(--seal);line-height:1;
+}
+.cover .dow{
+  font-family:var(--sans);font-weight:900;font-size:46px;line-height:1;
+  color:var(--paper);background:var(--seal);border-radius:14px;padding:11px 24px;
+}
+.cover .title{
+  font-family:var(--sans);font-weight:900;font-size:146px;line-height:1.02;
+  letter-spacing:.03em;margin:0 0 6px;color:var(--ink);
+}
+.cover .rule{height:8px;background:var(--seal);width:180px;margin:40px 0 56px;}
+.cover .lead-label{
+  font-family:var(--mono);font-weight:700;font-size:26px;letter-spacing:.2em;
+  color:var(--seal);margin-bottom:30px;text-transform:uppercase;
+}
+.cover .hl{display:flex;gap:26px;align-items:flex-start;padding:26px 0;border-top:1.5px solid var(--rule);}
+.cover .hl:last-of-type{border-bottom:1.5px solid var(--rule);}
+.cover .hl .no{font-family:var(--disp);font-weight:900;font-size:52px;line-height:1;color:var(--seal);flex:none;width:74px;}
+.cover .hl .t{font-family:var(--sans);font-weight:700;font-size:40px;line-height:1.28;color:var(--ink);}
+/* 静态左滑提示（截图媒介，不用动效） */
+.cover .swipe{
+  position:absolute;left:0;right:0;bottom:54px;
+  display:flex;align-items:center;justify-content:center;gap:16px;
+  font-family:var(--mono);font-weight:700;font-size:24px;letter-spacing:.2em;
+  color:var(--seal);text-transform:uppercase;
+}
+.cover .swipe svg{color:var(--seal);}
+
+/* ============ 头条页 ============ */
+.headline{padding:58px 72px 86px;display:flex;flex-direction:column;}
+.headline .topbar{flex:none;}
+/* 内容区竖向居中：短文案也均分留白，不在底部堆空白 */
+.hl-body{flex:1 1 auto;display:flex;flex-direction:column;justify-content:center;min-height:0;}
+.headline .kicker{
+  font-family:var(--mono);font-weight:700;font-size:26px;letter-spacing:.16em;
+  color:var(--seal);margin:0 0 18px;text-transform:uppercase;
+}
+.headline h2{
+  font-family:var(--sans);font-weight:900;font-size:56px;line-height:1.18;
+  letter-spacing:.01em;margin:0 0 14px;color:var(--ink);
+}
+/* 事实块：裸通栏正文 = 主角 */
+.fact{margin-top:32px;}
+.fact .label{
+  font-family:var(--mono);font-weight:700;font-size:26px;letter-spacing:.13em;
+  color:var(--ink-3);margin-bottom:16px;
+}
+.fact p{margin:0;font-family:var(--sans);font-weight:500;font-size:36px;line-height:1.5;color:var(--ink-2);}
+/* AI 分析：朱红左竖条 + 浅底批注卡 = 从属 */
+.impact{
+  position:relative;margin-top:40px;
+  padding:30px 36px 34px 40px;
+  background:var(--ai-bg);border-left:8px solid var(--seal);
+}
+.impact .label{
+  display:flex;align-items:center;gap:12px;
+  font-family:var(--mono);font-weight:700;font-size:26px;letter-spacing:.1em;
+  color:var(--seal);margin-bottom:16px;
+}
+.impact .label .chip{
+  font-size:19px;letter-spacing:.08em;color:var(--paper);background:var(--seal);
+  border-radius:5px;padding:3px 10px;
+}
+.impact p{margin:0;font-family:var(--sans);font-weight:500;font-size:34px;line-height:1.52;color:var(--ink-3);}
+.headline .src{margin-top:34px;font-family:var(--mono);font-size:26px;letter-spacing:.06em;color:var(--muted);}
+
+/* ============ 速览页 ============ */
+.briefs{padding:60px 72px 86px;}
+.briefs h2{font-family:var(--sans);font-weight:900;font-size:66px;line-height:1;margin:26px 0 24px;color:var(--ink);}
+.brief-list{border-top:3px solid var(--ink);border-bottom:3px solid var(--ink);}
+.brief-item{display:grid;grid-template-columns:64px 1fr;gap:22px;padding:22px 0;border-bottom:1px solid var(--rule);}
+.brief-item:last-child{border-bottom:0;}
+.brief-item .no{font-family:var(--disp);font-weight:900;font-size:42px;line-height:1;color:var(--seal);}
+.brief-item h3{margin:0;font-family:var(--sans);font-weight:700;font-size:38px;line-height:1.22;color:var(--ink);}
+.brief-item p{margin:10px 0 8px;font-family:var(--sans);font-weight:500;font-size:31px;line-height:1.4;color:var(--ink-2);}
+.brief-item .src{font-family:var(--mono);font-size:20px;letter-spacing:.05em;color:var(--muted);}
+</style>
+</head>
+<body>
+
+<div class="page-head">
+  <h1>小红书图组原型 · 科技日报</h1>
+  <p>竖版 1080×1440（此处按 <span class="seal">0.42</span> 缩放取景；浏览器放大可看原尺寸）。头条＝<span class="seal">方案 A</span>：事实裸通栏(主角) + AI 批注卡(从属)。</p>
+  <p>卡内文案已按 <span class="seal">草案字数契约</span> 忠实收敛 —— 无漂移、无半句、无省略号。真实字数以 Codex 渲染真图核定。</p>
+</div>
+
+<div class="gallery">
+
+  <!-- ============ 封面 ============ -->
+  <div class="item">
+    <div class="cap"><b>①</b> 封面</div>
+    <div class="shrink">
+      <div class="card cover">
+        <div class="cv-top">
+          <span class="pill">3 条头条</span>
+          <span class="pill">11 条速览</span>
+          <span class="pill">约 6 分钟</span>
+        </div>
+        <div class="datewrap"><span class="date">2026.07.07</span><span class="dow">周二</span></div>
+        <h1 class="title">AI科技日报</h1>
+        <div class="rule"></div>
+        <div class="lead-label">今日头条</div>
+        <div class="hl"><div class="no">01</div><div class="t">SK海力士赴美发 ADR，把 AI 存储超级周期搬上华尔街</div></div>
+        <div class="hl"><div class="no">02</div><div class="t">四个月净利 38 亿，深圳存储厂宏芯宇冲刺港股 IPO</div></div>
+        <div class="hl"><div class="no">03</div><div class="t">Vercel CEO：每天一半部署由编码 Agent 触发，模型正与 Agent 解耦</div></div>
+        <div class="swipe">
+          <span>左滑翻阅</span>
+          <svg width="66" height="22" viewBox="0 0 66 22" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M6 4l7 7-7 7"/><path d="M25 4l7 7-7 7"/><path d="M44 4l7 7-7 7"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 头条 1 ============ -->
+  <div class="item">
+    <div class="cap"><b>②</b> 头条 · 方案 A</div>
+    <div class="shrink">
+      <div class="card headline">
+        <div class="topbar"><span class="l">HEADLINE 1</span><span>2026.07.07</span></div>
+        <div class="hl-body">
+          <div class="kicker">半导体 · 存储</div>
+          <h2>SK海力士赴美发 ADR，把 AI 存储超级周期搬上华尔街</h2>
+          <div class="fact">
+            <div class="label">发生了什么</div>
+            <p>韩国存储大厂 SK 海力士周一宣布，将在美国发行近 1780 万股 ADR，每份相当于 1/10 普通股，预计周四定价、周五开始交易；按上周五首尔收盘价估算，可能募资约 280 亿美元。公司一季度营收同比增长近 200%，年内股价上涨约 260%。</p>
+          </div>
+          <div class="impact">
+            <div class="label"><span class="chip">AI</span>为什么重要 · AI 分析</div>
+            <p>本质是把韩国 AI 存储周期的定价权部分交给美国资本市场，也让美股投资者多了一个直接押注 HBM 景气的标的，与已被爆炒的美光形成对照。风险同样明确：5500 亿美元产能要数年才落地，若届时 AI 内存需求结构生变，可能从供不应求反转为过剩、价格跳水。</p>
+          </div>
+          <div class="src">来源 · Reuters</div>
+        </div>
+        <div class="foot"><span>AI科技日报 · 2026.07.07</span><span class="pg">头条 1 / 3</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 头条 3（示不同长度） ============ -->
+  <div class="item">
+    <div class="cap"><b>③</b> 头条 · 另一条</div>
+    <div class="shrink">
+      <div class="card headline">
+        <div class="topbar"><span class="l">HEADLINE 3</span><span>2026.07.07</span></div>
+        <div class="hl-body">
+          <div class="kicker">AI 基础设施 · 访谈</div>
+          <h2>Vercel CEO：每天一半部署由编码 Agent 触发，模型正与 Agent 解耦</h2>
+          <div class="fact">
+            <div class="label">发生了什么</div>
+            <p>云平台 Vercel 的 CEO 透露，公司目前每天处理约 600 万次部署，其中一半由编码 Agent 触发，AI 网关每天流经超过 1 万亿 token。他称去年是“到处做原型”，今年重点转向让 Agent 在生产环境中稳定可用。</p>
+          </div>
+          <div class="impact">
+            <div class="label"><span class="chip">AI</span>为什么重要 · AI 分析</div>
+            <p>一半部署由编码 Agent 发起、日均万亿 token，说明写代码的 Agent 已是当下 token 消耗的主引擎。他点出的“模型与 Agent 解耦”会削弱前沿实验室靠模型锁定客户的护城河，议价权向做编排和基础设施的中间层转移。</p>
+          </div>
+          <div class="src">来源 · TechCrunch</div>
+        </div>
+        <div class="foot"><span>AI科技日报 · 2026.07.07</span><span class="pg">头条 3 / 3</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 速览页 ============ -->
+  <div class="item">
+    <div class="cap"><b>④</b> 速览 · 每页 ≤5</div>
+    <div class="shrink">
+      <div class="card briefs">
+        <div class="topbar"><span class="l">BRIEFS</span><span>2026.07.07</span></div>
+        <h2>今日速览</h2>
+        <div class="brief-list">
+          <div class="brief-item">
+            <div class="no">01</div>
+            <div>
+              <h3>苹果 iOS 27 beta 开放 Siri 语速与表达度调节</h3>
+              <p>iOS 27 测试版启用了 Siri“语速”与“表达度”调节，用户可用滑块控制说话快慢和情感丰富程度。</p>
+              <div class="src">来源 · 9to5Mac</div>
+            </div>
+          </div>
+          <div class="brief-item">
+            <div class="no">02</div>
+            <div>
+              <h3>博客：GLM 5.2 或引爆 AI 推理“利润率崩塌”</h3>
+              <p>开发者撰文认为 AI 成本转折点在推理而非训练，实测开源 GLM 5.2 已接近顶级模型且迁移成本极低，或挤压前沿实验室利润。</p>
+              <div class="src">来源 · 个人博客</div>
+            </div>
+          </div>
+          <div class="brief-item">
+            <div class="no">03</div>
+            <div>
+              <h3>开源工具 OfficeCLI 让 AI Agent 直接读写 Office 文件</h3>
+              <p>OfficeCLI 号称首个面向 Agent 的 Office 套件，单个二进制无需装 Office 即可创建、读写 Word、Excel、PPT。</p>
+              <div class="src">来源 · GitHub</div>
+            </div>
+          </div>
+          <div class="brief-item">
+            <div class="no">04</div>
+            <div>
+              <h3>微软裁员约 4800 人，Xbox 成重灾区并剥离四家工作室</h3>
+              <p>微软裁减约 4800 个岗位、占员工 2.1%，Xbox 受冲击最大约 1600 人，并剥离四家工作室；人力高管称非被 AI 取代。</p>
+              <div class="src">来源 · The Verge</div>
+            </div>
+          </div>
+        </div>
+        <div class="foot"><span>AI科技日报 · 2026.07.07</span><span class="pg">速览 1 / 3</span></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

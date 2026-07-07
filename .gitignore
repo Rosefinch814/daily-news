@@ -31,3 +31,7 @@ web/dist-owner/
 # 临时文件
 *.log
 tmp/
+
+# 小红书旧营销项目的截图产物
+web/marketing/xiaohongshu/cards/*.png
+web/marketing/xiaohongshu/raw/*.png

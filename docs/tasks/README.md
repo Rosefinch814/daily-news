@@ -22,8 +22,8 @@
 
 见 [../milestones/01-科技日报.md](../milestones/01-科技日报.md)。
 
-当前进度（2026-07-01）：
+当前进度（2026-07-07）：
 - M1 主链路已完成：科技单板块日报可抓取、筛选、写作、导出并通过 Cloudflare Pages 发布。
-- M2 反馈闭环已完成：前端反馈写入 Supabase，`digest-feedback` 可生成 taste/style/seed-suggestions，T06/T07 已接入生成链路。
-- M3 先行项：T08 本地硬去重（近 7 天 URL + 可选标题 hash）+ T09 选题级软去重（AI 读近 3 天已发索引判重，绝不硬删）均已完成，T09 为 Codex 先行实现后产品侧追认。
-- 当前无新的 `todo` 工单；下一步以连续运行观察、M2 闭环效果验证、M3 其余（源容错/空板块/档案版本）拆分为主。
+- M2 反馈闭环已完成（含 T10/T11 反馈两通道，代码 done，待用户手动 apply Supabase schema + 设 `OWNER_FEEDBACK_TOKEN` 才生效）。
+- M3 先行项：T08 本地硬去重 + T09 选题级软去重均已完成。
+- **M4 分享·小红书图组导出**：设计已定稿（design §12 + 原型），spec/字数契约已回填。T12（卡片模板落地）、T13（xhs_condense AI 收敛）已 **done**。**新 todo：T14 发布文案（AI 钩子标题 + 精简正文，依赖 T12/T13）**。旧 `web/marketing/` 是无关历史项目，勿动。
