@@ -35,6 +35,24 @@ BRIEF_ITEM_SOFT_LIMIT = 260
 HASHTAGS = f"#{XHS_PUBLICATION_NAME} #科技日报 #AI日报 #人工智能 #科技资讯"
 NOTE_HASHTAGS = "#AI日报 #人工智能 #AIGC #科技资讯"
 NOTE_SLOGAN = "看完图组，快速补齐今天最值得关注的 AI 与科技动态。"
+GENERIC_NOTE_TITLE_TERMS = (
+    "AI科技日报",
+    "AI日报",
+    "日报",
+    "看点",
+    "速览",
+    "简报",
+    "今日看点",
+    "今日重点",
+    "今日速览",
+    "今日简报",
+    "新闻简报",
+    "科技资讯",
+    "科技新闻",
+    "一文看懂",
+    "小红书",
+    "左滑",
+)
 WEEKDAYS_CN = ["周一", "周二", "周三", "周四", "周五", "周六", "周日"]
 LOGGER = logging.getLogger(__name__)
 
@@ -508,6 +526,8 @@ def fallback_note_title(issue: Issue) -> str:
 
 def is_valid_note_title(title: str, issue: Issue) -> bool:
     if not title or len(title) > 20 or "\n" in title or "…" in title or "..." in title:
+        return False
+    if any(term in title for term in GENERIC_NOTE_TITLE_TERMS):
         return False
     allowed_text = " ".join(
         [

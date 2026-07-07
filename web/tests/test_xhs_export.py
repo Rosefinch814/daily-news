@@ -154,6 +154,8 @@ def test_xhs_note_title_prompt_contains_hard_limit_and_input_path(tmp_path: Path
     assert str(input_path) in prompt
     assert "不超过 20 个中文字符" in prompt
     assert "忠实、不标题党、不新增事实" in prompt
+    assert "不要概括整期" in prompt
+    assert "AI科技日报今日看点" in prompt
     assert '{"title": "不超过20字的中文标题"}' in prompt
 
 
@@ -173,10 +175,12 @@ def test_build_xhs_note_title_input_contains_only_needed_issue_context() -> None
 def test_note_title_validator_rejects_overlimit_and_new_numbers() -> None:
     issue = sample_issue()
 
-    assert is_valid_note_title("AI日报今日重点", issue)
+    assert is_valid_note_title("Agent开始接管部署", issue)
     assert not is_valid_note_title("这是一条明确超过二十个中文字符的小红书标题", issue)
     assert not is_valid_note_title("新增9999亿订单", issue)
     assert not is_valid_note_title("AI日报...", issue)
+    assert not is_valid_note_title("AI科技日报今日看点", issue)
+    assert not is_valid_note_title("今日AI速览", issue)
 
 
 def test_build_note_title_falls_back_when_ai_disabled_or_provider_fails(monkeypatch, tmp_path: Path) -> None:
