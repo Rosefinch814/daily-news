@@ -12,7 +12,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Literal, TypeVar
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from daily_news.config import PipelineConfig
 from daily_news.models import (
@@ -58,6 +58,8 @@ class ProviderRunResult:
 
 
 class XHSCondenseOutput(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     text: str
 
 

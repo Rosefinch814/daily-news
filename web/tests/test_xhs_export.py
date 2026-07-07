@@ -1,7 +1,7 @@
 from datetime import date
 from pathlib import Path
 
-from daily_news.ai_engine import AIEngineError
+from daily_news.ai_engine import AIEngineError, XHSCondenseOutput
 from daily_news.config import PipelineConfig
 from daily_news.main import make_issue
 from daily_news.models import AIIssueOutput
@@ -124,6 +124,13 @@ def test_xhs_condenser_falls_back_when_ai_provider_fails(monkeypatch) -> None:
     monkeypatch.setattr("daily_news.xhs_export.run_ai_task", fail_run_ai_task)
 
     assert condenser.condense(request, "确定性兜底文本。") == "确定性兜底文本。"
+
+
+def test_xhs_condense_schema_is_strict_for_codex_response_format() -> None:
+    schema = XHSCondenseOutput.model_json_schema()
+
+    assert schema["type"] == "object"
+    assert schema["additionalProperties"] is False
 
 
 def test_render_xhs_cards_html_contains_fixed_card_size_and_prototype_classes() -> None:
