@@ -57,10 +57,17 @@ class ProviderRunResult:
     extra: dict[str, Any] = field(default_factory=dict)
 
 
+class XHSCondenseSlotOutput(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    id: str
+    text: str
+
+
 class XHSCondenseOutput(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    text: str
+    slots: list[XHSCondenseSlotOutput]
 
 
 def extract_json_object(output: str) -> dict[str, Any]:
@@ -574,15 +581,23 @@ JSON schema 形状：
 """.strip()
 
 
-def build_xhs_condense_prompt(payload: dict[str, Any]) -> str:
+def build_xhs_condense_file_prompt(input_path: Path) -> str:
     return f"""
-你是《AI科技日报》的小红书卡片文案收敛助手。请只基于输入文本，把指定槽位轻度压缩到目标字数区间，输出严格 JSON。
+你是《AI科技日报》的小红书卡片文案收敛助手。请读取本地 JSON 文件，把所有 slots 批量轻度压缩到目标字数区间，输出严格 JSON。
 
-任务输入字段：
-- slot_type：headline_summary / headline_impact / brief_summary
-- title：该新闻标题，用于理解上下文，不得引入标题以外的新事实
-- original_text：日报原文槽位文本
-- target_min / target_max：目标字数区间
+输入文件：
+{input_path}
+
+CC 设计规范字数契约：
+- headline_summary：90-155 字，用于头条「发生了什么」事实摘要。
+- headline_impact：85-145 字，用于头条「为什么重要 · AI 分析」。
+- brief_summary：22-52 字，用于速览一句话摘要。
+- 每个 slot 自带 target_min / target_max；target_max 是硬上限，超过会被本地拒绝并回退兜底。
+
+输入文件字段：
+- publication_name / issue_date：本期元数据。
+- slot_ranges：设计字数契约表。
+- slots：需要收敛的槽位列表。每个 slot 包含 id、slot_type、title、kicker、sources、original_text、target_min、target_max。
 
 反漂移铁律：
 1. 只压缩、只删除次要信息，不得新增、改写、推断任何事实、数字、主体、时间、来源。
@@ -591,13 +606,12 @@ def build_xhs_condense_prompt(payload: dict[str, Any]) -> str:
 4. 如果 original_text 已经落在 target_min 到 target_max 内，原样返回。
 5. 如果无法同时满足区间和完整表达，宁可略短，不许编内容凑字。
 6. slot_type=headline_impact 时，内容仍然是分析判断，不要改写成事实摘要。
+7. slot_type=brief_summary 时，必须是一句话，不要写成两句或小段落。
 
 输出要求：
 - 只输出一个 JSON 对象，不要 Markdown，不要解释。
-- JSON schema：{{"text": "收敛后的中文文本"}}
-
-输入：
-{json.dumps(payload, ensure_ascii=False, indent=2)}
+- 输出 slots 数组，id 必须逐一对应输入 slots 中的 id；不要新增 id，不要遗漏 id。
+- JSON schema：{{"slots": [{{"id": "headline_01_summary", "text": "收敛后的中文文本"}}]}}
 """.strip()
 
 

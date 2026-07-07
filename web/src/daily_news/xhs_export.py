@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import html
+import json
 import logging
 import math
 import re
@@ -13,7 +14,7 @@ from daily_news.ai_engine import (
     AIEngineError,
     ProviderName,
     XHSCondenseOutput,
-    build_xhs_condense_prompt,
+    build_xhs_condense_file_prompt,
     run_ai_task,
 )
 from daily_news.config import PipelineConfig
@@ -57,6 +58,7 @@ class Card:
 
 @dataclass(frozen=True)
 class CondenseRequest:
+    slot_id: str
     slot_type: SlotType
     title: str
     original_text: str
@@ -64,65 +66,40 @@ class CondenseRequest:
     max_chars: int
 
 
+@dataclass(frozen=True)
+class XHSCondenseSlot:
+    request: CondenseRequest
+    article_index: int
+    level: Literal["headline", "brief"]
+    kicker: str
+    sources: list[dict[str, str]]
+
+
 class XHSCondenser:
-    def __init__(self, issue: Issue, *, config: PipelineConfig, provider: ProviderName | None = None) -> None:
-        self.config = config
-        self.provider: ProviderName = provider or config.ai.stage_providers.get("xhs_condense") or config.ai.default_provider
-        self.run_id = f"xhs-{issue.issue_date.isoformat()}"
-        self.cache: dict[CondenseRequest, str] = {}
-        self.sequence = 0
+    def __init__(self, responses: dict[str, str]) -> None:
+        self.responses = responses
+        self.cache: dict[str, str] = {}
 
     def condense(self, request: CondenseRequest, fallback: str) -> str:
-        if request in self.cache:
-            return self.cache[request]
+        if request.slot_id in self.cache:
+            return self.cache[request.slot_id]
         if original_text_is_in_range(request.original_text, request.min_chars, request.max_chars):
-            self.cache[request] = finish_complete_text(compact_text(request.original_text))
-            return self.cache[request]
+            self.cache[request.slot_id] = finish_complete_text(compact_text(request.original_text))
+            return self.cache[request.slot_id]
 
-        payload = {
-            "slot_type": request.slot_type,
-            "title": request.title,
-            "original_text": compact_text(request.original_text),
-            "target_min": request.min_chars,
-            "target_max": request.max_chars,
-        }
-        self.sequence += 1
-        stage = f"xhs_condense_{self.sequence:02d}"
-        try:
-            output, ai_run = run_ai_task(
-                task_type="xhs_condense",
-                prompt=build_xhs_condense_prompt(payload),
-                output_model=XHSCondenseOutput,
-                provider=self.provider,
-                config=self.config,
-            )
-            save_ai_task_run(
-                self.run_id,
-                stage,
-                ai_run,
-                save_attempts=self.config.logging.save_attempts,
-                save_provider_events=self.config.logging.save_provider_events,
-                append_metrics_jsonl=self.config.logging.append_metrics_jsonl,
-            )
-            candidate = finish_complete_text(compact_text(output.text))
-            if is_valid_condensed_text(candidate, request):
-                self.cache[request] = candidate
-                return candidate
-            LOGGER.warning("xhs_condense output rejected for %s: %s", request.slot_type, candidate)
-        except AIEngineError as exc:
-            if exc.record is not None:
-                failed_record = exc.record
-                save_ai_task_run(
-                    self.run_id,
-                    stage,
-                    failed_record,
-                    save_attempts=self.config.logging.save_attempts,
-                    save_provider_events=self.config.logging.save_provider_events,
-                    append_metrics_jsonl=self.config.logging.append_metrics_jsonl,
-                )
-            LOGGER.warning("xhs_condense failed for %s: %s", request.slot_type, exc)
+        candidate_text = self.responses.get(request.slot_id)
+        if candidate_text is None:
+            LOGGER.warning("xhs_condense output missing for %s", request.slot_id)
+            self.cache[request.slot_id] = fallback
+            return fallback
 
-        self.cache[request] = fallback
+        candidate = finish_complete_text(compact_text(candidate_text))
+        if is_valid_condensed_text(candidate, request):
+            self.cache[request.slot_id] = candidate
+            return candidate
+
+        LOGGER.warning("xhs_condense output rejected for %s: %s", request.slot_id, candidate)
+        self.cache[request.slot_id] = fallback
         return fallback
 
 
@@ -146,7 +123,7 @@ def export_xhs_issue(
     for old in out_dir.glob("*.png"):
         old.unlink()
 
-    condenser = XHSCondenser(issue, config=config, provider=provider) if ai_condense and config else None
+    condenser = prepare_xhs_condenser(issue, out_dir=out_dir, config=config, provider=provider) if ai_condense and config else None
     cards = build_cards(issue, condenser=condenser)
     html_path = out_dir / "cards.html"
     html_path.write_text(render_cards_html(issue, cards), encoding="utf-8")
@@ -159,6 +136,135 @@ def export_xhs_issue(
         caption_path=caption_path,
         html_path=html_path,
     )
+
+
+def prepare_xhs_condenser(
+    issue: Issue,
+    *,
+    out_dir: Path,
+    config: PipelineConfig,
+    provider: ProviderName | None = None,
+) -> XHSCondenser:
+    slots = collect_condense_slots(issue)
+    input_path = out_dir / "xhs_condense_input.json"
+    input_path.write_text(json.dumps(build_xhs_condense_input(issue, slots), ensure_ascii=False, indent=2), encoding="utf-8")
+    selected_provider: ProviderName = provider or config.ai.stage_providers.get("xhs_condense") or config.ai.default_provider
+    try:
+        output, ai_run = run_ai_task(
+            task_type="xhs_condense",
+            prompt=build_xhs_condense_file_prompt(input_path.resolve()),
+            output_model=XHSCondenseOutput,
+            provider=selected_provider,
+            config=config,
+        )
+        save_ai_task_run(
+            f"xhs-{issue.issue_date.isoformat()}",
+            "xhs_condense",
+            ai_run,
+            save_attempts=config.logging.save_attempts,
+            save_provider_events=config.logging.save_provider_events,
+            append_metrics_jsonl=config.logging.append_metrics_jsonl,
+        )
+        responses = {slot.id: slot.text for slot in output.slots}
+    except AIEngineError as exc:
+        if exc.record is not None:
+            save_ai_task_run(
+                f"xhs-{issue.issue_date.isoformat()}",
+                "xhs_condense",
+                exc.record,
+                save_attempts=config.logging.save_attempts,
+                save_provider_events=config.logging.save_provider_events,
+                append_metrics_jsonl=config.logging.append_metrics_jsonl,
+            )
+        LOGGER.warning("xhs_condense batch failed: %s", exc)
+        responses = {}
+    return XHSCondenser(responses)
+
+
+def collect_condense_slots(issue: Issue) -> list[XHSCondenseSlot]:
+    slots: list[XHSCondenseSlot] = []
+    for index, article in enumerate(issue.headlines[:MAX_HEADLINE_CARDS], start=1):
+        summary_min, summary_max = SLOT_RANGES["headline_summary"]
+        impact_min, impact_max = SLOT_RANGES["headline_impact"]
+        sources = source_payload(article.sources)
+        slots.append(
+            XHSCondenseSlot(
+                request=CondenseRequest(
+                    slot_id=f"headline_{index:02d}_summary",
+                    slot_type="headline_summary",
+                    title=article.title_zh,
+                    original_text=article.summary_zh,
+                    min_chars=summary_min,
+                    max_chars=summary_max,
+                ),
+                article_index=index,
+                level="headline",
+                kicker=article.kicker,
+                sources=sources,
+            )
+        )
+        slots.append(
+            XHSCondenseSlot(
+                request=CondenseRequest(
+                    slot_id=f"headline_{index:02d}_impact",
+                    slot_type="headline_impact",
+                    title=article.title_zh,
+                    original_text=article.ai_impact,
+                    min_chars=impact_min,
+                    max_chars=impact_max,
+                ),
+                article_index=index,
+                level="headline",
+                kicker=article.kicker,
+                sources=sources,
+            )
+        )
+    for index, article in enumerate(issue.briefs, start=1):
+        min_chars, max_chars = SLOT_RANGES["brief_summary"]
+        slots.append(
+            XHSCondenseSlot(
+                request=CondenseRequest(
+                    slot_id=f"brief_{index:02d}_summary",
+                    slot_type="brief_summary",
+                    title=article.title_zh,
+                    original_text=article.summary_zh,
+                    min_chars=min_chars,
+                    max_chars=max_chars,
+                ),
+                article_index=index,
+                level="brief",
+                kicker="",
+                sources=source_payload(article.sources),
+            )
+        )
+    return slots
+
+
+def build_xhs_condense_input(issue: Issue, slots: Sequence[XHSCondenseSlot]) -> dict[str, object]:
+    return {
+        "publication_name": XHS_PUBLICATION_NAME,
+        "issue_date": issue.issue_date.isoformat(),
+        "date_cn": issue.date_cn,
+        "slot_ranges": {
+            slot_type: {"target_min": min_chars, "target_max": max_chars}
+            for slot_type, (min_chars, max_chars) in SLOT_RANGES.items()
+        },
+        "slots": [
+            {
+                "id": slot.request.slot_id,
+                "slot_type": slot.request.slot_type,
+                "level": slot.level,
+                "article_index": slot.article_index,
+                "title": slot.request.title,
+                "kicker": slot.kicker,
+                "sources": slot.sources,
+                "original_text": compact_text(slot.request.original_text),
+                "target_min": slot.request.min_chars,
+                "target_max": slot.request.max_chars,
+            }
+            for slot in slots
+        ],
+    }
 
 
 def build_cards(issue: Issue, *, condenser: XHSCondenser | None = None) -> list[Card]:
@@ -219,11 +325,11 @@ def headline_card(
         <h2>{escape(article.title_zh)}</h2>
         <div class="fact">
           <div class="label">发生了什么</div>
-          <p>{escape(condense_slot(article.summary_zh, slot_type="headline_summary", min_chars=summary_min, max_chars=summary_max, title=article.title_zh, condenser=condenser))}</p>
+          <p>{escape(condense_slot(article.summary_zh, slot_id=f"headline_{index:02d}_summary", slot_type="headline_summary", min_chars=summary_min, max_chars=summary_max, title=article.title_zh, condenser=condenser))}</p>
         </div>
         <div class="impact">
           <div class="label"><span class="chip">AI</span>为什么重要 · AI 分析</div>
-          <p>{escape(condense_slot(article.ai_impact, slot_type="headline_impact", min_chars=impact_min, max_chars=impact_max, title=article.title_zh, condenser=condenser))}</p>
+          <p>{escape(condense_slot(article.ai_impact, slot_id=f"headline_{index:02d}_impact", slot_type="headline_impact", min_chars=impact_min, max_chars=impact_max, title=article.title_zh, condenser=condenser))}</p>
         </div>
         <div class="src">来源 · {escape(source_names(article.sources))}</div>
       </div>
@@ -258,6 +364,7 @@ def brief_item_html(article: BriefArticle, number: int, *, condenser: XHSCondens
     min_chars, max_chars = SLOT_RANGES["brief_summary"]
     summary = condense_slot(
         article.summary_zh,
+        slot_id=f"brief_{number:02d}_summary",
         slot_type="brief_summary",
         min_chars=min_chars,
         max_chars=max_chars,
@@ -348,8 +455,8 @@ def paginate_briefs(items: Sequence[BriefArticle], *, condenser: XHSCondenser | 
     pages: list[list[BriefArticle]] = []
     current: list[BriefArticle] = []
     current_height = 0
-    for item in items:
-        height = estimate_brief_item_height(item, condenser=condenser)
+    for number, item in enumerate(items, start=1):
+        height = estimate_brief_item_height(item, number=number, condenser=condenser)
         should_break = (
             current
             and (
@@ -369,10 +476,11 @@ def paginate_briefs(items: Sequence[BriefArticle], *, condenser: XHSCondenser | 
     return pages
 
 
-def estimate_brief_item_height(article: BriefArticle, *, condenser: XHSCondenser | None = None) -> int:
+def estimate_brief_item_height(article: BriefArticle, *, number: int | None = None, condenser: XHSCondenser | None = None) -> int:
     min_chars, max_chars = SLOT_RANGES["brief_summary"]
     summary = condense_slot(
         article.summary_zh,
+        slot_id=f"brief_{number:02d}_summary" if number is not None else "",
         slot_type="brief_summary",
         min_chars=min_chars,
         max_chars=max_chars,
@@ -391,6 +499,7 @@ def estimate_brief_item_height(article: BriefArticle, *, condenser: XHSCondenser
 def condense_slot(
     text: str,
     *,
+    slot_id: str = "",
     slot_type: SlotType,
     min_chars: int,
     max_chars: int,
@@ -401,6 +510,7 @@ def condense_slot(
     if condenser is None:
         return fallback
     request = CondenseRequest(
+        slot_id=slot_id,
         slot_type=slot_type,
         title=title,
         original_text=text,
@@ -521,6 +631,16 @@ def source_names(sources: Sequence[object]) -> str:
         if name:
             names.append(name)
     return "、".join(names) or "原文来源"
+
+
+def source_payload(sources: Sequence[object]) -> list[dict[str, str]]:
+    payload: list[dict[str, str]] = []
+    for source in sources:
+        name = getattr(source, "name", "")
+        url = getattr(source, "url", "")
+        if name or url:
+            payload.append({"name": str(name), "url": str(url)})
+    return payload
 
 
 def date_dot(issue: Issue) -> str:
