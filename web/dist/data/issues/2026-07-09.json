@@ -1,0 +1,407 @@
+{
+  "id": "tech-2026-07-09",
+  "section_slug": "tech",
+  "publication_name": "我的日报·科技",
+  "issue_date": "2026-07-09",
+  "volume": 1,
+  "number": 12,
+  "date_cn": "2026 年 7 月 9 日 · 周四",
+  "output_path": "issues/2026-07-09.html",
+  "headlines": [
+    {
+      "source_item_ids": [
+        "541ba3e8217e02e8"
+      ],
+      "kicker": "半导体 · 供应链",
+      "title_zh": "苹果与博通签下超300亿美元协议，在美自造无线芯片",
+      "summary_zh": "苹果与博通签下金额超过300亿美元的多年协议，由博通为苹果设计并生产150亿颗以上美国本土制造的定制无线连接芯片；苹果另投入15亿美元资本开支，帮助博通扩建位于科罗拉多州柯林斯堡的工厂。博通本就是苹果无线组件的主要硬件供应商。该协议属于苹果承诺未来四年在美投资6000亿美元的一部分，此前特朗普曾威胁若不将iPhone制造迁回美国就加征关税，后又收回该政策，iPhone整机组装仍在海外。苹果称合作将带来“数百个”美国岗位。",
+      "read_body_zh": [
+        "博通将为苹果设计并生产超过150亿颗美国本土制造的定制无线连接芯片，协议金额超过300亿美元、为期多年。作为配套，苹果将投入15亿美元资本开支，帮助博通扩建其位于科罗拉多州柯林斯堡的制造厂。无线连接芯片用于iPhone等苹果产品的Wi-Fi、蓝牙等功能，博通此前已是苹果无线组件的主要硬件供应商。",
+        "该协议是苹果承诺未来四年向美国经济投资6000亿美元的一部分，而这一承诺是在特朗普政府施压下作出的。去年特朗普曾威胁，若苹果不将核心iPhone制造迁回美国就将加征新关税，随后又撤回了这一政策。",
+        "苹果表示，与博通的这项合作将在美国创造“数百个”就业岗位——相对300亿美元的合同规模，这一数字并不大。尽管作出本土制造承诺，iPhone的整机组装目前仍留在海外。"
+      ],
+      "pullquote": null,
+      "ai_impact": "这笔订单把苹果的供应链本土化压力，转化成了对既有供应商博通的深度绑定，而非另起炉灶：苹果用采购承诺加直接注资的方式锁定美国本土无线芯片产能，也让博通在关税不确定性中拿到长周期确定性订单。对苹果而言，这是以可控成本回应政治压力的样板——把资本开支投向零部件而非难度极高的整机组装，既能对外交代“美国制造”，又不动摇iPhone的海外总装格局。数百个岗位与300亿美元的落差也说明，本土先进制造更多创造产能与资本密集度，而非大量就业，这正是芯片回流政策的现实边界。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/07/08/apple-to-produce-made-in-america-wireless-chips-with-broadcom"
+        }
+      ],
+      "relevance_score": 90,
+      "importance_score": 88
+    },
+    {
+      "source_item_ids": [
+        "60c2dbd002f1482f"
+      ],
+      "kicker": "AI芯片 · 融资",
+      "title_zh": "SambaNova以110亿美元估值融资10亿，摩根大通选它自建推理",
+      "summary_zh": "AI芯片公司SambaNova在F轮首关中以110亿美元估值融资10亿美元，由General Atlantic领投，后续还将有投资者加入。此轮距其2月发布SN50芯片、完成3.5亿美元E轮仅约5个月，也发生在英特尔一度传出以约16亿美元收购它之后。英特尔自C轮起就是其投资方并参与本轮，双方已就基于至强芯片的AI推理深化多年合作、共同开发产品。同时摩根大通选定SambaNova为“推理基础设施合作伙伴”，用其SN40L与SN50系统在银行内部运行安全的私有化推理。",
+      "read_body_zh": [
+        "SambaNova以110亿美元估值完成F轮首关，融资10亿美元，由General Atlantic领投，公司称未来几周还会有投资者进入并完成第二关。这距其今年2月发布SN50芯片并完成3.5亿美元E轮仅约5个月。此前彭博社去年12月曾报道，英特尔一度就以约16亿美元收购SambaNova进行谈判。",
+        "英特尔自C轮起便是SambaNova投资方，并参与了本轮融资；双方五个月前宣布围绕英特尔至强芯片的AI推理开发建立多年合作，如今已共同开发产品并联合推向市场。此外，摩根大通已选定SambaNova作为“推理基础设施合作伙伴”，用其SN40L与SN50系统在银行内部运行安全的私有化AI推理。",
+        "SambaNova主打“高端推理”，宣称能把万亿参数级大模型装进单个机架并高速运行。下一代SN50将于2026年下半年开始交付，软银为首个部署伙伴。除摩根大通外，公司还列出沙特阿美、英特尔及多家日本企业为客户。公司成立于2017年，融资将用于扩张业务并巩固供应链。"
+      ],
+      "pullquote": null,
+      "ai_impact": "这轮融资的信号意义大于金额本身。摩根大通这种体量的银行选择自建私有化推理基础设施、而非完全依赖云服务，说明金融、政府等敏感行业正把最核心的模型推理搬回本地，形成英伟达云端主导之外的“异构算力”采购需求，这正是SambaNova这类专用推理芯片商的机会窗口。英特尔的态度也耐人寻味：从传闻收购到联合开发再到追加投资，反映其想借外部架构补齐自身AI推理短板。对行业而言，企业级私有推理正从概念走向真实订单，推理市场的“淘金热”开始从少数模型厂商，外溢到更广的企业与主权云客户。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/07/08/sambanova-draws-1b-at-11b-valuation-in-series-f-first-close"
+        }
+      ],
+      "relevance_score": 92,
+      "importance_score": 86
+    },
+    {
+      "source_item_ids": [
+        "42d5404af2c4fabb",
+        "3e4eb64bc015fca2"
+      ],
+      "kicker": "大模型 · 语音",
+      "title_zh": "OpenAI发布全双工语音模型GPT-Live-1，可边说边听边翻译",
+      "summary_zh": "OpenAI发布全双工语音模型GPT-Live-1及其mini版本，能同时说与听，允许用户自然打断，并支持边说边译的实时翻译。ChatGPT现有的高级语音模式将默认替换为GPT-Live-1 mini，付费用户可用更大的GPT-Live-1。旧版依赖“语音转文字+大模型+文字转语音”的拼接流程，新模型则会把需要搜索或推理的问题转交给GPT-5.5等最新文本模型，并能在谈天气、股价、体育时给出比分、天气等可视化信息。OpenAI称已有超过1.5亿人使用其语音与听写功能。",
+      "read_body_zh": [
+        "OpenAI发布新一代对话模型GPT-Live-1与GPT-Live-1 mini，称其为公司迄今“最聪明的语音模型”。二者为全双工模型，可同时说话和聆听，让用户能自然打断，并支持在对方说话时同步翻译的实时翻译功能。ChatGPT现有的高级语音模式将默认换成GPT-Live-1 mini，付费用户可使用更大的GPT-Live-1。",
+        "旧版语音由语音转文字、大模型生成回答、文字转语音三段拼接而成，容易答不准或误打断用户。新模型在需要搜索、推理或执行代理任务时，会把问题转交给GPT-5.5等最新文本模型，同时保持对话；也能长时间保持沉默、吸收上下文直到被叫到，并可在谈天气、股价、体育时附上比分、预报等可视化信息。",
+        "新语音模式已在iOS、Android和网页端推出，免费用户默认使用mini版本。OpenAI称已有超过1.5亿人使用其语音与听写功能，并为青少年和涉及自我伤害的对话内置了安全防护。不过在发布会演示印地语实时翻译时，助手带有浓重美式口音、语气略显书面，公司承认新模式仍有待完善。"
+      ],
+      "pullquote": null,
+      "ai_impact": "语音正被OpenAI推向“计算的主要入口”。全双工加实时翻译，把语音助手从一问一答的工具，推向可长时间陪伴、可打断、可执行长任务的交互形态，这是AI产品入口形态的实质性升级，也解释了为何各家都在抢语音——谁掌握了日常最自然的交互层，谁就更可能沉淀高频用户与使用时长。把语音前端与GPT-5.5等后端文本模型解耦的做法，也让语音层能持续搭上模型升级的顺风车。结合此前关于AI耳机的传闻，OpenAI显然想把语音变成硬件与代理化工作的新触点，向苹果、亚马逊等既有助手主场发起正面竞争。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/07/08/openai-releases-new-voice-models-for-more-natural-live-conversations"
+        },
+        {
+          "name": "The Verge",
+          "url": "https://www.theverge.com/ai-artificial-intelligence/962856/chatgpt-upgraded-voice-mode-gpt-live"
+        }
+      ],
+      "relevance_score": 88,
+      "importance_score": 87
+    },
+    {
+      "source_item_ids": [
+        "d40ce87f871b8359"
+      ],
+      "kicker": "大模型 · 发布",
+      "title_zh": "马斯克旗下SpaceXAI发布Grok 4.5，主打“更便宜的Opus级”",
+      "summary_zh": "马斯克旗下SpaceXAI发布最新模型Grok 4.5，这是公司几周前上市后的首款模型。官方将其定位为能处理编程、办公文书、研究、写作等日常知识工作的“多面手”，并称其token效率是其他领先模型的两倍，即完成同样任务消耗更少算力、成本更低。定价为每百万输入token 2美元、每百万输出token 6美元，明显低于Anthropic的Opus 4.7（5美元/25美元）。马斯克称Grok 4.5大致相当于Opus 4.7但速度更快，是一款“Opus级”模型。",
+      "read_body_zh": [
+        "SpaceXAI发布最新模型Grok 4.5，这是公司几周前上市后推出的首款模型。官方在博客中将其定位为能承担编程与应用开发、办公与文书、研究、写作等常规知识工作的“多面手”，并称其“token效率是其他领先模型的两倍”——即处理同样任务所消耗的token更少，对应更低的使用成本。",
+        "公司公布的基准测试显示Grok 4.5与竞品顶级模型接近，但略逊于最好水平。马斯克在X上把它对标Anthropic为复杂任务设计的Opus，称其为“Opus级模型，但更快、token效率更高、成本更低”，并补充其内部评估认为Grok 4.5大致相当于Opus 4.7，但速度快得多。",
+        "价格上，Grok 4.5为每百万输入token 2美元、每百万输出token 6美元；相比之下Opus 4.7为5美元与25美元，OpenAI最贵的Sol为5美元与30美元，最便宜的Luna为1美元与6美元。本周是AI模型发布密集期，OpenAI计划于周四发布其“迄今最强”的GPT 5.6。"
+      ],
+      "pullquote": null,
+      "ai_impact": "Grok 4.5的卖点不在能力登顶，而在“够强且更便宜”。当模型能力趋于同质化，token成本正取代跑分成为关键竞争维度——把价格压到Opus的三分之一到五分之一，本质是用性价比换市场份额，直接冲击高端模型的定价权。这对重度调用API的企业和开发者尤其有吸引力，因为推理成本已成为规模化落地的主要顾虑。但“两倍token效率”“Opus级”目前仍是厂商自述，真实表现要看第三方评测与实际负载。叠加OpenAI周四即将发布GPT 5.6，前沿模型的发布与降价正被压缩进同一周，价格战与能力战同时开打。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/07/08/spacexai-releases-grok-4-5-which-elon-describes-as-an-opus-class-model"
+        }
+      ],
+      "relevance_score": 84,
+      "importance_score": 83
+    },
+    {
+      "source_item_ids": [
+        "469e864fa66a7772"
+      ],
+      "kicker": "自动驾驶 · 监管",
+      "title_zh": "美国NHTSA限期整改：无人车不得干扰急救与执法现场",
+      "summary_zh": "美国国家公路交通安全管理局（NHTSA）局长莫里森向自动驾驶企业发出指令，称其车辆干扰急救和执法人员的情况不可接受。他指出，机构已发现无人驾驶车辆“明显的干扰模式”：驶入正在处置的紧急现场、挡住救护车与消防车，或无法识别警灯、照明弹、烟雾、火焰和交通锥等基本安全状况。NHTSA要求各家企业在本月底前提交解决方案。信件未点名，但细节指向运营全美最大robotaxi车队的Waymo；Waymo拒绝置评。",
+      "read_body_zh": [
+        "NHTSA局长乔纳森·莫里森向自动驾驶开发者发出指令，称无人车干扰急救或执法人员的情况“不可接受”。他在信中表示，机构已发现无人驾驶车辆“明显的干扰模式”，包括驶入正在处置的紧急现场、挡住救护车和消防车去路，或未能识别并响应警灯、照明弹、烟雾、火焰、交通锥等基本安全状况，并称这属于“功能性缺陷”，强调紧急现场“不是罕见或极端的边缘案例”。",
+        "NHTSA要求自动驾驶企业在本月底前提交各自的“解决方案”，但未说明若被忽视会有何后果，也未界定何为可接受的方案。信件没有点名具体公司，细节却指向运营全美最大robotaxi车队、在洛杉矶、凤凰城和旧金山等地运营的Waymo。此前TechCrunch调查发现，截至今年3月至少有6起事件中，急救人员不得不接管Waymo车辆将其移出车道，其中一次是一名警员正在处置大规模枪击案。Waymo拒绝置评。",
+        "NHTSA同时表示，正推进对联邦机动车安全标准（FMVSS）的更新，这些规则规定车辆设计与装备要求。相关调整可能有利于特斯拉、Zoox等正在开发无方向盘、无踏板车辆的公司；机构已提出取消雨刮、遮阳板、除雾系统和轮胎标牌等要求的提案，并于上周发布了2026年监管计划。"
+      ],
+      "pullquote": null,
+      "ai_impact": "这是自动驾驶监管从“个案事故”转向“能力底线”的一个拐点。把无法识别急救现场定性为“功能性缺陷”而非边缘案例，等于给robotaxi设定了一条明确的安全合格线，并用月底提交方案的期限施加即时压力，可能倒逼Waymo等头部玩家优先投入感知与决策资源，甚至影响其扩张节奏。值得注意的是，同一机构一边收紧运营安全要求，一边放松车辆硬件标准（取消方向盘、雨刮等），实际是在为无人车规模化扫清设计障碍——监管姿态是“安全上更严、形态上更松”。对特斯拉、Zoox这类押注无人形态整车的公司，这种双向调整既是约束也是通道。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/07/08/feds-demand-autonomous-vehicle-companies-stop-interfering-with-first-responders"
+        }
+      ],
+      "relevance_score": 76,
+      "importance_score": 85
+    }
+  ],
+  "briefs": [
+    {
+      "source_item_ids": [
+        "02e4258551dc0845"
+      ],
+      "title_zh": "法国初创ZML推出跨芯片推理软件，免费主打降本",
+      "summary_zh": "法国AI初创公司ZML发布免费推理服务器ZML/LLMD，可让多种开源大模型在英伟达、AMD、谷歌TPU、苹果Metal和英特尔Arc等不同芯片上运行，目标是打破芯片生态壁垒、以最高速度调度异构算力并降低推理成本。ZML此前融资2000万美元，投资者包括图灵奖得主杨立昆等；公司称与英伟达关系良好，该产品暂不开源，先免费收集使用数据再考虑商业化。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/07/08/hot-french-startup-zml-releases-free-product-to-speed-inference-across-lots-of-ai-chips"
+        }
+      ],
+      "relevance_score": 87,
+      "importance_score": 75
+    },
+    {
+      "source_item_ids": [
+        "629b460923f1524d"
+      ],
+      "title_zh": "谷歌更新安卓开发评测，Gemini仍落后于对手",
+      "summary_zh": "谷歌大幅更新其Android Bench代码能力评测，新增八款模型并加入成本、效率与开源模型指标，还邀请开发者自测反馈。在这套100项安卓开发任务的新榜单中，谷歌自家Gemini 3.1 Pro仅列第五，落后于GPT 5.4、Claude Sonnet 5和Claude Fable 5；其中Fable 5以84.5%的准确率大幅领先。这是谷歌自研模型再一次在自家评测中不敌竞争对手。",
+      "sources": [
+        {
+          "name": "Ars Technica",
+          "url": "https://arstechnica.com/google/2026/07/google-revamps-android-ai-dev-benchmark-adds-fable-5-and-other-agents"
+        }
+      ],
+      "relevance_score": 78,
+      "importance_score": 72
+    },
+    {
+      "source_item_ids": [
+        "fecde0a4a24c745c"
+      ],
+      "title_zh": "德国量子检测初创获欧盟支持，加速芯片检测",
+      "summary_zh": "德国初创QuantumDiamonds获欧盟批准、由德国联邦经济部和巴伐利亚州提供的7600万欧元无稀释资金，将在慕尼黑新建半导体检测设备工厂，另完成1500万欧元股权融资。公司用合成金刚石中的量子缺陷传感，把通常需数周的芯片缺陷检测压缩到两分钟且不中断产线、可穿透多层芯片，声称能帮台湾晶圆厂和韩国存储厂省下数亿美元。实验室工具售价数百万美元，高通量系统或达1000万至1500万美元。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/07/08/with-eu-backing-quantumdiamonds-aims-to-speed-up-chip-manufacturing"
+        }
+      ],
+      "relevance_score": 76,
+      "importance_score": 71
+    },
+    {
+      "source_item_ids": [
+        "65a89af7ad5dfa8c"
+      ],
+      "title_zh": "研究者：9款主流AI编程工具可被用于组建僵尸网络",
+      "summary_zh": "安全研究者提出名为“HalluSquatting”的新型攻击，利用大模型倾向于“幻觉”出不存在的软件包名或资源标识符这一弱点：攻击者预测模型最可能编造的名称并抢注、植入恶意指令，当AI编程助手自动拉取这些资源时即被感染。该手法可大规模、无差别地感染设备，用于组建僵尸网络或发动DDoS攻击，Cursor、Gemini CLI、GitHub Copilot等九款流行工具均受影响。这是提示注入类攻击首次具备大规模扩散能力。",
+      "sources": [
+        {
+          "name": "Ars Technica",
+          "url": "https://arstechnica.com/security/2026/07/hackers-can-use-9-of-the-most-popular-ai-tools-to-assemble-massive-botnets"
+        }
+      ],
+      "relevance_score": 66,
+      "importance_score": 78
+    },
+    {
+      "source_item_ids": [
+        "ffec2b1d9a8a399d"
+      ],
+      "title_zh": "Prime Intellect融资1.3亿美元，帮企业自建AI智能体",
+      "summary_zh": "成立于2024年的Prime Intellect完成1.3亿美元A轮融资，估值达10亿美元，由Radical Ventures领投，英伟达、英特尔资本等跟投。公司提供由算力、强化学习框架和评测工具组成的“全栈”平台，以市场化的模块方式让企业无需依赖前沿实验室即可训练自有智能体。客户包括Ramp、Zapier等，年化营收（ARR）已达1亿美元。其增长部分源于企业担心把专有数据交给OpenAI、Anthropic，以及模型被突然关停的风险。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/07/08/prime-intellect-raises-130m-series-a-to-help-enterprises-build-their-own-ai-agents"
+        }
+      ],
+      "relevance_score": 75,
+      "importance_score": 70
+    },
+    {
+      "source_item_ids": [
+        "2cdb880d9b735ca0"
+      ],
+      "title_zh": "中信建投：AI服务器带动PCB高阶升级与设备耗材需求",
+      "summary_zh": "中信建投研报指出，算力需求正成为PCB行业最重要的结构性增量。AI服务器架构从CPU平台转向GPU/ASIC集群，全面抬升PCB在用量、层数、材料、孔结构与线路精度上的要求，带动高多层板、高阶HDI需求快速增长；同时M7-M9低损耗基材迭代、mSAP等精密工艺加速导入，行业高端化趋势明确，倒逼全流程设备升级，PCB设备及配套耗材同步迎来机遇。",
+      "sources": [
+        {
+          "name": "36氪",
+          "url": "https://36kr.com/newsflashes/3887685210372611?f=rss"
+        }
+      ],
+      "relevance_score": 81,
+      "importance_score": 64
+    },
+    {
+      "source_item_ids": [
+        "f2f1bd72f1777e33"
+      ],
+      "title_zh": "腾讯混元Hy3调用激增，WorkBuddy紧急扩容",
+      "summary_zh": "腾讯混元公告称，其Hy3模型自在WorkBuddy首发上线以来调用激增。7月8日上午10时起算力资源消耗达到峰值并出现排队，下午排队率一度超过50%；公司随即调度可用资源补充，目前已扩容完毕。",
+      "sources": [
+        {
+          "name": "36氪",
+          "url": "https://36kr.com/newsflashes/3887708659677956?f=rss"
+        }
+      ],
+      "relevance_score": 73,
+      "importance_score": 61
+    },
+    {
+      "source_item_ids": [
+        "e67d0538815321e7"
+      ],
+      "title_zh": "速腾聚创上半年激光雷达销量71.9万台，同比增长169.6%",
+      "summary_zh": "速腾聚创宣布，2026年上半年激光雷达总销量达719200台，同比增长169.6%。其中机器人领域销量282600台，同比增长510.4%；ADAS（辅助驾驶）领域销量436600台，同比增长98.0%。第二季度总销量388900台，机器人与ADAS领域分别同比增长182.3%和135.7%，显示自动驾驶与机器人感知硬件同步放量。",
+      "sources": [
+        {
+          "name": "36氪",
+          "url": "https://36kr.com/newsflashes/3887698872154883?f=rss"
+        }
+      ],
+      "relevance_score": 64,
+      "importance_score": 66
+    },
+    {
+      "source_item_ids": [
+        "b700586a7557380a"
+      ],
+      "title_zh": "美国政府扶持的稀土产能流向日韩",
+      "summary_zh": "尽管特朗普政府力推建立本土供应链，MP Materials、Energy Fuels、Phoenix Tailings等获得数十亿美元美国政府支持的稀土企业，其产品仍主要卖给日本和韩国——因当地磁材制造规模远大于美国初生的产能。稀土磁材广泛用于电动车、武器制导系统乃至半导体产业。业内指出，目前能规模化生产钕铁硼磁体的国家仅有日本和中国，美国本土需求承接仍需时间。",
+      "sources": [
+        {
+          "name": "Ars Technica",
+          "url": "https://arstechnica.com/science/2026/07/us-rare-earths-flow-to-asia-as-domestic-demand-is-slow-to-emerge"
+        }
+      ],
+      "relevance_score": 57,
+      "importance_score": 70
+    },
+    {
+      "source_item_ids": [
+        "e591150fc583761c"
+      ],
+      "title_zh": "Lovable据报洽谈融资，估值翻倍至132亿美元",
+      "summary_zh": "据Sifted报道，瑞典“氛围编程”（vibe coding，即用自然语言描述即可生成软件）初创公司Lovable正洽谈以132亿美元估值融资3亿美元，估值较去年12月的66亿美元翻倍，预计由Menlo Ventures领投。这家成立不到三年的公司6月年化营收（ARR）已达5亿美元，客户包括Workday、Asana和英伟达等企业。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/07/08/lovable-reportedly-in-talks-to-double-its-valuation-to-13-2b"
+        }
+      ],
+      "relevance_score": 70,
+      "importance_score": 68
+    },
+    {
+      "source_item_ids": [
+        "3f4fad890b5b198e"
+      ],
+      "title_zh": "General Intuition用游戏数据训练机器人基础模型",
+      "summary_zh": "初创公司General Intuition主张具身智能会像语言模型一样进入“基础模型”时代，用海量视频游戏数据（含玩家按键动作与时机）训练出对空间与时间有通用推理能力的基础模型，从而大幅减少对真实数据的依赖。公司上月以23亿美元估值融资3.2亿美元，并展示其模型仅用八分钟真实数据微调，就能驱动一台四足机器人。其目标是成为物理AI的基础模型，供其他机器人公司在其上开发。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/07/08/this-startup-thinks-robotics-is-about-to-have-its-chatgpt-moment"
+        }
+      ],
+      "relevance_score": 62,
+      "importance_score": 64
+    },
+    {
+      "source_item_ids": [
+        "278ffacf86d656b6",
+        "0db7c6969aaaf79b"
+      ],
+      "title_zh": "Meta据报测试“超级感知”眼镜，可能不亮录制指示灯",
+      "summary_zh": "据《金融时报》报道，Meta正在测试一款“超级感知”智能眼镜原型，可持续采集音频并每隔几秒拍照，佩戴者随后可就采集到的声音和图像向Meta AI提问。一种方案下，原始音视频不存储也不提供给用户，仅提取元数据上传服务器供AI查询。Meta本周刚宣布若检测到录制指示灯被篡改就禁用摄像头，但据报在“超级感知”模式下会让该指示灯保持熄灭，引发新的隐私担忧。",
+      "sources": [
+        {
+          "name": "The Verge",
+          "url": "https://www.theverge.com/tech/963138/meta-smart-glasses-recording-super-sensing-ai"
+        },
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/07/08/meta-wants-its-ai-glasses-to-seem-less-creepy-its-ai-strategy-says-otherwise"
+        }
+      ],
+      "relevance_score": 58,
+      "importance_score": 67
+    },
+    {
+      "source_item_ids": [
+        "f8835897345da09c"
+      ],
+      "title_zh": "阶跃星辰将发布AI智能体手机",
+      "summary_zh": "据财联社报道，大模型公司阶跃星辰即将发布AI终端品牌、智能体系统及其首款AI智能体手机。此前OpenAI已公开押注新一代AI终端、计划2027年上市；阶跃星辰抢先落地AI智能体手机，成为全球大模型厂商中率先迈出这一步的玩家。目前该产品尚未公布规格、用户数据与量产信息。",
+      "sources": [
+        {
+          "name": "36氪",
+          "url": "https://36kr.com/newsflashes/3887717218089736?f=rss"
+        }
+      ],
+      "relevance_score": 66,
+      "importance_score": 60
+    },
+    {
+      "source_item_ids": [
+        "2e7c2726ff6a959d"
+      ],
+      "title_zh": "无人机配送初创Manna计划大举拓展美国市场",
+      "summary_zh": "爱尔兰无人机配送初创Manna宣布，将在俄克拉何马州塔尔萨设立美国运营与制造中心，未来数年雇佣约1000人，工厂预计一年后投产。公司以按次收费的“配送即服务”模式运营，在欧洲与DoorDash、Uber Eats等合作。Manna已退出爱尔兰本土配送，转而把资金集中投入美国，并称当地放松的监管为行业带来“助推”，正评估另外六座城市、最快2027年底进入。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/07/08/autonomous-drone-delivery-startup-manna-plots-major-u-s-expansion"
+        }
+      ],
+      "relevance_score": 52,
+      "importance_score": 62
+    }
+  ],
+  "discarded": [
+    {
+      "source_item_ids": [
+        "d549003497161008"
+      ],
+      "reason": "AI视频工具横评和产品榜单性质较强，偏工具导购与体验集合，缺少新的市场采用、商业化或平台生态信号；按口味档案降权后不入选。",
+      "relevance_score": 45,
+      "importance_score": 35
+    },
+    {
+      "source_item_ids": [
+        "ba608447df4f3fb5"
+      ],
+      "reason": "本质是小公司融资稿，“物理AI”表述较重、营销色彩明显；虽提到数据中心能源和客户案例，但未达到打破硬边界的产业级新事实。",
+      "relevance_score": 38,
+      "importance_score": 42
+    },
+    {
+      "source_item_ids": [
+        "a9942f5877db63ea"
+      ],
+      "reason": "氪星晚报属于聚合稿，默认不做头条；其中Grok 4.5等可用信息已有独立来源覆盖，其余条目分散且不足以作为单独速览来源。",
+      "relevance_score": 30,
+      "importance_score": 35
+    },
+    {
+      "source_item_ids": [
+        "50e0543211c3d9f3"
+      ],
+      "reason": "Meta Muse Image发布和用户照片争议已在7月8日历史索引中作为速览讲过，本条只是换源转述，没有足够新增事实。",
+      "relevance_score": 32,
+      "importance_score": 30
+    },
+    {
+      "source_item_ids": [
+        "e81df9ecabf3af4e"
+      ],
+      "reason": "Claude Cowork扩展到移动端和网页端已在7月8日历史索引中发布过，本条为同一事件换源复述，无新增事实。",
+      "relevance_score": 35,
+      "importance_score": 28
+    }
+  ],
+  "merged_sources": [
+    {
+      "source_item_ids": [
+        "42d5404af2c4fabb",
+        "3e4eb64bc015fca2"
+      ],
+      "reason": "同一事件：OpenAI发布GPT-Live-1系列并升级ChatGPT语音模式。"
+    },
+    {
+      "source_item_ids": [
+        "278ffacf86d656b6",
+        "0db7c6969aaaf79b"
+      ],
+      "reason": "同一事件线索：Meta AI眼镜隐私策略与持续感知原型报道。"
+    }
+  ]
+}
