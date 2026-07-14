@@ -10,7 +10,7 @@ ai:
   timeout_seconds: 900
   repair_attempts: 1
   codex:
-    command: /Applications/Codex.app/Contents/Resources/codex exec
+    command: /Applications/ChatGPT.app/Contents/Resources/codex exec
     model:
   claude:
     command: claude -p
