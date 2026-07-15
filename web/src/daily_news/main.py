@@ -306,6 +306,9 @@ def validate_shortlist_ids(shortlist: CodexShortlistOutput, candidates: list[Can
     missing = (top_level_ids | item_ids) - candidate_ids
     if missing:
         raise ValueError(f"Codex shortlist references unknown candidate ids: {', '.join(sorted(missing))}")
+    missing_candidate_items = candidate_ids - item_ids
+    if missing_candidate_items:
+        raise ValueError(f"Codex shortlist ids are inconsistent: missing from items: {', '.join(sorted(missing_candidate_items))}")
     if top_level_ids != item_ids:
         missing_from_top = item_ids - top_level_ids
         missing_from_items = top_level_ids - item_ids
@@ -326,6 +329,26 @@ def validate_shortlist_ids(shortlist: CodexShortlistOutput, candidates: list[Can
     for item_id in shortlist.drop_item_ids:
         if item_decisions.get(item_id) != "drop":
             raise ValueError(f"drop_item_ids contains id not marked drop: {item_id}")
+
+
+def normalize_shortlist_top_level_ids(shortlist: CodexShortlistOutput) -> CodexShortlistOutput:
+    keep_item_ids: list[str] = []
+    maybe_item_ids: list[str] = []
+    drop_item_ids: list[str] = []
+    for item in shortlist.items:
+        if item.decision == "keep":
+            keep_item_ids.append(item.source_item_id)
+        elif item.decision == "maybe":
+            maybe_item_ids.append(item.source_item_id)
+        elif item.decision == "drop":
+            drop_item_ids.append(item.source_item_id)
+    return shortlist.model_copy(
+        update={
+            "keep_item_ids": keep_item_ids,
+            "maybe_item_ids": maybe_item_ids,
+            "drop_item_ids": drop_item_ids,
+        }
+    )
 
 
 def candidates_for_enrichment(run_id: str, local_prefilter: list[CandidateItem]) -> list[CandidateItem]:
@@ -439,7 +462,7 @@ def shortlist_mvp(args: argparse.Namespace) -> int:
 
 def shortlist_codex(args: argparse.Namespace) -> int:
     local_prefilter = load_shortlist(args.run_id)
-    codex_shortlist = load_codex_shortlist(args.run_id)
+    codex_shortlist = normalize_shortlist_top_level_ids(load_codex_shortlist(args.run_id))
     validate_shortlist_ids(codex_shortlist, local_prefilter)
     summarize_codex_shortlist(codex_shortlist)
     print(f"Validated: {artifact_path(args.run_id, '02_codex_shortlist.json')}")
@@ -512,6 +535,7 @@ def run_ai_shortlist_stage(
             print(f"Debug: {debug_path}")
         raise
     try:
+        shortlist = normalize_shortlist_top_level_ids(shortlist)
         validate_shortlist_ids(shortlist, candidates)
     except Exception as exc:
         failed_run = mark_ai_run_failed(ai_run, exc)
@@ -825,7 +849,7 @@ def ai_file_read_test(args: argparse.Namespace) -> int:
         if provider_result.return_code != 0:
             raise AIEngineError(f"AI command failed with code {provider_result.return_code}: {provider_result.stderr.strip()}")
         parsed = extract_json_object(raw_output)
-        output = CodexShortlistOutput.model_validate(parsed)
+        output = normalize_shortlist_top_level_ids(CodexShortlistOutput.model_validate(parsed))
         validate_shortlist_ids(output, candidates)
         decisions = {item.decision for item in output.items}
         if decisions != {"keep", "maybe", "drop"}:
@@ -1469,7 +1493,7 @@ class PipelineRunner:
         if stage == "local_shortlist":
             return bool(load_shortlist(self.run_id))
         if stage == "ai_shortlist":
-            shortlist = load_codex_shortlist(self.run_id)
+            shortlist = normalize_shortlist_top_level_ids(load_codex_shortlist(self.run_id))
             validate_shortlist_ids(shortlist, load_shortlist(self.run_id))
             return True
         if stage == "enrich":

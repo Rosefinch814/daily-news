@@ -16,6 +16,7 @@ from daily_news.main import (
     digest_feedback,
     make_issue,
     merge_enriched_candidates,
+    normalize_shortlist_top_level_ids,
     resolve_stage_provider,
     run_pipeline,
     temporary_feedback_mode,
@@ -64,13 +65,15 @@ def test_codex_shortlist_fixture_validates_against_candidates() -> None:
     validate_shortlist_ids(shortlist, [_candidate("item-1"), _candidate("item-2"), _candidate("item-3")])
 
 
-def test_codex_shortlist_rejects_inconsistent_top_level_ids() -> None:
+def test_codex_shortlist_normalizes_inconsistent_top_level_ids() -> None:
     fixture = Path(__file__).parent / "fixtures" / "sample_codex_shortlist.json"
     shortlist = CodexShortlistOutput.model_validate_json(fixture.read_text(encoding="utf-8"))
     broken = shortlist.model_copy(update={"drop_item_ids": []})
 
-    with pytest.raises(ValueError, match="missing from top-level lists"):
-        validate_shortlist_ids(broken, [_candidate("item-1"), _candidate("item-2"), _candidate("item-3")])
+    normalized = normalize_shortlist_top_level_ids(broken)
+
+    validate_shortlist_ids(normalized, [_candidate("item-1"), _candidate("item-2"), _candidate("item-3")])
+    assert normalized.drop_item_ids == ["item-3"]
 
 
 def test_merge_enriched_candidates_preserves_codex_selected_candidates() -> None:
