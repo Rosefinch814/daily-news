@@ -119,6 +119,13 @@
     if(!response.ok) throw new Error("反馈写入失败：" + response.status);
   }
 
+  function feedbackFailureText(error){
+    var message = (error && error.message) || "";
+    var status = message.match(/\b(\d{3})\b/);
+    if(status) return "已暂存 · 写入失败 " + status[1];
+    return "已暂存 · 联网后重试";
+  }
+
   async function flushFeedbackQueue(){
     if(!feedbackEnabled()) return;
     var queue = queuedFeedback();
@@ -188,12 +195,12 @@
 
   async function submitFeedback(table, payload, statusNode, successText){
     try{
-      await flushFeedbackQueue();
       await postFeedback(table, payload);
       setFeedbackStatus(statusNode, successText || "已记下");
+      flushFeedbackQueue().catch(function(){});
     }catch(error){
       queueFeedback(table, payload);
-      setFeedbackStatus(statusNode, "已暂存 · 联网后重试");
+      setFeedbackStatus(statusNode, feedbackFailureText(error));
     }
   }
 
