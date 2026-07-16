@@ -800,12 +800,30 @@ def run_provider(
                 output_path=output_path,
             )
             completed, duration_ms = _run_command(command, prompt, timeout)
+            fallback_extra: dict[str, Any] = {}
+            if completed.returncode != 0 and config.ai.codex.model and config.ai.codex.fallback_to_default:
+                if output_path.exists():
+                    output_path.unlink()
+                fallback_command = _without_model_arg(command)
+                fallback_completed, fallback_duration_ms = _run_command(fallback_command, prompt, timeout)
+                fallback_extra = {
+                    "fallback_used": True,
+                    "fallback_from_model": config.ai.codex.model,
+                    "fallback_reason": completed.stderr.strip() or completed.stdout.strip(),
+                    "initial_return_code": completed.returncode,
+                    "initial_duration_ms": duration_ms,
+                }
+                completed = fallback_completed
+                duration_ms += fallback_duration_ms
+                command = fallback_command
             output_text = output_path.read_text(encoding="utf-8").strip() if output_path.exists() else completed.stdout.strip()
             result = _provider_result_from_codex(
                 output_text=output_text,
                 completed=completed,
                 command=command,
                 duration_ms=duration_ms,
+                configured_model=config.ai.codex.model if "--model" in command else "codex-default",
+                extra=fallback_extra,
             )
             return result
 
@@ -867,6 +885,8 @@ def _provider_result_from_codex(
     completed: subprocess.CompletedProcess[str],
     command: list[str],
     duration_ms: int,
+    configured_model: str | None,
+    extra: dict[str, Any] | None = None,
 ) -> ProviderRunResult:
     events = _parse_jsonl(completed.stdout)
     usage = _extract_usage_metrics(events)
@@ -877,7 +897,7 @@ def _provider_result_from_codex(
         command=command,
         return_code=completed.returncode,
         duration_ms=duration_ms,
-        model=_first_string(events, ["model"]),
+        model=_first_string(events, ["model"]) or configured_model,
         input_tokens=usage.get("input_tokens"),
         output_tokens=usage.get("output_tokens"),
         cache_read_tokens=usage.get("cache_read_tokens"),
@@ -885,8 +905,22 @@ def _provider_result_from_codex(
         total_tokens=usage.get("total_tokens"),
         cost_usd=_first_float(events, ["cost_usd", "total_cost_usd"]),
         provider_events=completed.stdout,
-        extra={"event_count": len(events)},
+        extra={"event_count": len(events), **(extra or {})},
     )
+
+
+def _without_model_arg(command: list[str]) -> list[str]:
+    stripped: list[str] = []
+    skip_next = False
+    for arg in command:
+        if skip_next:
+            skip_next = False
+            continue
+        if arg in {"--model", "-m"}:
+            skip_next = True
+            continue
+        stripped.append(arg)
+    return stripped
 
 
 def _parse_json_object_or_none(value: str) -> dict[str, Any] | None:
@@ -1043,6 +1077,7 @@ def _attempt_payload(
         "cache_write_tokens": result.cache_write_tokens if result else None,
         "total_tokens": result.total_tokens if result else None,
         "cost_usd": result.cost_usd if result else None,
+        "extra": result.extra if result else {},
     }
 
 
@@ -1144,6 +1179,7 @@ def run_ai_task(
                 cost_usd=provider_result.cost_usd,
                 attempts=attempt_records,
                 provider_events=provider_result.provider_events,
+                extra=provider_result.extra,
             )
         except Exception as exc:  # noqa: BLE001 - persisted for debug.
             last_error = exc
@@ -1191,6 +1227,7 @@ def run_ai_task(
                     cost_usd=final_attempt.get("cost_usd"),
                     attempts=attempt_records,
                     provider_events=provider_result.provider_events if provider_result else None,
+                    extra=provider_result.extra if provider_result else {},
                 )
                 raise AIEngineError(str(exc), record=record) from exc
             current_prompt = build_repair_prompt(prompt, last_raw_output, str(exc))

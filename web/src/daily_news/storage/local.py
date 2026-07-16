@@ -212,6 +212,7 @@ def save_ai_task_run(
             "total_tokens": persisted.total_tokens,
             "cost_usd": persisted.cost_usd,
             "error": persisted.error,
+            "extra": persisted.extra,
             "started_at": persisted.started_at.isoformat(),
             "finished_at": persisted.finished_at.isoformat(),
             "provider_event_log": persisted.provider_event_log,

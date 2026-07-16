@@ -1,0 +1,377 @@
+{
+  "id": "tech-2026-07-16",
+  "section_slug": "tech",
+  "publication_name": "我的日报·科技",
+  "issue_date": "2026-07-16",
+  "volume": 1,
+  "number": 17,
+  "date_cn": "2026 年 7 月 16 日 · 周四",
+  "output_path": "issues/2026-07-16.html",
+  "headlines": [
+    {
+      "source_item_ids": [
+        "4ab827baea05ad4f"
+      ],
+      "kicker": "AI · 监管",
+      "title_zh": "苹果智能获准入华，接入阿里千问",
+      "summary_zh": "中国国家网信办批准苹果在华提供生成式 AI 服务，前提是把阿里巴巴的千问模型集成进 iOS、iPadOS、macOS 和 visionOS。这笔去年就传出的合作，让苹果 2024 年首发的 Apple 智能终于能落地中国市场。此前苹果曾接触百度、DeepSeek 和字节的模型，但因难以适配中国用户而屡屡推迟。阿里向 CNBC 确认，千问将被“集成进 Apple 智能体验”，涉及文本与图像的理解和生成，但未给出上线时间表。消息公布后，阿里巴巴美股盘前涨约 4%，随后涨幅扩大到超过 6%。",
+      "read_body_zh": [
+        "据路透社报道，中国国家网信办已批准苹果在境内提供 AI 服务，放行的关键是苹果与阿里巴巴达成协议，把千问模型接入 iOS、iPadOS、macOS 和 visionOS 等操作系统。这一合作去年就有传闻，是苹果在中国这个关键市场推进 AI 战略的重要一步。",
+        "此前，苹果曾传出考虑与百度合作，但在把模型适配中国用户时遇阻，也探索过接入 DeepSeek 和字节跳动的模型，几轮周折导致 Apple 智能功能迟迟无法进入中国。二季度苹果大中华区营收同比增长 28% 至 205 亿美元，并在一轮购物节的 iPhone 降价后重回中国智能手机市场第二位。",
+        "阿里巴巴向 CNBC 确认了这笔交易，称千问会被“集成进 Apple 智能体验”，涉及文本与图像理解和内容生成等能力，但没有给出具体时间表。受消息推动，阿里巴巴美股盘前一度上涨约 4%，截至发稿涨幅已超过 6%。"
+      ],
+      "pullquote": null,
+      "ai_impact": "对苹果，这解开了它在华最大的产品短板——没有本地 AI 就难以对抗自带大模型的安卓旗舰；接入千问等于把中国区端侧 AI 外包给一家本土龙头，换取合规和体验。对阿里，拿下苹果这个分发入口是千问对抗豆包、DeepSeek 的重要背书，也解释了股价的即时反应。更值得注意的是，这确立了“外资终端 + 中国大模型”的合规范式：想在中国卖 AI 手机，模型供给权正加速向本土大模型公司集中，苹果、三星这类全球厂商都得就地找合作方。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/07/15/apple-intelligence-approved-for-launch-in-china-with-alibabas-qwen-ai"
+        }
+      ],
+      "relevance_score": 95,
+      "importance_score": 91
+    },
+    {
+      "source_item_ids": [
+        "d7d4df866a58d34f"
+      ],
+      "kicker": "端侧AI · 合作",
+      "title_zh": "面壁智能 MiniCPM 端侧模型将上三星旗舰手机",
+      "summary_zh": "据 36 氪独家，端侧大模型公司面壁智能已与三星达成合作，其自研的 MiniCPM 系列端侧模型将搭载于三星数款旗舰机型上市。同一天，中国网信部门公布 7 款手机端侧生成式 AI 服务完成备案，包括 Apple 智能、华为小艺、OPPO Andes GPT、vivo 蓝心、小米澎湃 AI、三星盖乐世 AI 和努比亚豆包，被视为端侧 AI 从概念演示进入规模化落地的节点。面壁 2022 年孵化自清华 NLP 实验室，MiniCPM 系列在 GitHub、Hugging Face 累计下载已超 3800 万次；它在三星体系里具体承担什么功能仍待三星确认。",
+      "read_body_zh": [
+        "36 氪旗下《智能涌现》独家获悉，专注端侧的面壁智能已与三星手机达成合作，自研 MiniCPM 系列端侧模型将随三星数款旗舰上市。三星是全球出货量最大的安卓厂商之一，其端侧 AI 此前主要靠自研 Galaxy AI 和与谷歌的合作，并正把 Gemini 整合进设备生态，7 月 22 日将在伦敦举行 Galaxy Unpacked 2026 发布会。",
+        "面壁 2022 年 8 月成立、孵化自清华大学自然语言处理实验室，2026 年上半年累计融资超 50 亿元、估值突破 200 亿元，是国内端侧 AI 估值最高的独角兽。其 MiniCPM 系列开源模型累计下载已超 3800 万次，并完成对高通、联发科、英特尔、英伟达、AMD 及华为昇腾、寒武纪等芯片平台的适配。",
+        "在车端，面壁的端侧智能体 SuperMate 预计到 2026 年底交付超 30 万台量产车，覆盖吉利、上汽大众、广汽、马自达等品牌。不过报道也指出，面壁模型在三星体系中具体承担怎样的角色，仍有待三星进一步确认。"
+      ],
+      "pullquote": null,
+      "ai_impact": "这条新闻的真正含义，是中国开放权重端侧模型开始从下载量、评测榜走进全球头部终端的量产供应链。过去手机端侧 AI 大多是厂商自研（华为小艺、小米澎湃），如今阿里千问进 Apple 智能、面壁进三星，说明模型公司正成为手机 AI 的独立供给方，端侧 AI 出现“做芯片式”的市场化分工——厂商不必事事自研。对面壁，绑定三星旗舰是估值兑现的关键订单；但也埋着变数：三星同时在深化 Gemini 合作，面壁能吃到多大功能份额、是否只是备选，将决定这笔合作的商业厚度。",
+      "sources": [
+        {
+          "name": "36氪",
+          "url": "https://36kr.com/p/3896830362601351?f=rss"
+        }
+      ],
+      "relevance_score": 89,
+      "importance_score": 81
+    },
+    {
+      "source_item_ids": [
+        "c63f15f7c2903cbf"
+      ],
+      "kicker": "半导体 · 产业政策",
+      "title_zh": "印度砸数十亿美元，抢夺手机与芯片制造",
+      "summary_zh": "印度周三推出一项约 65 亿美元（6250 亿卢比）的“手机制造计划”，为期五年，按合格销售额给予 2.25% 至 5% 的补贴，本地采购关键零部件再加 1.5%；同时追加约 133 亿美元用于半导体制造，扩容 2021 年启动的 100 亿美元芯片激励。目标是把更多全球电子供应链从中国吸引过来。苹果 2017 年起在印度组装 iPhone，目前约 25% 的 iPhone 在印度生产。但据 Counterpoint，2025 年中国占全球智能手机产量 63%，印度仅 18%，差距仍然巨大。",
+      "read_body_zh": [
+        "印度政府周三公布名为“手机制造计划”的新激励，五年内投入约 6250 亿卢比（约 65 亿美元），按厂商合格销售额给 2.25% 至 5% 补贴，若在本地采购关键零部件和组件可再获 1.5%。新德里还追加约 1.28 万亿卢比（约 133 亿美元）扶持本土半导体制造，扩大 2021 年那笔 100 亿美元的芯片激励，重点补贴设备、材料、设计和研发。",
+        "过去十年印度已成为重要的手机制造中心，吸引了苹果、三星以及小米、OPPO、vivo 等中国品牌。苹果 2017 年起通过富士康、塔塔集团等供应商在印度组装 iPhone，目前约四分之一的 iPhone 在印度生产。新德里近期还批准了中国 vivo 与印度迪克森的合资，并取消部分手机及电子元件的进口关税。",
+        "该计划将运行至 2031 年 3 月，印度政府预计期间手机产值约 4050 亿美元、新增约 6 万个直接就业。分析人士指出，这标志着印度从“多组装”转向追求“深度、研发与本地价值”，但据 Counterpoint，2025 年中国占全球智能手机产量 63%，印度仅 18%，要真正挑战中国还有很长的路。"
+      ],
+      "pullquote": {
+        "text": "苹果将直接受益，印度不断增强的制造与出口能力，会让它更有底气把生产从中国分散出去。",
+        "cite": "Navkendar Singh，IDC 副总裁"
+      },
+      "ai_impact": "这不是普通补贴新闻，而是一次国家级供应链重构，直接牵动苹果、三星把产能移出中国的节奏。补贴结构透露了印度的野心变化：从只奖励“组装”转向奖励“本地采购 + 研发”，想补上它一直缺的零部件生态短板——因为内存价格创新高、卢比走弱推高进口成本，厂商正为每一分钱成本焦虑。对全球格局，若印度真能把 18% 的份额往 35%–40% 推，将重塑电子制造的地理版图和议价权；但组装易、供应链和高附加值环节难，这才是真正的考验，短期难撼动中国 63% 的主导地位。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/07/15/india-bets-billions-on-breaking-chinas-grip-on-smartphone-manufacturing"
+        }
+      ],
+      "relevance_score": 86,
+      "importance_score": 93
+    },
+    {
+      "source_item_ids": [
+        "f1c77f3fa45f07ca"
+      ],
+      "kicker": "数据中心 · 能源",
+      "title_zh": "谷歌签下史上最大太阳能加储能项目供电 AI",
+      "summary_zh": "谷歌宣布完成迄今最大的太阳能加储能采购，项目位于美国阿肯色州，名为 Steel River 能源中心，坐落在孟菲斯以北约 30 英里。谷歌与开发商 Cypress Creek Energy 共同投资，并买断前两期全部产能，新增 1 吉瓦太阳能和 1.9 吉瓦时储能；前两期就足以覆盖该州约 6% 的峰值用电。三期全部建成后总规模约 1.8 吉瓦太阳能加 2.9 吉瓦时储能，将成为全美最大太阳能设施，最后一期计划 2029 年并网。Cypress Creek 已为前两期锁定 35 亿美元融资。电力将直接上网，抵消谷歌数据中心的用电需求。",
+      "read_body_zh": [
+        "谷歌表示，这是它迄今最大的一笔太阳能与电池储能采购。项目位于阿肯色州，前两期发电量足以满足该州约 6% 的峰值需求，电力直接送入电网，用来抵消谷歌数据中心的用电。谷歌既与开发商 Cypress Creek Energy 共同投资，也买断前两期的全部产出，为其组合增加 1 吉瓦太阳能和 1.9 吉瓦时储能。",
+        "这个名为 Steel River 的能源中心位于孟菲斯以北约 30 英里，三期全部建成后总容量约 1.8 吉瓦太阳能加 2.9 吉瓦时储能，将成为全美最大太阳能设施，最后一期计划 2029 年并网。Cypress Creek 已为前两期锁定 35 亿美元融资。太阳能配大容量电池，可让电厂全天候向电网稳定供电，帮助谷歌逐时匹配清洁电力。",
+        "报道对比指出，谷歌的清洁能源路线与马斯克旗下 xAI 形成反差——xAI 在以南约 40 英里处运营一座未取得联邦清洁空气许可的天然气电厂，据路透社报道其运行着近 60 台燃气轮机。谷歌此前也曾投资天然气，与 Crusoe 在西得州建 933 兆瓦电厂，但这在其以清洁能源为主的组合中属于个例。"
+      ],
+      "pullquote": null,
+      "ai_impact": "电力已成为超大规模云厂商扩 AI 算力的真正瓶颈，这笔采购是谷歌给出的能源答案：用“太阳能 + 大储能”解决清洁电力不稳定的老问题，实现逐时匹配，从而在扩数据中心的同时守住碳目标。它也放大了行业的路线分歧——谷歌押可再生能源，xAI 则靠未获许可的天然气抢速度，反映出算力竞赛下“上电速度”与“合规、环境成本”之间的取舍。对电网和储能产业，超大规模厂商成为混合电厂的锚定买家，会带动更多“光伏 + 电池”项目落地，把 AI 的电力需求转化为新能源装机的确定性订单。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/07/15/googles-biggest-clean-power-project-is-40-miles-north-of-xais-unpermitted-gas-power-plant"
+        }
+      ],
+      "relevance_score": 90,
+      "importance_score": 87
+    },
+    {
+      "source_item_ids": [
+        "e53fca9fa81be1b1"
+      ],
+      "kicker": "大模型 · 发布",
+      "title_zh": "Thinking Machines 发布开放权重模型 Inkling",
+      "summary_zh": "Thinking Machines 发布首个从零训练、完整开放权重的模型 Inkling。它是一个混合专家（MoE）Transformer，总参数 9750 亿、激活参数 410 亿，支持最高 100 万 token 的上下文，预训练用了 45 万亿 token 的文本、图像、音频和视频。公司同时预览了更轻的 Inkling-Small（激活 120 亿参数）。Inkling 原生处理文本、图像和音频，支持可控的“思考强度”来平衡性能与成本，即日起可在其 Tinker 平台上微调。官方坦承它并非当前最强的模型，而是定位为可定制的开放权重底座。",
+      "read_body_zh": [
+        "Thinking Machines 表示，Inkling 是它从零训练、并公开完整权重的模型，采用混合专家架构，总参数 9750 亿、每次激活 410 亿，上下文窗口最高 100 万 token，预训练数据涵盖 45 万亿 token 的文本、图像、音频和视频。这是一个模型家族的首款，公司同时放出更轻量的 Inkling-Small 预览版，激活参数 120 亿，以更低成本和延迟提供不错性能。",
+        "官方明确表示，Inkling 并不是当前最强的开源或闭源模型，而是把自己定位为“适合定制的开放权重底座”，卖点是多模态、高效思考，以及可在 Tinker 平台上直接微调。它支持可控的思考强度：在智能体框架内即可设定，用来在性能与 token 消耗之间取舍。官方称在 Terminal Bench 上，Inkling 达到与 Nemotron 3 Ultra 相同表现只需约三分之一的 token。",
+        "在智能体编程和工具调用上，Inkling 在多数相关基准中位居开放权重模型前列，训练时随机化了工具集和 schema 以降低对特定框架的敏感度。官方展示了它一次成型搭建可交互 Web 应用、并在 40 轮由 GPT Codex 充当评审的反馈中迭代打磨一款游戏；音频和视觉采用无编码器架构，从零在通用数据上训练。"
+      ],
+      "pullquote": null,
+      "ai_impact": "把“可控思考强度”和“为微调而生”作为核心卖点，透露出开放权重模型竞争的重心正在转移：不再单纯拼榜单峰值，而是拼落地时的成本、延迟和可定制性——同等表现只花三分之一 token，对要跑数百万次、嵌进长流程的应用才是真金白银。Thinking Machines 用 Tinker 平台 + Playground 把模型、微调和试玩打包，实质是在争夺开发者的“底座选择权”，与其他开放权重玩家正面竞争定制生态。官方主动淡化“最强”而强调“最合适”，也说明前沿实验室开始把商业价值押在服务和工作流粘性上，而非单一能力指标。",
+      "sources": [
+        {
+          "name": "Thinking Machines",
+          "url": "https://thinkingmachines.ai/news/introducing-inkling"
+        }
+      ],
+      "relevance_score": 94,
+      "importance_score": 89
+    }
+  ],
+  "briefs": [
+    {
+      "source_item_ids": [
+        "c80555245e231eec"
+      ],
+      "title_zh": "韩美半导体拟建第八座工厂，押注 AI 设备短缺",
+      "summary_zh": "据韩国《每日经济新闻》，韩美半导体董事长郭东信表示，鉴于预计明年起 AI 半导体设备将供不应求，公司正考虑投建第八座工厂，建成后将成为其规模最大的厂区，选址毗邻正在仁川施工的第七工厂。公司称随着全球芯片厂商扩大投资，其热压键合机与混合键合机需求将快速增长，并计划 2026 年底在加州圣何塞设立美国子公司强化技术服务。",
+      "sources": [
+        {
+          "name": "36氪",
+          "url": "https://36kr.com/newsflashes/3897576310785667?f=rss"
+        }
+      ],
+      "relevance_score": 92,
+      "importance_score": 79
+    },
+    {
+      "source_item_ids": [
+        "75272168adada69c"
+      ],
+      "title_zh": "微软被曝培训销售，贬低 OpenAI 和 Anthropic",
+      "summary_zh": "据彭博社，微软在周二一场内部会议上要求销售团队以效率和成本为卖点，把自研 AI 模型与 OpenAI、谷歌、Anthropic 的产品做负面对比。高管 Jacob Andreou 直接拿 Copilot 对比 Anthropic 的 Claude，称后者在 Office 应用中“更慢、更不准，且缺乏安全集成”。此前有报道称微软已在 Word、Excel 等旗舰应用中把 OpenAI 和 Anthropic 的模型换成自研模型。今年 4 月双方修订协议，取消了 OpenAI 的独家条款。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/07/15/microsoft-is-reportedly-training-salespeople-to-talk-down-openai-and-anthropic"
+        }
+      ],
+      "relevance_score": 83,
+      "importance_score": 78
+    },
+    {
+      "source_item_ids": [
+        "bc76657e5d543365",
+        "13c5bb2ada07f5c3"
+      ],
+      "title_zh": "微软打出创纪录补丁，同日又爆 Windows 零日",
+      "summary_zh": "微软本月“补丁星期二”一次修复了创纪录的 570 个安全漏洞，并称是借助 AI 帮助员工发现了大量此前未知的隐藏漏洞，其中至少两个为已被利用的零日，包括一个 Windows Server 提权漏洞和一个正被攻击者利用的 SharePoint 漏洞（美国 CISA 已预警）。就在同一天，匿名研究者 NightmareEclypse 公布了名为 HiveLegacy 的新零日利用代码，可让低权限账户修改管理员账户的注册表配置；该研究者已累计发布九个此类利用，并抱怨微软对漏洞报告的处理方式。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/07/15/microsoft-patches-record-number-of-security-vulnerabilities-citing-its-use-of-ai"
+        },
+        {
+          "name": "Ars Technica",
+          "url": "https://arstechnica.com/security/2026/07/windows-0-day-drops-the-same-day-microsoft-releases-record-number-of-patches"
+        }
+      ],
+      "relevance_score": 64,
+      "importance_score": 80
+    },
+    {
+      "source_item_ids": [
+        "ffb3dfe723b238eb"
+      ],
+      "title_zh": "太空数据中心到底有多难建",
+      "summary_zh": "Ars Technica 在系列报道中拆解了轨道数据中心的技术账。SpaceX 已把大量未来价值押在这上面，设想发射并维护一个百万卫星星座，产生 120 吉瓦电力，为数千万乃至最高 1 亿块前沿级 GPU 供电；首代方案称为 AI1 卫星。马斯克称这“并非超难问题”，很多技术已用于 Starlink V3。但报道指出，散热、辐射、发射运力和时延都是硬约束，物理上可行、经济上却极具挑战。铱星 CEO Matt Desch 评价这是当下热门话题，但“要克服的技术挑战极为庞大”。",
+      "sources": [
+        {
+          "name": "Ars Technica",
+          "url": "https://arstechnica.com/space/2026/07/how-hard-is-it-to-build-orbital-data-centers-actually"
+        }
+      ],
+      "relevance_score": 82,
+      "importance_score": 69
+    },
+    {
+      "source_item_ids": [
+        "7ef3d39dfd176c7e"
+      ],
+      "title_zh": "TCP/IP 之父参与制定 AI Agent 身份标准",
+      "summary_zh": "互联网协议先驱 Vint Cerf 上周离开谷歌后，开始为 Innovation Labs 担任顾问，推动一套让 AI Agent 在开放互联网上自我标识的架构。该机构隶属 DNS 注册商 Identity Digital，提出名为 DNSid 的方案，用域名系统为每个 Agent 建立身份、并以密码学证明记录其注册，以解决跨平台 Agent 的身份、权限和问责难题。据称正与数家未具名的超大规模厂商和身份公司试点。Cerf 认为 Agent 经济未必是必然，但人们一定会去尝试。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/07/15/vint-cerf-is-working-on-a-plan-to-unleash-ai-agents-on-the-open-internet"
+        }
+      ],
+      "relevance_score": 80,
+      "importance_score": 74
+    },
+    {
+      "source_item_ids": [
+        "c08021f2f7d1bca3"
+      ],
+      "title_zh": "Anthropic 联手黑石组建 15 亿美元 AI 落地公司 Ode",
+      "summary_zh": "Anthropic 在 5 月与黑石、Hellman & Friedman、高盛等成立的 15 亿美元 AI 实施公司如今定名为“Ode with Anthropic”。它把前沿模型工程师派驻到企业现场，帮客户把 AI 接进核心业务流程，走的是与 OpenAI“The Deployment Company”类似的路线。Ode 由黑石发起，收购了 AI 工程服务创业公司 Fractional AI 作为班底，目前约有 100 名工程师，奉行“Claude 优先”但不限于 Anthropic 技术。CEO 称若执行得当，有望成为万亿美元级公司。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/07/15/anthropic-blackstone-bet-the-next-trillion-dollar-ai-business-is-implementation-not-just-models"
+        }
+      ],
+      "relevance_score": 78,
+      "importance_score": 75
+    },
+    {
+      "source_item_ids": [
+        "0c083be938e72d65"
+      ],
+      "title_zh": "OpenAI 首款品牌硬件是一块发光键盘",
+      "summary_zh": "OpenAI 推出首款品牌硬件 Codex Micro，是一块售价 230 美元、带 RGB 灯效的迷你键盘，用于一眼监看多个 Codex 智能体的运行状态。它与 Work Louder 联名限量发售，顶部两排的六个磨砂按键会用颜色实时反馈最多六个 Codex 线程：空闲白、思考蓝、完成绿、需人工决策闪黄、报错闪红，轻按即可调出对应窗口。下方六个按键默认映射接受、拒绝、分支等常用操作，可通过软件重映射，并支持另外五套通用快捷键。",
+      "sources": [
+        {
+          "name": "Ars Technica",
+          "url": "https://arstechnica.com/ai/2026/07/openais-first-branded-hardware-is-a-light-up-keyboard"
+        }
+      ],
+      "relevance_score": 76,
+      "importance_score": 58
+    },
+    {
+      "source_item_ids": [
+        "cafebeed93ad2255"
+      ],
+      "title_zh": "研究者演示诱导 Claude 逐字外泄用户记忆",
+      "summary_zh": "安全研究者 Ayush Paul 披露了一种从 Claude 外泄用户记忆信息的路径。他利用 claude.ai 的联网能力：web_fetch 允许 Claude 点击上一页里出现的链接，于是他搭建一个把首页链接到 /a、/b……并逐级延伸的攻击网站，配合伪装成可信企业的提示注入，诱导 Claude 沿字母目录“拼写”出用户姓名、雇主等信息，服务器日志便逐字符收到数据。作者称 claude.ai 的记忆由每日摘要和对话检索组成，隔离本身没问题，风险出在它与浏览工具组合之后。",
+      "sources": [
+        {
+          "name": "Hacker News",
+          "url": "https://www.ayush.digital/blog/the-memory-heist"
+        }
+      ],
+      "relevance_score": 72,
+      "importance_score": 72
+    },
+    {
+      "source_item_ids": [
+        "e2506a328b896ffa"
+      ],
+      "title_zh": "谷歌图片搜索 25 周年改版，加码个性化与 AI",
+      "summary_zh": "谷歌为图片搜索上线 25 周年推出改版，把原本简洁的搜索框改成一个未搜索前就先呈现的图片瀑布流，并会依据用户的兴趣持续更新——这里的“兴趣”指的是用户在谷歌上的网页浏览和搜索历史。谷歌图片搜索于 2001 年 7 月首发，官方称当年的灵感来自人们想直接“看到”而非阅读珍妮弗·洛佩兹那条绿裙子。此次改版延续了谷歌 2026 年在搜索各处加入 AI 的思路。",
+      "sources": [
+        {
+          "name": "Ars Technica",
+          "url": "https://arstechnica.com/google/2026/07/google-revamps-image-search-for-its-25th-anniversary-with-more-images-and-more-ai"
+        }
+      ],
+      "relevance_score": 65,
+      "importance_score": 62
+    },
+    {
+      "source_item_ids": [
+        "1be6f5c0d54d0171"
+      ],
+      "title_zh": "Suno 遭入侵，代码疑显示其抓取 YouTube 训练",
+      "summary_zh": "据 404 Media，AI 音乐生成公司 Suno 遭黑客入侵。黑客称在去年 11 月通过供应链攻击获取一名员工凭据，进而拿到源码，显示 Suno 涉嫌抓取了 YouTube Music、Deezer、Genius、素材音乐库和播客 RSS 上数十年的音频。Suno 此前承认用互联网上“公开可得的音乐文件”训练，主张属合理使用，但正被各大唱片公司起诉。黑客还称获取了客户邮箱、电话和 Stripe 中的部分信用卡号；Suno 未通知客户，称这是一次“已被迅速控制的有限安全事件”。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/07/15/hack-suggests-ai-music-generator-suno-scraped-youtube-for-training-data"
+        }
+      ],
+      "relevance_score": 54,
+      "importance_score": 68
+    },
+    {
+      "source_item_ids": [
+        "dc205e9d19a70133"
+      ],
+      "title_zh": "谷歌下周起在 Play 商店分发第三方应用商店",
+      "summary_zh": "谷歌与 Epic 之间的和解被撤回，这意味着谷歌须受法院完整反垄断救济约束。谷歌已确认将从下周起在 Play 商店内分发竞争对手的应用商店，为其他平台分食 Android 收入打开口子。此案源于 2020 年 Epic 在《堡垒之夜》中绕过谷歌和苹果的 30% 抽成而被下架。法官 James Donato 判定的救济包括下调费率、把 Play 应用镜像到其他商店，以及最关键的——在 Play 商店内为第三方应用商店提供位置，以打破谷歌的分发垄断。",
+      "sources": [
+        {
+          "name": "Ars Technica",
+          "url": "https://arstechnica.com/gadgets/2026/07/third-party-app-stores-coming-to-google-play-next-week-as-epic-settlement-withdrawn"
+        }
+      ],
+      "relevance_score": 52,
+      "importance_score": 81
+    }
+  ],
+  "discarded": [
+    {
+      "source_item_ids": [
+        "0ad397264e25b7f7"
+      ],
+      "reason": "历史索引已于 7 月 14 日发布 iOS 27 公测版、重做 Siri 开放试用；本条为同一事件换源转述，无新事实。",
+      "relevance_score": 88,
+      "importance_score": 72
+    },
+    {
+      "source_item_ids": [
+        "f77faae2bc5b0d5a"
+      ],
+      "reason": "历史索引已于 7 月 15 日把 OpenAI 无屏可移动 AI 音箱列为头条；本条仍基于同一匿名消息源，无足以构成跟进的新事实。",
+      "relevance_score": 84,
+      "importance_score": 76
+    },
+    {
+      "source_item_ids": [
+        "de0a58e200f71703"
+      ],
+      "reason": "6 月旧文在 Hacker News 再度走红，核心为在老旧 Xeon 上跑 Gemma 的工程教程与个案，无新的市场采用、成本或产业链信号。",
+      "relevance_score": 60,
+      "importance_score": 37
+    },
+    {
+      "source_item_ids": [
+        "0e379923ade18f3e"
+      ],
+      "reason": "个人离职长文主要陈述对谷歌与军方/政府合作的伦理立场，关键指控缺独立佐证，无明确的新产品、监管或产业事实。",
+      "relevance_score": 39,
+      "importance_score": 49
+    },
+    {
+      "source_item_ids": [
+        "1ad49e79afc33197"
+      ],
+      "reason": "AI 制药趋势合集，把此前发布、融资与合作拼成赛道叙事，无清晰且未被覆盖的单一新增事件。",
+      "relevance_score": 36,
+      "importance_score": 46
+    },
+    {
+      "source_item_ids": [
+        "886bf0cd3795edc9"
+      ],
+      "reason": "核心为斯年智驾 3 亿元 C 轮融资，触及“小公司融资”硬性回避项，重卡自动驾驶商业化信息不足以突破边界。",
+      "relevance_score": 67,
+      "importance_score": 54
+    },
+    {
+      "source_item_ids": [
+        "1b2d6dd509c3ad42"
+      ],
+      "reason": "核心为语音 AI 初创公司 2400 万美元 A 轮融资，属“小公司融资”硬性回避项。",
+      "relevance_score": 43,
+      "importance_score": 48
+    },
+    {
+      "source_item_ids": [
+        "5652371f8e709fa9"
+      ],
+      "reason": "尽管披露 1.2 亿美元年化收入和 20 万付费客户，核心仍是 AI 编程初创公司 1.3 亿美元融资，受“小公司融资”硬边界限制丢弃。",
+      "relevance_score": 74,
+      "importance_score": 62
+    }
+  ],
+  "merged_sources": [
+    {
+      "source_item_ids": [
+        "bc76657e5d543365",
+        "13c5bb2ada07f5c3"
+      ],
+      "reason": "同一轮微软 Patch Tuesday 安全事件的互补报道：一条聚焦新零日利用，另一条聚焦创纪录补丁数量及 AI 辅助发现。"
+    }
+  ]
+}

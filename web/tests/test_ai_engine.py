@@ -8,6 +8,7 @@ from daily_news.ai_engine import (
     ProviderRunResult,
     _provider_result_from_claude,
     _provider_result_from_codex,
+    _without_model_arg,
     build_issue_file_prompt,
     build_provider_command,
     build_repair_prompt,
@@ -17,6 +18,7 @@ from daily_news.ai_engine import (
     build_shortlist_prompt,
     extract_json_object,
     run_ai_task,
+    run_provider,
 )
 from subprocess import CompletedProcess
 from daily_news.config import PipelineConfig, load_section
@@ -251,6 +253,42 @@ def test_build_codex_provider_command_is_read_only() -> None:
     assert command[-1] == "-"
 
 
+def test_build_codex_provider_command_supports_model() -> None:
+    config = PipelineConfig()
+    config.ai.codex.model = "gpt-5.6-sol"
+
+    command = build_provider_command("codex", config)
+
+    assert "--model" in command
+    assert "gpt-5.6-sol" in command
+    assert "--model" not in _without_model_arg(command)
+
+
+def test_codex_provider_falls_back_to_default_model(monkeypatch: pytest.MonkeyPatch) -> None:
+    config = PipelineConfig()
+    config.ai.codex.model = "gpt-5.6-sol"
+    calls: list[list[str]] = []
+
+    def fake_run_command(command: list[str], prompt: str, timeout: int):  # noqa: ANN001
+        calls.append(command)
+        if len(calls) == 1:
+            return CompletedProcess(args=command, returncode=1, stdout="", stderr="model unavailable"), 10
+        return CompletedProcess(args=command, returncode=0, stdout='{"ok":true}', stderr=""), 20
+
+    monkeypatch.setattr("daily_news.ai_engine._run_command", fake_run_command)
+
+    result = run_provider("codex", "prompt", CodexShortlistOutput, config, use_output_schema=False)
+
+    assert len(calls) == 2
+    assert "--model" in calls[0]
+    assert "--model" not in calls[1]
+    assert result.return_code == 0
+    assert result.model == "codex-default"
+    assert result.duration_ms == 30
+    assert result.extra["fallback_used"] is True
+    assert result.extra["fallback_from_model"] == "gpt-5.6-sol"
+
+
 def test_build_claude_provider_command_supports_model_and_budget() -> None:
     config = PipelineConfig()
     config.ai.claude.model = "claude-test"
@@ -391,10 +429,12 @@ def test_codex_jsonl_events_usage_is_optional() -> None:
         completed=completed,
         command=["codex"],
         duration_ms=300,
+        configured_model="gpt-configured",
     )
 
     assert result.output_text == '{"ok": true}'
     assert result.input_tokens == 11
     assert result.output_tokens == 7
     assert result.total_tokens == 18
+    assert result.model == "gpt-test"
     assert result.extra["event_count"] == 2

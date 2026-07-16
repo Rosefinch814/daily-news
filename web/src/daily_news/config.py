@@ -13,6 +13,7 @@ from daily_news.paths import CONFIG_DIR
 class ProviderRuntimeConfig(BaseModel):
     command: str
     model: str | None = None
+    fallback_to_default: bool = True
     max_budget_usd: float | None = None
 
 

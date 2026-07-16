@@ -11,7 +11,8 @@ ai:
   repair_attempts: 1
   codex:
     command: /Applications/ChatGPT.app/Contents/Resources/codex exec
-    model:
+    model: gpt-5.6-sol
+    fallback_to_default: true
   claude:
     command: claude -p
     model:

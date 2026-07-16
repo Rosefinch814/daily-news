@@ -305,3 +305,4 @@ class AIRunRecord(BaseModel):
     attempts: list[dict[str, Any]] = Field(default_factory=list)
     provider_event_log: str | None = None
     provider_events: str | None = None
+    extra: dict[str, Any] = Field(default_factory=dict)
