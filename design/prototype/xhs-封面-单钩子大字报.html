@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>小红书封面 · 单钩子大字报（定稿）</title>
+<!--
+  小红书封面改版 · 单钩子大字报 —— 设计对话定稿。
+  目标：把封面从「报纸头版罗列」改成「当天最有料一句 = 超大字主视觉」，提升 feed 缩略图点击率。
+  简报：docs/design-briefs/小红书封面改版-单钩子大字报.md
+  权威：视觉基调 design/设计规范.md（V1a 报纸感、§1 token）；行为/反漂移 spec/小红书图组导出.md §3.3/§4。
+  只动封面；头条页/速览页（design §12.3/§12.4）本轮不动。
+  ⚠ 完全复用 §1 token，零新增裸值/新色；红全部来自 --seal。
+  ⚠ 大字钩子/支撑句是对外事实性文案，反漂移铁律照旧：忠实、不标题党、不半句、不省略号。演示文案为忠实草案。
+
+  【本轮定稿结论】
+  · 采用「A 支撑句版」：大字下补一句上下文事实（来自头条 1 摘要收敛），中部 kicker+大字+支撑句三层。
+  · 字号 v1 先用 M 档 94px（钩子 17–24 字）；L 档 116px 存档备用（更短更冲的钩子时启用）。
+  · 图组结构：不设总览卡，封面大字 = 头条 1 钩子；顺序 封面→头条1→头条2→头条3→速览；3 条总览交 caption 正文。
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,900&family=JetBrains+Mono:wght@500;700&family=Noto+Serif+SC:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F4EFE3; --ink:#1A1714; --ink-2:#3D372F; --ink-3:#5A5247;
+  --muted:#8E836F; --rule:#D2C8B2; --rule-2:#B7AB90;
+  --seal:#A6342B; --seal-soft:#F0DCD5; --ai-bg:#ECE7DA; --field:#FBF8EF;
+  --sans:"Noto Serif SC","Songti SC",serif;
+  --disp:"Fraunces","Georgia",serif;
+  --mono:"JetBrains Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box;}
+body{margin:0;background:#cfc6b2;color:var(--ink);font-family:var(--sans);padding:44px;}
+.page-head{max-width:1400px;margin:0 auto 30px;font-family:var(--mono);color:#4a4234;}
+.page-head h1{font-family:var(--disp);font-weight:900;color:#3a3226;margin:0 0 6px;font-size:26px;}
+.page-head p{margin:2px 0;font-size:13px;line-height:1.6;}
+.page-head .seal{color:var(--seal);font-weight:700;}
+
+.gallery{display:flex;flex-wrap:wrap;gap:48px;justify-content:center;}
+.item{display:flex;flex-direction:column;align-items:center;gap:12px;}
+.item .cap{font-family:var(--mono);font-size:13px;color:#4a4234;}
+.item .cap b{color:var(--seal);}
+/* 缩放取景框：卡片真实 1080×1440，按 0.42 缩小展示 */
+.shrink{width:453.6px;height:604.8px;overflow:hidden;box-shadow:0 18px 46px rgba(40,30,15,.32);position:relative;}
+.shrink .card{transform:scale(.42);transform-origin:top left;}
+/* feed 方形安全区示意：正方取中裁切 = 竖图中段 1080×1080（y 180–1260）；缩略图只见此区 */
+.safe-badge{position:absolute;left:8px;top:calc(180px * .42 + 8px);z-index:3;
+  font-family:var(--mono);font-size:10px;letter-spacing:.05em;color:var(--seal);
+  background:rgba(244,239,227,.82);border:1px solid var(--seal);border-radius:4px;padding:2px 6px;}
+.safe-line{position:absolute;left:0;right:0;z-index:2;border-top:1.5px dashed rgba(166,52,43,.45);pointer-events:none;}
+.safe-line.top{top:calc(180px * .42);}
+.safe-line.bot{top:calc(1260px * .42);}
+
+/* ============ 卡片基座 ============ */
+.card{width:1080px;height:1440px;background:var(--paper);color:var(--ink);position:relative;overflow:hidden;}
+
+/* ============ 封面 · 单钩子大字报 ============ */
+/* 高度由 .card 的 1440px 主宰——不要在此再写 height，否则会塌成取景框高 */
+.cover2{display:flex;flex-direction:column;}
+
+/* 顶部品牌骨架条（每天不变）——刊名角标 + 日期角标 + 报头分隔线 */
+.cv2-head{flex:none;display:flex;justify-content:space-between;align-items:center;
+  padding:64px 80px 30px;border-bottom:3px solid var(--rule-2);}
+.cv2-brand{display:flex;align-items:center;gap:18px;}
+.cv2-brand .seal-mark{width:26px;height:26px;background:var(--seal);flex:none;}
+.cv2-brand .name{font-family:var(--sans);font-weight:900;font-size:36px;letter-spacing:.03em;color:var(--ink-2);}
+.cv2-date{display:flex;align-items:baseline;gap:16px;}
+.cv2-date .d{font-family:var(--mono);font-weight:700;font-size:40px;letter-spacing:.02em;color:var(--seal);line-height:1;}
+.cv2-date .dow{font-family:var(--sans);font-weight:900;font-size:28px;color:var(--ink-3);line-height:1;}
+
+/* 大字钩子区（主视觉 · 占满方形安全区） */
+.cv2-hook{flex:1 1 auto;display:flex;flex-direction:column;justify-content:center;padding:0 80px;min-height:0;}
+.cv2-kicker{align-self:flex-start;font-family:var(--mono);font-weight:700;font-size:26px;letter-spacing:.14em;
+  color:var(--paper);background:var(--seal);padding:11px 22px;border-radius:6px;margin-bottom:46px;text-transform:uppercase;}
+.cv2-big{font-family:var(--sans);font-weight:900;line-height:1.14;letter-spacing:.005em;color:var(--ink);margin:0;}
+.cv2-big em{color:var(--seal);font-style:normal;}   /* 数字/主体重音：只换朱红，不改字重字号 */
+/* —— 字号档位：v1 先用 M；L 存档备用（设计推导值，待真图核定 ±3~5px） —— */
+.cv2-big.l {font-size:116px;}   /* 存档 · 12–16 字 · 2 行 */
+.cv2-big.m {font-size:94px;}    /* v1 采用 · 17–24 字 · 3 行 */
+/* 支撑句（采用）：大字下更小一句上下文事实，填满中部、多一个点击理由，仍单主题 */
+.cv2-sub{margin:36px 0 0;font-family:var(--sans);font-weight:500;font-size:40px;line-height:1.42;color:var(--ink-3);}
+.cv2-sub em{color:var(--seal);font-style:normal;font-weight:700;}
+
+/* 底部非安全区（下 360px 带）：极次要暗示，缩略图裁掉无所谓 */
+.cv2-foot{flex:none;padding:30px 80px 64px;border-top:3px solid var(--rule-2);}
+.cv2-foot .bar{height:6px;width:120px;background:var(--seal);margin-bottom:24px;}
+.cv2-foot .row{display:flex;justify-content:space-between;align-items:center;
+  font-family:var(--mono);font-weight:700;font-size:24px;letter-spacing:.08em;color:var(--muted);}
+.cv2-foot .more{color:var(--ink-3);}
+.cv2-foot .swipe{display:flex;align-items:center;gap:14px;color:var(--seal);text-transform:uppercase;}
+.cv2-foot .swipe svg{color:var(--seal);}
+</style>
+</head>
+<body>
+
+<div class="page-head">
+  <h1>小红书封面 · 单钩子大字报（定稿）</h1>
+  <p>竖版 1080×1440（按 <span class="seal">0.42</span> 取景）。大字 = 当天最有料一句（= 头条 1 钩子），占满 feed <span class="seal">方形安全区</span>（虚线间 = 正方取中裁切可见区）；刊名+日期降级顶部角标；3 条头条删、压成底部「+2 左滑」，总览交 caption。</p>
+  <p>已定：采用 <span class="seal">A 支撑句版</span>（大字下补一句上下文事实）。字号 v1 <span class="seal">先用 M 档 94px</span>（钩子 17–24 字）；<span class="seal">L 档 116px 存档</span>备用。数字/主体 <span class="seal">换朱红重音</span>，红全部来自 <span class="seal">--seal</span>、零新增裸值。</p>
+</div>
+
+<div class="gallery">
+
+  <!-- ============ M 档 · A 支撑句 —— v1 采用 ============ -->
+  <div class="item">
+    <div class="cap"><b>M 档 94px</b> · A 支撑句 —— v1 采用</div>
+    <div class="shrink">
+      <div class="safe-badge">方形安全区</div>
+      <div class="safe-line top"></div>
+      <div class="safe-line bot"></div>
+      <div class="card cover2">
+        <div class="cv2-head">
+          <div class="cv2-brand"><span class="seal-mark"></span><span class="name">AI科技日报</span></div>
+          <div class="cv2-date"><span class="d">2026.07.07</span><span class="dow">周二</span></div>
+        </div>
+        <div class="cv2-hook">
+          <div class="cv2-kicker">AI 存储 · 今日头条</div>
+          <h1 class="cv2-big m"><em>SK海力士</em>赴美发ADR，把AI存储周期搬上华尔街</h1>
+          <p class="cv2-sub">拟发行近 <em>1780 万股</em> ADR，周五定价，一季度营收同比增近 200%</p>
+        </div>
+        <div class="cv2-foot">
+          <div class="bar"></div>
+          <div class="row">
+            <span class="more">+2 条头条 · 11 速览 · 约 6 分钟</span>
+            <span class="swipe">左滑翻阅
+              <svg width="66" height="22" viewBox="0 0 66 22" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M6 4l7 7-7 7"/><path d="M25 4l7 7-7 7"/><path d="M44 4l7 7-7 7"/>
+              </svg>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ L 档 · A 支撑句 —— 存档备用 ============ -->
+  <div class="item">
+    <div class="cap"><b>L 档 116px</b> · A 支撑句 —— 存档（更短更冲的钩子）</div>
+    <div class="shrink">
+      <div class="safe-badge">方形安全区</div>
+      <div class="safe-line top"></div>
+      <div class="safe-line bot"></div>
+      <div class="card cover2">
+        <div class="cv2-head">
+          <div class="cv2-brand"><span class="seal-mark"></span><span class="name">AI科技日报</span></div>
+          <div class="cv2-date"><span class="d">2026.07.07</span><span class="dow">周二</span></div>
+        </div>
+        <div class="cv2-hook">
+          <div class="cv2-kicker">半导体 · 今日头条</div>
+          <h1 class="cv2-big l">净利<em>38亿</em>，宏芯宇冲刺港股IPO</h1>
+          <p class="cv2-sub">四个月累计营收翻倍，主营企业级存储主控，拟港股募资扩产</p>
+        </div>
+        <div class="cv2-foot">
+          <div class="bar"></div>
+          <div class="row">
+            <span class="more">+2 条头条 · 11 速览 · 约 6 分钟</span>
+            <span class="swipe">左滑翻阅
+              <svg width="66" height="22" viewBox="0 0 66 22" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M6 4l7 7-7 7"/><path d="M25 4l7 7-7 7"/><path d="M44 4l7 7-7 7"/>
+              </svg>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

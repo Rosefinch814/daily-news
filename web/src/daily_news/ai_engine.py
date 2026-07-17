@@ -62,6 +62,7 @@ class XHSCondenseSlotOutput(BaseModel):
 
     id: str
     text: str
+    emphasis_terms: list[str]
 
 
 class XHSCondenseOutput(BaseModel):
@@ -595,6 +596,8 @@ def build_xhs_condense_file_prompt(input_path: Path) -> str:
 {input_path}
 
 CC 设计规范字数契约：
+- cover_hook：12-24 字，用于新版封面的单钩子大字。
+- cover_sub：28-46 字，用于新版封面的事实支撑句。
 - headline_summary：90-155 字，用于头条「发生了什么」事实摘要。
 - headline_impact：85-145 字，用于头条「为什么重要 · AI 分析」。
 - brief_summary：22-52 字，用于速览一句话摘要。
@@ -613,11 +616,15 @@ CC 设计规范字数契约：
 5. 如果无法同时满足区间和完整表达，宁可略短，不许编内容凑字。
 6. slot_type=headline_impact 时，内容仍然是分析判断，不要改写成事实摘要。
 7. slot_type=brief_summary 时，必须是一句话，不要写成两句或小段落。
+8. slot_type=cover_hook 时，只能收敛头条 1 标题；允许标题式短句，不强制补句号。
+9. slot_type=cover_sub 时，只能收敛头条 1 摘要中的事实，不得引用 ai_impact。
+10. emphasis_terms 只用于 cover_hook：返回 text 中原样存在、值得用朱红强调的主体或关键数字片段；其他槽位返回空数组。
 
 输出要求：
 - 只输出一个 JSON 对象，不要 Markdown，不要解释。
 - 输出 slots 数组，id 必须逐一对应输入 slots 中的 id；不要新增 id，不要遗漏 id。
-- JSON schema：{{"slots": [{{"id": "headline_01_summary", "text": "收敛后的中文文本"}}]}}
+- 每个 slot 都必须包含 emphasis_terms；没有重音时输出空数组，避免缺字段触发 repair。
+- JSON schema：{{"slots": [{{"id": "cover_hook", "text": "收敛后的中文文本", "emphasis_terms": ["主体或数字"]}}]}}
 """.strip()
 
 

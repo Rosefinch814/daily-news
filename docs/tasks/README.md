@@ -22,8 +22,10 @@
 
 见 [../milestones/01-科技日报.md](../milestones/01-科技日报.md)。
 
-当前进度（2026-07-07）：
+当前进度（2026-07-16）：
 - M1 主链路已完成：科技单板块日报可抓取、筛选、写作、导出并通过 Cloudflare Pages 发布。
-- M2 反馈闭环已完成（含 T10/T11 反馈两通道，代码 done，待用户手动 apply Supabase schema + 设 `OWNER_FEEDBACK_TOKEN` 才生效）。
+- M2 反馈闭环已完成（含 T10/T11 反馈两通道，代码 done，Supabase 手动步骤用户已 apply、已真生效）。
 - M3 先行项：T08 本地硬去重 + T09 选题级软去重均已完成。
-- **M4 分享·小红书图组导出**：设计已定稿（design §12 + 原型），spec/字数契约已回填。T12（卡片模板落地）、T13（xhs_condense AI 收敛）已 **done**。**新 todo：T14 发布文案（AI 钩子标题 + 精简正文，依赖 T12/T13）**。旧 `web/marketing/` 是无关历史项目，勿动。
+- **M4 分享·小红书图组导出**：T12（卡片模板）、T13（xhs_condense AI 收敛）、T14（发布文案 标题+正文）均已 **done**。
+- **新 todo：T15 封面改版·单钩子大字报**（提点击率，依赖 T12/T13）——封面从"报纸罗列"改成"头条 1 钩子大字"，重做 `cover_card` + 加 `cover_hook`/`cover_sub` 收敛槽位 + 字号档 + 数字重音。行为见 spec §2/§4/§7，视觉见 design §12.2 + 原型 `xhs-封面-单钩子大字报.html`。
+- 旧 `web/marketing/` 是无关历史项目，勿动。

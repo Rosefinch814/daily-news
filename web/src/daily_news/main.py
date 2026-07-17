@@ -1702,8 +1702,9 @@ def export_xhs(args: argparse.Namespace) -> int:
         config=config,
         ai_condense=not args.no_ai_condense,
         provider=provider,
+        cover_template=args.cover_template,
     )
-    print(f"小红书日报图组已导出：{result.output_dir}")
+    print(f"小红书日报图组已导出（封面：{args.cover_template}）：{result.output_dir}")
     for path in result.image_paths:
         print(f"- {path}")
     print(f"- {result.caption_path}")
@@ -1833,6 +1834,12 @@ def build_parser() -> argparse.ArgumentParser:
     export_xhs_parser.add_argument("--output-dir", help="Override output directory; defaults to web/runs/xhs/<date>")
     export_xhs_parser.add_argument("--config", help="Pipeline config path; defaults to web/config/pipeline.yaml")
     export_xhs_parser.add_argument("--provider", choices=["claude", "codex"], help="Override xhs_condense provider")
+    export_xhs_parser.add_argument(
+        "--cover-template",
+        choices=["classic", "single-hook"],
+        default="classic",
+        help="Cover template; single-hook writes to a separate <date>-single-hook directory by default",
+    )
     export_xhs_parser.add_argument("--no-ai-condense", action="store_true", help="Use deterministic card text fallback only")
     export_xhs_parser.set_defaults(func=export_xhs)
 

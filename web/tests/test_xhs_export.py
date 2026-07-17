@@ -1,3 +1,5 @@
+import html
+import re
 from datetime import date
 from pathlib import Path
 
@@ -25,6 +27,8 @@ from daily_news.xhs_export import (
     build_note_title,
     collect_condense_slots,
     condense_slot,
+    emphasize_cover_text,
+    export_xhs_issue,
     fallback_note_title,
     is_valid_note_title,
     paginate_briefs,
@@ -62,6 +66,44 @@ def test_build_xhs_cards_uses_design_cards_and_dynamic_briefs() -> None:
     assert '<span class="chip">AI</span>' in cards[1].html_body
     assert "条快扫" not in "".join(card.html_body for card in cards)
     assert "…" not in "".join(card.html_body for card in cards)
+
+
+def test_single_hook_cover_is_additive_and_keeps_content_cards_identical() -> None:
+    issue = sample_issue()
+
+    classic_cards = build_cards(issue, cover_template="classic")
+    single_hook_cards = build_cards(issue, cover_template="single-hook")
+
+    assert classic_cards[0].kind == "cover"
+    assert single_hook_cards[0].kind == "cover2"
+    assert classic_cards[1:] == single_hook_cards[1:]
+    assert 'class="cv2-big m"' in single_hook_cards[0].html_body
+    assert "cv2-head" in single_hook_cards[0].html_body
+    assert "lead-label" not in single_hook_cards[0].html_body
+    assert f"+{max(0, min(3, len(issue.headlines)) - 1)} 条头条" in single_hook_cards[0].html_body
+
+
+def test_single_hook_cover_uses_large_size_for_short_hook() -> None:
+    issue = sample_issue()
+    issue.headlines[0].title_zh = "芯片巨头集体涨价"
+
+    cover = build_cards(issue, cover_template="single-hook")[0]
+
+    assert 'class="cv2-big l"' in cover.html_body
+
+
+def test_single_hook_output_directory_does_not_replace_classic(monkeypatch, tmp_path: Path) -> None:
+    issue = sample_issue()
+    monkeypatch.setattr("daily_news.xhs_export.RUNS_DIR", tmp_path)
+    monkeypatch.setattr("daily_news.xhs_export.render_card_images", lambda html_path, output_dir, count: [])
+
+    classic = export_xhs_issue(issue, cover_template="classic")
+    single_hook = export_xhs_issue(issue, cover_template="single-hook")
+
+    assert classic.output_dir == tmp_path / "xhs" / "2026-06-23"
+    assert single_hook.output_dir == tmp_path / "xhs" / "2026-06-23-single-hook"
+    assert "class=\"card cover\"" in classic.html_path.read_text(encoding="utf-8")
+    assert "class=\"card cover2\"" in single_hook.html_path.read_text(encoding="utf-8")
 
 
 def test_condense_slot_keeps_complete_text_inside_contract() -> None:
@@ -132,6 +174,19 @@ def test_build_xhs_condense_input_contains_ordered_slots_and_contract() -> None:
     assert "read_body_zh" not in payload_slots[0]
 
 
+def test_single_hook_condense_input_adds_cover_slots_only_when_requested() -> None:
+    issue = sample_issue()
+    slots = collect_condense_slots(issue, include_cover=True)
+
+    payload = build_xhs_condense_input(issue, slots)
+
+    assert [slot["id"] for slot in payload["slots"][:2]] == ["cover_hook", "cover_sub"]
+    assert payload["slot_ranges"]["cover_hook"] == {"target_min": 12, "target_max": 24}
+    assert payload["slot_ranges"]["cover_sub"] == {"target_min": 28, "target_max": 46}
+    assert slots[0].request.original_text == issue.headlines[0].title_zh
+    assert slots[1].request.original_text == issue.headlines[0].summary_zh
+
+
 def test_xhs_condense_file_prompt_contains_design_contract(tmp_path: Path) -> None:
     input_path = tmp_path / "xhs_condense_input.json"
     input_path.write_text("{}", encoding="utf-8")
@@ -142,6 +197,9 @@ def test_xhs_condense_file_prompt_contains_design_contract(tmp_path: Path) -> No
     assert "headline_summary：90-155" in prompt
     assert "headline_impact：85-145" in prompt
     assert "brief_summary：22-52" in prompt
+    assert "cover_hook：12-24" in prompt
+    assert "cover_sub：28-46" in prompt
+    assert "emphasis_terms" in prompt
     assert "target_max 是硬上限" in prompt
 
 
@@ -224,6 +282,21 @@ def test_xhs_condense_schema_is_strict_for_codex_response_format() -> None:
     assert schema["type"] == "object"
     assert schema["additionalProperties"] is False
     assert schema["properties"]["slots"]["type"] == "array"
+    slot_schema = schema["$defs"]["XHSCondenseSlotOutput"]
+    assert slot_schema["additionalProperties"] is False
+    assert "emphasis_terms" in slot_schema["required"]
+
+
+def test_cover_emphasis_only_adds_markup_without_changing_text() -> None:
+    original = "SK海力士拟发行1780万股ADR"
+
+    marked = emphasize_cover_text(original, ["SK海力士"])
+    numeric_fallback = emphasize_cover_text(original, [])
+
+    assert "<em>SK海力士</em>" in marked
+    assert "<em>1780万</em>" in numeric_fallback
+    assert html.unescape(re.sub(r"</?em>", "", marked)) == original
+    assert html.unescape(re.sub(r"</?em>", "", numeric_fallback)) == original
 
 
 def test_xhs_note_title_schema_is_strict_for_codex_response_format() -> None:

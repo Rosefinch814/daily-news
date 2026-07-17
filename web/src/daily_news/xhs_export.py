@@ -14,6 +14,7 @@ from daily_news.ai_engine import (
     AIEngineError,
     ProviderName,
     XHSCondenseOutput,
+    XHSCondenseSlotOutput,
     XHSNoteTitleOutput,
     build_xhs_condense_file_prompt,
     build_xhs_note_title_prompt,
@@ -56,12 +57,18 @@ GENERIC_NOTE_TITLE_TERMS = (
 WEEKDAYS_CN = ["周一", "周二", "周三", "周四", "周五", "周六", "周日"]
 LOGGER = logging.getLogger(__name__)
 
-SlotType = Literal["headline_summary", "headline_impact", "brief_summary"]
+CoverTemplate = Literal["classic", "single-hook"]
+SlotType = Literal["cover_hook", "cover_sub", "headline_summary", "headline_impact", "brief_summary"]
 SLOT_RANGES: dict[SlotType, tuple[int, int]] = {
+    "cover_hook": (12, 24),
+    "cover_sub": (28, 46),
     "headline_summary": (90, 155),
     "headline_impact": (85, 145),
     "brief_summary": (22, 52),
 }
+COVER_HOOK_LARGE_MAX_CHARS = 16
+COVER_SAFE_TOP = 180
+COVER_SAFE_BOTTOM = 1260
 
 
 @dataclass(frozen=True)
@@ -98,24 +105,30 @@ class XHSCondenseSlot:
 
 
 class XHSCondenser:
-    def __init__(self, responses: dict[str, str]) -> None:
+    def __init__(self, responses: dict[str, str | XHSCondenseSlotOutput]) -> None:
         self.responses = responses
         self.cache: dict[str, str] = {}
 
     def condense(self, request: CondenseRequest, fallback: str) -> str:
         if request.slot_id in self.cache:
             return self.cache[request.slot_id]
-        if original_text_is_in_range(request.original_text, request.min_chars, request.max_chars):
-            self.cache[request.slot_id] = finish_complete_text(compact_text(request.original_text))
+        if original_text_is_in_range(
+            request.original_text,
+            request.min_chars,
+            request.max_chars,
+            require_complete=request.slot_type != "cover_hook",
+        ):
+            self.cache[request.slot_id] = normalize_condensed_text(request.original_text, request.slot_type)
             return self.cache[request.slot_id]
 
-        candidate_text = self.responses.get(request.slot_id)
-        if candidate_text is None:
+        response = self.responses.get(request.slot_id)
+        if response is None:
             LOGGER.warning("xhs_condense output missing for %s", request.slot_id)
             self.cache[request.slot_id] = fallback
             return fallback
 
-        candidate = finish_complete_text(compact_text(candidate_text))
+        candidate_text = response if isinstance(response, str) else response.text
+        candidate = normalize_condensed_text(candidate_text, request.slot_type)
         if is_valid_condensed_text(candidate, request):
             self.cache[request.slot_id] = candidate
             return candidate
@@ -123,6 +136,12 @@ class XHSCondenser:
         LOGGER.warning("xhs_condense output rejected for %s: %s", request.slot_id, candidate)
         self.cache[request.slot_id] = fallback
         return fallback
+
+    def emphasis_terms(self, slot_id: str) -> list[str]:
+        response = self.responses.get(slot_id)
+        if not isinstance(response, XHSCondenseSlotOutput):
+            return []
+        return [term for term in response.emphasis_terms if term]
 
 
 def load_issue_for_xhs(issue_date: str, *, dist_dir: Path = DIST_DIR) -> Issue:
@@ -139,14 +158,29 @@ def export_xhs_issue(
     config: PipelineConfig | None = None,
     ai_condense: bool = False,
     provider: ProviderName | None = None,
+    cover_template: CoverTemplate = "classic",
 ) -> XHSExportResult:
-    out_dir = output_dir or RUNS_DIR / "xhs" / issue.issue_date.isoformat()
+    validate_cover_template(cover_template)
+    default_dir_name = issue.issue_date.isoformat()
+    if cover_template == "single-hook":
+        default_dir_name += "-single-hook"
+    out_dir = output_dir or RUNS_DIR / "xhs" / default_dir_name
     out_dir.mkdir(parents=True, exist_ok=True)
     for old in out_dir.glob("*.png"):
         old.unlink()
 
-    condenser = prepare_xhs_condenser(issue, out_dir=out_dir, config=config, provider=provider) if ai_condense and config else None
-    cards = build_cards(issue, condenser=condenser)
+    condenser = (
+        prepare_xhs_condenser(
+            issue,
+            out_dir=out_dir,
+            config=config,
+            provider=provider,
+            cover_template=cover_template,
+        )
+        if ai_condense and config
+        else None
+    )
+    cards = build_cards(issue, condenser=condenser, cover_template=cover_template)
     html_path = out_dir / "cards.html"
     html_path.write_text(render_cards_html(issue, cards), encoding="utf-8")
     caption_path = out_dir / "caption.txt"
@@ -173,8 +207,9 @@ def prepare_xhs_condenser(
     out_dir: Path,
     config: PipelineConfig,
     provider: ProviderName | None = None,
+    cover_template: CoverTemplate = "classic",
 ) -> XHSCondenser:
-    slots = collect_condense_slots(issue)
+    slots = collect_condense_slots(issue, include_cover=cover_template == "single-hook")
     input_path = out_dir / "xhs_condense_input.json"
     input_path.write_text(json.dumps(build_xhs_condense_input(issue, slots), ensure_ascii=False, indent=2), encoding="utf-8")
     selected_provider: ProviderName = provider or config.ai.stage_providers.get("xhs_condense") or config.ai.default_provider
@@ -194,7 +229,7 @@ def prepare_xhs_condenser(
             save_provider_events=config.logging.save_provider_events,
             append_metrics_jsonl=config.logging.append_metrics_jsonl,
         )
-        responses = {slot.id: slot.text for slot in output.slots}
+        responses = {slot.id: slot for slot in output.slots}
     except AIEngineError as exc:
         if exc.record is not None:
             save_ai_task_run(
@@ -283,8 +318,45 @@ def build_xhs_note_title_input(issue: Issue) -> dict[str, object]:
     }
 
 
-def collect_condense_slots(issue: Issue) -> list[XHSCondenseSlot]:
+def collect_condense_slots(issue: Issue, *, include_cover: bool = False) -> list[XHSCondenseSlot]:
     slots: list[XHSCondenseSlot] = []
+    if include_cover and issue.headlines:
+        article = issue.headlines[0]
+        sources = source_payload(article.sources)
+        hook_min, hook_max = SLOT_RANGES["cover_hook"]
+        sub_min, sub_max = SLOT_RANGES["cover_sub"]
+        slots.extend(
+            [
+                XHSCondenseSlot(
+                    request=CondenseRequest(
+                        slot_id="cover_hook",
+                        slot_type="cover_hook",
+                        title=article.title_zh,
+                        original_text=article.title_zh,
+                        min_chars=hook_min,
+                        max_chars=hook_max,
+                    ),
+                    article_index=1,
+                    level="headline",
+                    kicker=article.kicker,
+                    sources=sources,
+                ),
+                XHSCondenseSlot(
+                    request=CondenseRequest(
+                        slot_id="cover_sub",
+                        slot_type="cover_sub",
+                        title=article.title_zh,
+                        original_text=article.summary_zh,
+                        min_chars=sub_min,
+                        max_chars=sub_max,
+                    ),
+                    article_index=1,
+                    level="headline",
+                    kicker=article.kicker,
+                    sources=sources,
+                ),
+            ]
+        )
     for index, article in enumerate(issue.headlines[:MAX_HEADLINE_CARDS], start=1):
         summary_min, summary_max = SLOT_RANGES["headline_summary"]
         impact_min, impact_max = SLOT_RANGES["headline_impact"]
@@ -343,6 +415,7 @@ def collect_condense_slots(issue: Issue) -> list[XHSCondenseSlot]:
 
 
 def build_xhs_condense_input(issue: Issue, slots: Sequence[XHSCondenseSlot]) -> dict[str, object]:
+    used_slot_types = {slot.request.slot_type for slot in slots}
     return {
         "publication_name": XHS_PUBLICATION_NAME,
         "issue_date": issue.issue_date.isoformat(),
@@ -350,6 +423,7 @@ def build_xhs_condense_input(issue: Issue, slots: Sequence[XHSCondenseSlot]) -> 
         "slot_ranges": {
             slot_type: {"target_min": min_chars, "target_max": max_chars}
             for slot_type, (min_chars, max_chars) in SLOT_RANGES.items()
+            if slot_type in used_slot_types
         },
         "slots": [
             {
@@ -369,8 +443,15 @@ def build_xhs_condense_input(issue: Issue, slots: Sequence[XHSCondenseSlot]) -> 
     }
 
 
-def build_cards(issue: Issue, *, condenser: XHSCondenser | None = None) -> list[Card]:
-    cards = [cover_card(issue)]
+def build_cards(
+    issue: Issue,
+    *,
+    condenser: XHSCondenser | None = None,
+    cover_template: CoverTemplate = "classic",
+) -> list[Card]:
+    validate_cover_template(cover_template)
+    cover = single_hook_cover_card(issue, condenser=condenser) if cover_template == "single-hook" else cover_card(issue)
+    cards = [cover]
     for index, article in enumerate(issue.headlines[:MAX_HEADLINE_CARDS], start=1):
         cards.append(headline_card(issue, article, index, condenser=condenser))
     cards.extend(brief_cards(issue, condenser=condenser))
@@ -407,6 +488,62 @@ def cover_card(issue: Issue) -> Card:
       </div>
     """
     return Card(kind="cover", html_body=body)
+
+
+def single_hook_cover_card(issue: Issue, *, condenser: XHSCondenser | None = None) -> Card:
+    if not issue.headlines:
+        return cover_card(issue)
+
+    article = issue.headlines[0]
+    hook_min, hook_max = SLOT_RANGES["cover_hook"]
+    sub_min, sub_max = SLOT_RANGES["cover_sub"]
+    hook = condense_slot(
+        article.title_zh,
+        slot_id="cover_hook",
+        slot_type="cover_hook",
+        min_chars=hook_min,
+        max_chars=hook_max,
+        title=article.title_zh,
+        condenser=condenser,
+    )
+    sub = condense_slot(
+        article.summary_zh,
+        slot_id="cover_sub",
+        slot_type="cover_sub",
+        min_chars=sub_min,
+        max_chars=sub_max,
+        title=article.title_zh,
+        condenser=condenser,
+    )
+    size_class = "l" if len(hook) <= COVER_HOOK_LARGE_MAX_CHARS else "m"
+    emphasis_terms = condenser.emphasis_terms("cover_hook") if condenser else []
+    hook_html = emphasize_cover_text(hook, emphasis_terms)
+    sub_html = emphasize_cover_text(sub, [])
+    kicker = f"{article.kicker} · 今日头条" if article.kicker else "今日头条"
+    remaining_headlines = max(0, min(len(issue.headlines), MAX_HEADLINE_CARDS) - 1)
+    body = f"""
+      <div class="cv2-head">
+        <div class="cv2-brand"><span class="seal-mark"></span><span class="name">{escape(XHS_PUBLICATION_NAME)}</span></div>
+        <div class="cv2-date"><span class="d">{escape(date_dot(issue))}</span><span class="dow">{escape(weekday_cn(issue))}</span></div>
+      </div>
+      <div class="cv2-hook">
+        <div class="cv2-kicker">{escape(kicker)}</div>
+        <h1 class="cv2-big {size_class}">{hook_html}</h1>
+        <p class="cv2-sub">{sub_html}</p>
+      </div>
+      <div class="cv2-foot">
+        <div class="bar"></div>
+        <div class="row">
+          <span class="more">+{remaining_headlines} 条头条 · {len(issue.briefs)} 速览 · 约 {estimate_reading_minutes(issue)} 分钟</span>
+          <span class="swipe">左滑翻阅
+            <svg width="66" height="22" viewBox="0 0 66 22" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M6 4l7 7-7 7"/><path d="M25 4l7 7-7 7"/><path d="M44 4l7 7-7 7"/>
+            </svg>
+          </span>
+        </div>
+      </div>
+    """
+    return Card(kind="cover2", html_body=body)
 
 
 def headline_card(
@@ -586,12 +723,34 @@ def render_card_images(html_path: Path, output_dir: Path, count: int) -> list[Pa
             device_scale_factor=1,
         )
         page.goto(html_path.resolve().as_uri(), wait_until="networkidle")
+        validate_single_hook_layout(page)
         for index in range(1, count + 1):
             output_path = output_dir / f"{index:02d}.png"
             page.locator(f"#card-{index}").screenshot(path=str(output_path))
             image_paths.append(output_path)
         browser.close()
     return image_paths
+
+
+def validate_single_hook_layout(page: object) -> None:
+    cover = page.locator("#card-1.cover2")  # type: ignore[attr-defined]
+    if cover.count() == 0:
+        return
+
+    def content_fits() -> bool:
+        card_box = cover.bounding_box()
+        big_box = cover.locator(".cv2-big").bounding_box()
+        sub_box = cover.locator(".cv2-sub").bounding_box()
+        if card_box is None or big_box is None or sub_box is None:
+            return False
+        content_top = min(big_box["y"], sub_box["y"]) - card_box["y"]
+        content_bottom = max(big_box["y"] + big_box["height"], sub_box["y"] + sub_box["height"]) - card_box["y"]
+        return content_top >= COVER_SAFE_TOP and content_bottom <= COVER_SAFE_BOTTOM
+
+    if not content_fits() and cover.locator(".cv2-big.l").count():
+        cover.locator(".cv2-big").evaluate("element => { element.classList.remove('l'); element.classList.add('m'); }")
+    if not content_fits():
+        raise RuntimeError("single-hook cover content exceeds the 1080x1080 feed safe area")
 
 
 def paginate_briefs(items: Sequence[BriefArticle], *, condenser: XHSCondenser | None = None) -> list[list[BriefArticle]]:
@@ -667,6 +826,8 @@ def fallback_condense_slot(text: str, *, slot_type: SlotType, min_chars: int, ma
     value = compact_text(text)
     if not value:
         return ""
+    if slot_type == "cover_hook":
+        return fallback_cover_hook(value, min_chars=min_chars, max_chars=max_chars)
     if min_chars <= len(value) <= max_chars and ends_complete(value):
         return value
     if len(value) <= max_chars:
@@ -686,21 +847,77 @@ def fallback_condense_slot(text: str, *, slot_type: SlotType, min_chars: int, ma
     return finish_complete_text("".join(selected))
 
 
-def original_text_is_in_range(text: str, min_chars: int, max_chars: int) -> bool:
+def fallback_cover_hook(text: str, *, min_chars: int, max_chars: int) -> str:
+    value = compact_text(text).strip("。！？!? ")
+    if len(value) <= max_chars:
+        return value
+
+    clauses = [part.strip("，,：:；;。！？!? ") for part in re.split(r"[，,：:；;。！？!?]", value) if part.strip()]
+    selected = ""
+    for clause in clauses:
+        candidate = clause if not selected else f"{selected}，{clause}"
+        if len(candidate) > max_chars:
+            break
+        selected = candidate
+    if len(selected) >= min_chars:
+        return selected
+    return value[:max_chars].rstrip("，,、；;：: ")
+
+
+def normalize_condensed_text(text: str, slot_type: SlotType) -> str:
     value = compact_text(text)
-    return min_chars <= len(value) <= max_chars and ends_complete(value)
+    if slot_type == "cover_hook":
+        return value.strip("。！？!? ")
+    return finish_complete_text(value)
+
+
+def original_text_is_in_range(text: str, min_chars: int, max_chars: int, *, require_complete: bool = True) -> bool:
+    value = compact_text(text)
+    return min_chars <= len(value) <= max_chars and (ends_complete(value) if require_complete else True)
 
 
 def is_valid_condensed_text(text: str, request: CondenseRequest) -> bool:
     if not text or "…" in text or "..." in text:
         return False
-    if not ends_complete(text):
+    if request.slot_type != "cover_hook" and not ends_complete(text):
         return False
     if len(text) > request.max_chars:
         return False
     if len(compact_text(request.original_text)) >= request.min_chars and len(text) < request.min_chars:
         return False
     return numbers_in_text(text).issubset(numbers_in_text(request.original_text + request.title))
+
+
+def emphasize_cover_text(text: str, emphasis_terms: Sequence[str]) -> str:
+    terms = sorted({compact_text(term) for term in emphasis_terms if compact_text(term) in text}, key=len, reverse=True)
+    matches: list[tuple[int, int]] = []
+    if terms:
+        for term in terms:
+            matches.extend((match.start(), match.end()) for match in re.finditer(re.escape(term), text))
+    else:
+        number_pattern = r"\d+(?:\.\d+)?(?:万亿|亿美元|亿元|亿|万|%|美元|元|股)?"
+        matches.extend((match.start(), match.end()) for match in re.finditer(number_pattern, text))
+
+    selected: list[tuple[int, int]] = []
+    for start, end in sorted(matches, key=lambda span: (span[0], -(span[1] - span[0]))):
+        if any(start < existing_end and end > existing_start for existing_start, existing_end in selected):
+            continue
+        selected.append((start, end))
+    selected.sort()
+
+    parts: list[str] = []
+    cursor = 0
+    for start, end in selected:
+        parts.append(escape(text[cursor:start]))
+        parts.append(f"<em>{escape(text[start:end])}</em>")
+        cursor = end
+    parts.append(escape(text[cursor:]))
+    return "".join(parts)
+
+
+def validate_cover_template(cover_template: str) -> None:
+    if cover_template not in {"classic", "single-hook"}:
+        raise ValueError(f"Unsupported XHS cover template: {cover_template}")
 
 
 def numbers_in_text(text: str) -> set[str]:
@@ -976,6 +1193,142 @@ body{
   text-transform:uppercase;
 }
 .cover .swipe svg{
+  color:var(--seal);
+}
+.cover2{
+  display:flex;
+  flex-direction:column;
+}
+.cv2-head{
+  flex:none;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:64px 80px 30px;
+  border-bottom:3px solid var(--rule-2);
+}
+.cv2-brand{
+  display:flex;
+  align-items:center;
+  gap:18px;
+}
+.cv2-brand .seal-mark{
+  width:26px;
+  height:26px;
+  background:var(--seal);
+  flex:none;
+}
+.cv2-brand .name{
+  font-family:var(--sans);
+  font-weight:900;
+  font-size:36px;
+  letter-spacing:.03em;
+  color:var(--ink-2);
+}
+.cv2-date{
+  display:flex;
+  align-items:baseline;
+  gap:16px;
+}
+.cv2-date .d{
+  font-family:var(--mono);
+  font-weight:700;
+  font-size:40px;
+  letter-spacing:.02em;
+  color:var(--seal);
+  line-height:1;
+}
+.cv2-date .dow{
+  font-family:var(--sans);
+  font-weight:900;
+  font-size:28px;
+  color:var(--ink-3);
+  line-height:1;
+}
+.cv2-hook{
+  flex:1 1 auto;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  padding:0 80px;
+  min-height:0;
+}
+.cv2-kicker{
+  align-self:flex-start;
+  font-family:var(--mono);
+  font-weight:700;
+  font-size:26px;
+  letter-spacing:.14em;
+  color:var(--paper);
+  background:var(--seal);
+  padding:11px 22px;
+  border-radius:6px;
+  margin-bottom:46px;
+  text-transform:uppercase;
+}
+.cv2-big{
+  font-family:var(--sans);
+  font-weight:900;
+  line-height:1.14;
+  letter-spacing:.005em;
+  color:var(--ink);
+  margin:0;
+}
+.cv2-big em{
+  color:var(--seal);
+  font-style:normal;
+}
+.cv2-big.l{
+  font-size:116px;
+}
+.cv2-big.m{
+  font-size:94px;
+}
+.cv2-sub{
+  margin:36px 0 0;
+  font-family:var(--sans);
+  font-weight:500;
+  font-size:40px;
+  line-height:1.42;
+  color:var(--ink-3);
+}
+.cv2-sub em{
+  color:var(--seal);
+  font-style:normal;
+  font-weight:700;
+}
+.cv2-foot{
+  flex:none;
+  padding:30px 80px 64px;
+  border-top:3px solid var(--rule-2);
+}
+.cv2-foot .bar{
+  height:6px;
+  width:120px;
+  background:var(--seal);
+  margin-bottom:24px;
+}
+.cv2-foot .row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  font-family:var(--mono);
+  font-weight:700;
+  font-size:24px;
+  letter-spacing:.08em;
+  color:var(--muted);
+}
+.cv2-foot .more{
+  color:var(--ink-3);
+}
+.cv2-foot .swipe{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  color:var(--seal);
+  text-transform:uppercase;
+}
+.cv2-foot .swipe svg{
   color:var(--seal);
 }
 .headline{
