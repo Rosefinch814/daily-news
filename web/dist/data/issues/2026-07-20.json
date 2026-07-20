@@ -1,0 +1,335 @@
+{
+  "id": "tech-2026-07-20",
+  "section_slug": "tech",
+  "publication_name": "我的日报·科技",
+  "issue_date": "2026-07-20",
+  "volume": 1,
+  "number": 19,
+  "date_cn": "2026 年 7 月 20 日 · 周一",
+  "output_path": "issues/2026-07-20.html",
+  "headlines": [
+    {
+      "source_item_ids": [
+        "c9e4a4e152a58477"
+      ],
+      "kicker": "AI芯片 · 主权战略",
+      "title_zh": "黄仁勋两天扫遍日本产业界：万亿日元押注主权“物理AI”，底座仍是英伟达芯片",
+      "summary_zh": "英伟达CEO黄仁勋7月15日至16日访问东京，与丰田、发那科、安川、富士通等企业高管会面，带走了覆盖日本整个科技生态的一揽子协议：一座国家级AI工厂、与顶尖机器人企业的合作，以及为下一代AI芯片供货的材料厂商协议。日本政府牵头约44家本土企业，以软银、索尼、NEC、本田为核心，组建主权AI项目Noetra，五年内投入最多1万亿日元（约62亿美元），自研用于机器人、车辆和工厂的“物理AI”基础模型，硬件则由英伟达提供。",
+      "read_body_zh": [
+        "黄仁勋7月15日至16日在东京密集会见丰田、发那科、安川、富士通、川崎重工等企业高管。日本政府牵头约44家本土企业，以软银、索尼、NEC、本田为核心，组建主权AI项目Noetra，五年内投入最多1万亿日元（约62亿美元），自研运行机器人、车辆与工厂的“物理AI”基础模型；模型分三阶段推进，从2026财年起先做强化日语的推理模型，2028年推出多模态版本，2030年推出可驱动机器人的“真实世界原生AI”。",
+        "英伟达将为其建设一座“Vera Rubin AI工厂”，预计2028年启用，配备13750颗Vera CPU与27500颗Rubin GPU，算力达140兆瓦，由Noetra负责运营与数据中心建设。发那科、安川、川崎、富士通、日立、NEC、索尼、软银、久保田等企业将基于英伟达Cosmos模型开发，英伟达同时发布可在机器内Jetson Thor芯片上运行的Cosmos 3 Edge。",
+        "丰田把英伟达Drive平台从车端延伸到制造与交通系统。日本更大的目标是到2040年在18个行业部署1000万台AI机器人，配套650亿美元公私投资，并在其估值约1330亿美元的AI机器人市场占据逾三成份额；高市政府已把AI与半导体列为到2040年撬动370万亿日元投资计划的核心。"
+      ],
+      "pullquote": {
+        "text": "AI的下一个前沿在物理世界，这是日本一代人一遇的机会。",
+        "cite": "黄仁勋"
+      },
+      "ai_impact": "这是一场“软件主权、硬件依赖”的交易：日本想掌握运行机器的模型大脑，但训练万亿级参数模型的算力底座仍是英伟达芯片，短期难以摆脱。对英伟达而言，继韩国5万台GPU、台湾主场演讲之后再拿下日本，等于把机器人、汽车与工厂这条“物理AI”产业链绑定进自家的Cosmos生态和Rubin芯片，直接利好其下一代GPU与相关芯片材料供应商。日本此举也为其他寻求主权AI的经济体提供了范本：可以自建模型与数据，却绕不开美国的计算硬件——这正是当前AI地缘格局中最难破解的一环。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/07/19/what-to-watch-for-after-jensen-huangs-japan-visit"
+        }
+      ],
+      "relevance_score": 98,
+      "importance_score": 94
+    },
+    {
+      "source_item_ids": [
+        "bc0aab231e775a5f"
+      ],
+      "kicker": "大模型 · 开放权重",
+      "title_zh": "阿里通义千问3.8亮相：2.4万亿参数、承诺即将开放权重，Max预览版已上线",
+      "summary_zh": "阿里巴巴通义千问团队宣布，Qwen3.8即将发布并“很快”开放权重，参数规模达2.4万亿。官方称该模型仍在持续演进，是“当今最强大的模型之一”，可对标主流前沿AI模型，并自我描述为“仅次于Fable 5”。用户无需等待正式版：Qwen3.8-Max-Preview预览版已率先上线阿里的Token Plan、Qoder与QoderWork，并在国际与中国两地公布定价页面。不过模型权重尚未正式放出，也暂无第三方独立评测印证其真实水平。",
+      "read_body_zh": [
+        "阿里巴巴通义千问团队通过社交平台宣布，Qwen3.8即将发布并“很快”开放权重，参数规模达2.4万亿。团队强调该模型仍在持续迭代演进，并把它定位为“当今最强大的模型之一”。",
+        "在能力定位上，官方表示Qwen3.8可对标主流前沿AI模型，并自我描述为“仅次于Fable 5”。但这些均为阿里官方说法，模型权重尚未正式放出，也暂无第三方独立评测印证其真实水平，实际能力仍待验证。",
+        "无需等待正式版，Qwen3.8-Max-Preview预览版已率先上线阿里的Token Plan、Qoder与QoderWork，并在国际与中国两地公布定价页面，供用户抢先试用；完整版本与开放权重的具体时间表尚未给出。"
+      ],
+      "pullquote": null,
+      "ai_impact": "Qwen3.8把中国大模型的竞争重新拉回“开放权重+超大参数”的正面战场。若2.4万亿参数模型真如宣称对标前沿并最终开源，将进一步压低高端模型的使用门槛与价格，冲击闭源厂商的商业化节奏；叠加近期Kimi K3引发的“开源逼近前沿”讨论，还会加剧市场对算力需求和芯片股的敏感。但在权重和独立评测落地前，“仅次于Fable 5”更多是营销定位，真实竞争力需第三方验证，采用与投资判断不宜提前下注。",
+      "sources": [
+        {
+          "name": "通义千问 / Hacker News",
+          "url": "https://twitter.com/Alibaba_Qwen/status/2078759124914098291"
+        }
+      ],
+      "relevance_score": 95,
+      "importance_score": 86
+    },
+    {
+      "source_item_ids": [
+        "072f1f00e4affa2e",
+        "31717f0455b18868"
+      ],
+      "kicker": "大模型 · 市场反应",
+      "title_zh": "Kimi K3发布48小时算力告急：月之暗面暂停新订阅，评测逼近前沿引芯片股回调",
+      "summary_zh": "月之暗面（Moonshot AI）表示，Kimi K3发布后48小时内需求激增、逼近现有GPU算力上限，为保障现有订阅用户，公司暂停新用户订阅并将分批重开，同时把会员拆分为通用的Kimi会员与面向编程的Kimi Code会员。Arena.ai、Vals AI等独立分析显示K3已可与旗舰前沿模型一较高下，官方则称其仍落后于Claude Fable 5和GPT 5.6 Sol。该发布恰逢中国领导人在上海世界人工智能大会讲话，周五纳斯达克下跌约1%，英伟达等芯片股遭抛售。",
+      "read_body_zh": [
+        "月之暗面宣布，Kimi K3发布后48小时内需求激增，已逼近现有GPU算力上限。为保障现有订阅用户体验，公司暂停新用户订阅，将分批重新开放，并把会员拆分为面向Web、App与Work的Kimi会员，以及面向编程场景的Kimi Code会员，以更精准地匹配算力。",
+        "在能力上，月之暗面称K3仍落后于最强闭源模型Claude Fable 5和GPT 5.6 Sol，但在其评测套件中达到“前沿级”表现；Arena.ai与Vals AI等独立分析也显示，K3已可与旗舰前沿模型一较高下。",
+        "该发布恰逢中国领导人在上海世界人工智能大会发表讲话，周五纳斯达克下跌约1%，英伟达等芯片股遭抛售。David Sacks批评美国自缚手脚，前Uber CEO卡兰尼克重提中国模型“蒸馏”美国模型的争议，OpenAI战略主管Dean Ball则担忧开放权重主导会走向“完全的AI共产主义”，并预测美方会用监管制造不确定性。"
+      ],
+      "pullquote": {
+        "text": "开放权重模型主导的世界，一个可能的结局是“完全的AI共产主义”。",
+        "cite": "OpenAI 战略主管 Dean Ball"
+      },
+      "ai_impact": "Kimi K3的真正冲击不在发布本身，而在“供不应求”这一市场信号：一款接近前沿的开源中国模型，48小时就把算力打满，说明高性能开放权重模型的真实需求被明显低估。这对闭源厂商是双重压力——价格锚被拉低、用户被分流；对英伟达等芯片股则是矛盾利好：需求越旺、GPU越紧，但市场也开始担心开源会削弱美国模型的护城河，才有了当日抛售与“用监管制造FUD”的政策讨论。会员拆分为通用与编程两类，也透露出算力紧张下厂商正按场景精细分配资源。",
+      "sources": [
+        {
+          "name": "月之暗面 / Hacker News",
+          "url": "https://twitter.com/kimi_moonshot/status/2078855608565207130"
+        },
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/07/18/kimi-threat-or-menace"
+        }
+      ],
+      "relevance_score": 96,
+      "importance_score": 88
+    },
+    {
+      "source_item_ids": [
+        "8a58fef0912cb7c7"
+      ],
+      "kicker": "生成式AI · 影视",
+      "title_zh": "网飞5.87亿美元现金收购AI影视公司：本·阿弗莱克联创，监管文件首曝价码",
+      "summary_zh": "根据一份最新监管文件，网飞（Netflix）为收购AI影视制作公司InterPositive支付了5.87亿美元现金。该交易于今年3月宣布时并未披露金额，此前彭博社曾报道可能高达6亿美元。InterPositive由演员兼导演本·阿弗莱克联合创办，其AI工具帮助电影人在后期制作中改善素材。收购时整支团队并入网飞，阿弗莱克出任高级顾问。网飞在最新财报中称，已有约300部作品使用了生成式AI。",
+      "read_body_zh": [
+        "根据一份最新监管文件，网飞为收购AI影视制作公司InterPositive支付了5.87亿美元现金。该交易于今年3月宣布时并未披露金额，此前彭博社曾报道可能高达6亿美元。InterPositive由演员兼导演本·阿弗莱克联合创办。",
+        "据阿弗莱克介绍，InterPositive的AI工具帮助电影人在后期制作中改善素材，尤其用于弥补“缺失镜头、背景替换或打光错误”等现实拍摄难题。收购时整支团队并入网飞，阿弗莱克出任高级顾问，他称此举是为了“守护人类创造力的力量”。",
+        "在最新财报中，网飞表示已有约300部作品使用了生成式AI。此次监管文件则首次披露了这笔收购的具体金额，此前公司仅确认交易达成而未公布条款。"
+      ],
+      "pullquote": {
+        "text": "我想守护人类创造力的力量。",
+        "cite": "本·阿弗莱克"
+      },
+      "ai_impact": "5.87亿美元现金给生成式AI影视工具打出了明确的价格标签：不是用于炒作，而是大型流媒体平台愿意为“能进生产流程”的AI后期工具真金白银买单。这与网飞已有约300部作品用上生成式AI相互印证，说明AI正从演示走向影视工业的常规工序。由好莱坞名人阿弗莱克操刀、并以“守护人类创造力”为叙事，也是在演员和编剧高度警惕AI的背景下，为技术落地寻找更易被行业接受的包装。对其他制片厂而言，这单交易既是估值参照，也是加速采购AI制作能力的信号。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/07/19/netflix-paid-587m-for-ben-afflecks-ai-filmmaking-startup"
+        }
+      ],
+      "relevance_score": 82,
+      "importance_score": 84
+    }
+  ],
+  "briefs": [
+    {
+      "source_item_ids": [
+        "3039191b9918cded"
+      ],
+      "title_zh": "韩国半导体板块急跌，中韩半导体ETF月内跌超30%",
+      "summary_zh": "自2026年6月下旬起，此前累计翻倍走强的韩国半导体板块遭遇猛烈抛压，三星电子、SK海力士掉头急跌。国内唯一布局韩国市场的中韩半导体ETF（华泰柏瑞）7月以来跌幅已超30%，港股挂钩上述韩企的两倍杠杆产品更上演极端“过山车”。国泰基金指出，高波动赛道叠加过高杠杆是风险根源，短期价格不完全等于产业基本面，把市场对AI存储“超级周期”的信仰推向分歧高点。",
+      "sources": [
+        {
+          "name": "36氪",
+          "url": "https://36kr.com/newsflashes/3903228318762889?f=rss"
+        }
+      ],
+      "relevance_score": 91,
+      "importance_score": 78
+    },
+    {
+      "source_item_ids": [
+        "c8319c2eeda39a12"
+      ],
+      "title_zh": "华盛顿特区自动驾驶新规博弈：Waymo、特斯拉、Uber分立",
+      "summary_zh": "华盛顿特区市议会正评估一项允许自动驾驶汽车运营的法案，拟议规则包括180天、25万英里强制测试门槛、100万美元申请费、500万美元许可费和每英里0.15美元征税。周一听证会吸引Lyft、特斯拉、Uber、Waymo到场。已越过测试门槛的Waymo基本支持，多数同业反对：特斯拉主张异地测试里程应计入，Uber则称法案会给Waymo事实垄断，力推机器人出租车与人类司机混合运营的方案。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/07/19/techcrunch-mobility-the-battle-over-robotaxi-rules"
+        }
+      ],
+      "relevance_score": 85,
+      "importance_score": 78
+    },
+    {
+      "source_item_ids": [
+        "89448c2bc71ed4b7"
+      ],
+      "title_zh": "OpenAI将Codex标称上下文从37.2万下调至27.2万",
+      "summary_zh": "一份已合并的GitHub PR显示，OpenAI把Codex模型的标称上下文窗口从37.2万tokens下调至27.2万，帖子在Hacker News获304分、145条讨论，直接影响代码Agent的长上下文使用体验，引发开发者关注。目前公开信息有限，官方未给出下调原因，也缺少实际性能对比数据。",
+      "sources": [
+        {
+          "name": "Hacker News",
+          "url": "https://github.com/openai/codex/pull/33972/files"
+        }
+      ],
+      "relevance_score": 79,
+      "importance_score": 63
+    },
+    {
+      "source_item_ids": [
+        "059a721ab60137b0"
+      ],
+      "title_zh": "鸿海首获SpaceX AI服务器代工订单",
+      "summary_zh": "据界面报道，鸿海精密首度拿下SpaceX的AI服务器代工订单，双方下一步将瞄准太空AI数据中心。这把AI服务器供应链与太空算力设想连在一起，是基础设施层面的新看点；不过目前仅为单句二手消息，订单规模与交付细节均未披露。",
+      "sources": [
+        {
+          "name": "36氪",
+          "url": "https://36kr.com/newsflashes/3903228591392643?f=rss"
+        }
+      ],
+      "relevance_score": 88,
+      "importance_score": 77
+    },
+    {
+      "source_item_ids": [
+        "e1474e6bd7cdf344"
+      ],
+      "title_zh": "苹果以窃取商业秘密起诉OpenAI，矛头指向其硬件计划",
+      "summary_zh": "苹果对OpenAI提起商业秘密诉讼，指控其存在诱使苹果现员工与前员工泄露机密信息的“系统性不当行为”，并点名OpenAI首席硬件官Tang Tan，称已有400多名苹果前员工加入OpenAI。OpenAI回应称“未见任何证据表明该诉状有依据”。此案正值OpenAI推进硬件产品（与Jony Ive合作的智能音箱）并已保密提交IPO申请，相关分析主要出自播客推演，实际后果尚未落地。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/07/19/can-an-apple-lawsuit-derail-openais-hardware-plans"
+        }
+      ],
+      "relevance_score": 90,
+      "importance_score": 83
+    },
+    {
+      "source_item_ids": [
+        "2fdbe2664816416c"
+      ],
+      "title_zh": "非营利Current AI集资4亿美元，打造开源公共AI基础设施",
+      "summary_zh": "非营利组织Current AI（2025年2月成立，法国政府先期出资1亿美元，福特、麦克阿瑟基金会、DeepMind、Salesforce加入后累计承诺资金达4亿美元）正在搭建开放的公共AI基础设施。近期它联合Hugging Face、Mozilla、MIT媒体实验室推出开源聊天工具Alpha Chat，向肯尼亚、黎巴嫩、巴西亚马逊等地4家机构拨付320万美元资助，并与印度政府合作推出支持22种印度语言的离线设备，代表主权与开源AI的另一条路线。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/07/19/nonprofit-current-ai-is-racing-to-build-the-world-wide-web-of-ai-free-for-all"
+        }
+      ],
+      "relevance_score": 76,
+      "importance_score": 75
+    },
+    {
+      "source_item_ids": [
+        "7a93ca935c24ef2e"
+      ],
+      "title_zh": "美国二季度电动车销量同比降20.5%，多款车型退场",
+      "summary_zh": "据Kelley Blue Book与Cox Automotive数据，美国2026年二季度电动车销量约24.7万辆、占市场约5.8%，同比下降20.5%，主因是7500美元联邦税收抵免于2025年秋到期，叠加关税、成本与监管变化。本田停售最后一款纯电车Prologue，Afeela合资项目告吹，现代Ioniq 6、日产Ariya、Polestar（受中资技术禁令影响）相继退出，特斯拉则停产Model S/X，转向AI、自动驾驶与机器人。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/07/18/all-the-evs-that-were-discontinued-or-killed-off-in-the-u-s-this-year"
+        }
+      ],
+      "relevance_score": 68,
+      "importance_score": 75
+    },
+    {
+      "source_item_ids": [
+        "65f5d9da90c586b0"
+      ],
+      "title_zh": "美国直流快充数量较2023年翻倍，可靠性升至90分区间",
+      "summary_zh": "据美国能源与交通联合办公室数据，全国直流快充桩已从2023年7月约3.2万座增至如今的两倍以上；Paren可靠性指数一年内从85升至90分中段，涵盖成功充电率与站点停机等指标。作者驾驶奥迪e-tron完成600英里往返蒙特利尔之行，除一处刷卡机故障外近乎顺畅。特斯拉网络仍占主导，但其他运营商正快速扩张，充电体验整体改善。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/07/18/a-600-mile-road-trip-and-data-proves-ev-charging-doesnt-suck-anymore"
+        }
+      ],
+      "relevance_score": 61,
+      "importance_score": 68
+    },
+    {
+      "source_item_ids": [
+        "72db3af63355fd3e"
+      ],
+      "title_zh": "国网特高压年内前三批采购已超2025年全年",
+      "summary_zh": "中信证券研报称，国家电网新一代电子商务平台数据显示，国网已开启2026年特高压项目第三次设备招标及输变电项目第三次变电设备（含电缆）招标的中标候选人公示。特高压年内前三批采购金额已超过2025年全年，高压设备也有望在主网架建设景气度拉动下维持高位。券商看好目前处于低位的内需高压设备龙头迎来拐点，是观察电网投资的一个数据点。",
+      "sources": [
+        {
+          "name": "36氪",
+          "url": "https://36kr.com/newsflashes/3903229038413446?f=rss"
+        }
+      ],
+      "relevance_score": 73,
+      "importance_score": 72
+    },
+    {
+      "source_item_ids": [
+        "45767a5bb84ee792"
+      ],
+      "title_zh": "研究：依赖AI建议后受试者准确率由27%降至9%",
+      "summary_zh": "法国与意大利多所大学的研究发现，一旦可以获取AI建议，受试者说“我不知道”的意愿从44%骤降至3%，准确率从27%跌到9%，而自信心却从30%升至76%。研究刻意选用AI通常会答错的题目（如电影中球队队服颜色），确保准确率下降不是合理委托可靠工具的结果；金钱激励改善有限。研究呼应沃顿学院提出的“认知投降”，作者尤其担忧从小接触这类系统的儿童。",
+      "sources": [
+        {
+          "name": "Hacker News",
+          "url": "https://thenextweb.com/news/ai-advice-suppresses-critical-thinking-wrong-answers-study"
+        }
+      ],
+      "relevance_score": 70,
+      "importance_score": 72
+    },
+    {
+      "source_item_ids": [
+        "cd6c83b09f0380fe"
+      ],
+      "title_zh": "Claude Code已在数百万设备用上Rust版Bun",
+      "summary_zh": "据Bun作者Jarred Sumner透露，Claude Code v2.1.181（6月17日发布）及之后版本已改用Rust重写的Bun，Linux启动速度提升约10%，其余几乎无感。开发者Simon Willison通过strings命令在本地验证，找到Bun v1.4.0标识和563个.rs源文件名，佐证Rust版Bun已在数百万设备上投入生产；该版本目前作为Bun canary发布。",
+      "sources": [
+        {
+          "name": "Hacker News",
+          "url": "https://simonwillison.net/2026/Jul/19/claude-code-in-bun-in-rust"
+        }
+      ],
+      "relevance_score": 74,
+      "importance_score": 61
+    },
+    {
+      "source_item_ids": [
+        "62cfbad1312dd4b5"
+      ],
+      "title_zh": "纽约市拟要求房东披露房源图片是否经AI生成或编辑",
+      "summary_zh": "纽约市长Mamdani发布的《Rental Ripoff Report》建议，要求房东和经纪人披露房源信息（含图片）是否使用AI生成或编辑，同时配套承认租户工会、加强租户权利等措施。报告针对图片美化后与实际不符、误导租户（尤其是远程签约者）的乱象。目前这只是政策建议，是生成式AI内容透明规则向房地产场景延伸的一个案例。",
+      "sources": [
+        {
+          "name": "Hacker News",
+          "url": "https://petapixel.com/2026/07/16/mayor-mamdani-says-landlords-cant-secretly-use-ai-images-to-advertise-properties"
+        }
+      ],
+      "relevance_score": 55,
+      "importance_score": 59
+    }
+  ],
+  "discarded": [
+    {
+      "source_item_ids": [
+        "29fd5dd1a81ad440"
+      ],
+      "reason": "医保预授权中的AI应用属医疗政策评论，无重要产品发布、模型进展或大厂产业影响，且标题命中的“半导体”为误匹配。",
+      "relevance_score": 24,
+      "importance_score": 61
+    },
+    {
+      "source_item_ids": [
+        "d08c96c40c07a749"
+      ],
+      "reason": "实体游戏介质衰退的周末专栏聚焦光盘与数字商店，不涉及AI、半导体或自动驾驶核心主题，属趋势合集而非当日关键事件。",
+      "relevance_score": 18,
+      "importance_score": 55
+    },
+    {
+      "source_item_ids": [
+        "e8a19dee8f930f99"
+      ],
+      "reason": "科技主题基金收益回撤主要是泛市场风格轮动和公募观点，缺少AI或半导体产业基本面新增事实，且与已入选的韩国半导体估值调整重复。",
+      "relevance_score": 35,
+      "importance_score": 53
+    }
+  ],
+  "merged_sources": [
+    {
+      "source_item_ids": [
+        "072f1f00e4affa2e",
+        "31717f0455b18868"
+      ],
+      "reason": "同一核心事件的跟进：Kimi K3发布后的需求爆发、独立评测、市场与政策反应。"
+    }
+  ]
+}
