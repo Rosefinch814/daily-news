@@ -20,7 +20,15 @@ class ProviderRuntimeConfig(BaseModel):
 class PipelineAIConfig(BaseModel):
     default_provider: Literal["claude", "codex"] = "codex"
     stage_providers: dict[
-        Literal["semantic_shortlist", "selection", "issue_compose", "digest_feedback", "xhs_condense", "xhs_note_title"],
+        Literal[
+            "semantic_shortlist",
+            "selection",
+            "issue_compose",
+            "digest_feedback",
+            "xhs_condense",
+            "xhs_note_title",
+            "xhs_magnetize",
+        ],
         Literal["claude", "codex"],
     ] = Field(default_factory=dict)
     timeout_seconds: int = 300

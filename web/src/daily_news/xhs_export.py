@@ -6,6 +6,7 @@ import logging
 import math
 import re
 import shutil
+import unicodedata
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Literal, Sequence
@@ -15,8 +16,10 @@ from daily_news.ai_engine import (
     ProviderName,
     XHSCondenseOutput,
     XHSCondenseSlotOutput,
+    XHSMagnetizeOutput,
     XHSNoteTitleOutput,
     build_xhs_condense_file_prompt,
+    build_xhs_magnetize_prompt,
     build_xhs_note_title_prompt,
     run_ai_task,
 )
@@ -70,6 +73,36 @@ COVER_HOOK_LARGE_MAX_CHARS = 16
 COVER_SAFE_TOP = 180
 COVER_SAFE_BOTTOM = 1260
 V2_TITLE_FONT_SIZES = (100, 90, 82)
+MAGNETIZE_RESTRAINED_BANNED_TERMS = (
+    "震惊",
+    "太火了",
+    "暴涨",
+    "崩盘",
+    "吊打",
+    "秒杀",
+    "逆天",
+)
+MAGNETIZE_FUTURE_SOURCE_TERMS = ("计划", "目标", "预计", "预期", "拟", "将", "有望", "可能", "或将", "力争")
+MAGNETIZE_FUTURE_OUTPUT_TERMS = MAGNETIZE_FUTURE_SOURCE_TERMS + ("要", "冲刺")
+MAGNETIZE_ABSOLUTE_TERMS = ("已实现", "正式上线", "史上最大", "史最大", "首次", "唯一", "全面", "领先", "超过", "吊打", "碾压")
+MAGNETIZE_ABSOLUTE_EQUIVALENTS = {"史最大": ("史最大", "史上最大")}
+MAGNETIZE_ENTITY_QUALIFIERS = ("国行", "中国", "美国", "韩国", "日本", "全球", "国内", "海外", "当地")
+MAGNETIZE_ENTITY_STOPWORDS = {
+    "AI",
+    "CEO",
+    "ARR",
+    "IPO",
+    "人工",
+    "智能",
+    "芯片",
+    "模型",
+    "手机",
+    "公司",
+    "政府",
+    "法院",
+    "产品",
+    "市场",
+}
 
 
 @dataclass(frozen=True)
@@ -78,6 +111,16 @@ class XHSExportResult:
     image_paths: list[Path]
     caption_path: Path
     html_path: Path
+
+
+@dataclass(frozen=True)
+class XHSCoverTitleVariants:
+    original: str
+    fallback: str
+    restrained: str
+    punchy: str | None
+    source: Literal["ai", "fallback"]
+    rejection_reasons: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -183,7 +226,23 @@ def export_xhs_issue(
         if ai_condense and config
         else None
     )
-    cards = build_cards(issue, condenser=condenser, cover_template=cover_template)
+    cover_title_variants = None
+    if cover_template == "v2" and issue.headlines:
+        cover_title_variants = prepare_v2_cover_title_variants(
+            issue,
+            out_dir=out_dir,
+            condenser=condenser,
+            config=config,
+            provider=provider,
+            ai_enabled=ai_condense and config is not None,
+        )
+        write_cover_title_variants(out_dir / "cover_title_variants.txt", cover_title_variants)
+    cards = build_cards(
+        issue,
+        condenser=condenser,
+        cover_template=cover_template,
+        v2_cover_title=cover_title_variants.restrained if cover_title_variants else None,
+    )
     html_path = out_dir / "cards.html"
     html_path.write_text(render_cards_html(issue, cards), encoding="utf-8")
     caption_path = out_dir / "caption.txt"
@@ -246,6 +305,144 @@ def prepare_xhs_condenser(
         LOGGER.warning("xhs_condense batch failed: %s", exc)
         responses = {}
     return XHSCondenser(responses)
+
+
+def prepare_v2_cover_title_variants(
+    issue: Issue,
+    *,
+    out_dir: Path,
+    condenser: XHSCondenser | None,
+    config: PipelineConfig | None,
+    provider: ProviderName | None = None,
+    ai_enabled: bool = False,
+) -> XHSCoverTitleVariants:
+    article = issue.headlines[0]
+    hook_min, hook_max = SLOT_RANGES["cover_hook"]
+    fallback = condense_slot(
+        article.title_zh,
+        slot_id="cover_hook",
+        slot_type="cover_hook",
+        min_chars=hook_min,
+        max_chars=hook_max,
+        title=article.title_zh,
+        condenser=condenser,
+    )
+    fallback_variants = XHSCoverTitleVariants(
+        original=article.title_zh,
+        fallback=fallback,
+        restrained=fallback,
+        punchy=None,
+        source="fallback",
+    )
+    if not ai_enabled or config is None:
+        return fallback_variants
+
+    input_path = out_dir / "xhs_magnetize_input.json"
+    input_path.write_text(
+        json.dumps(build_xhs_magnetize_input(issue), ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+    selected_provider: ProviderName = (
+        provider or config.ai.stage_providers.get("xhs_magnetize") or config.ai.default_provider
+    )
+    try:
+        output, ai_run = run_ai_task(
+            task_type="xhs_magnetize",
+            prompt=build_xhs_magnetize_prompt(input_path.resolve()),
+            output_model=XHSMagnetizeOutput,
+            provider=selected_provider,
+            config=config,
+        )
+        save_ai_task_run(
+            f"xhs-{issue.issue_date.isoformat()}",
+            "xhs_magnetize",
+            ai_run,
+            save_attempts=config.logging.save_attempts,
+            save_provider_events=config.logging.save_provider_events,
+            append_metrics_jsonl=config.logging.append_metrics_jsonl,
+        )
+    except AIEngineError as exc:
+        if exc.record is not None:
+            save_ai_task_run(
+                f"xhs-{issue.issue_date.isoformat()}",
+                "xhs_magnetize",
+                exc.record,
+                save_attempts=config.logging.save_attempts,
+                save_provider_events=config.logging.save_provider_events,
+                append_metrics_jsonl=config.logging.append_metrics_jsonl,
+            )
+        LOGGER.warning("xhs_magnetize failed: %s", exc)
+        return XHSCoverTitleVariants(
+            original=fallback_variants.original,
+            fallback=fallback_variants.fallback,
+            restrained=fallback_variants.restrained,
+            punchy=None,
+            source="fallback",
+            rejection_reasons=(f"provider 失败：{exc}",),
+        )
+
+    restrained = compact_text(output.restrained)
+    punchy = compact_text(output.punchy)
+    restrained_reasons = validate_magnetized_title(
+        output.restrained,
+        original_title=article.title_zh,
+        summary=article.summary_zh,
+        restrained=True,
+    )
+    punchy_reasons = validate_magnetized_title(
+        output.punchy,
+        original_title=article.title_zh,
+        summary=article.summary_zh,
+        restrained=False,
+    )
+    reasons = tuple(
+        [f"克制版：{reason}" for reason in restrained_reasons]
+        + [f"冲版：{reason}" for reason in punchy_reasons]
+    )
+    if restrained_reasons:
+        LOGGER.warning("xhs_magnetize restrained output rejected: %s", "; ".join(restrained_reasons))
+    if punchy_reasons:
+        LOGGER.warning("xhs_magnetize punchy output rejected: %s", "; ".join(punchy_reasons))
+    return XHSCoverTitleVariants(
+        original=article.title_zh,
+        fallback=fallback,
+        restrained=fallback if restrained_reasons else restrained,
+        punchy=None if punchy_reasons else punchy,
+        source="fallback" if restrained_reasons else "ai",
+        rejection_reasons=reasons,
+    )
+
+
+def build_xhs_magnetize_input(issue: Issue) -> dict[str, object]:
+    article = issue.headlines[0]
+    hook_min, hook_max = SLOT_RANGES["cover_hook"]
+    return {
+        "publication_name": XHS_PUBLICATION_NAME,
+        "issue_date": issue.issue_date.isoformat(),
+        "title_zh": article.title_zh,
+        "summary_zh": article.summary_zh,
+        "target_min": hook_min,
+        "target_max": hook_max,
+    }
+
+
+def write_cover_title_variants(path: Path, variants: XHSCoverTitleVariants) -> None:
+    punchy = variants.punchy or "无（未通过校验或未启用 AI）"
+    reasons = "无" if not variants.rejection_reasons else "；".join(variants.rejection_reasons)
+    path.write_text(
+        "\n".join(
+            [
+                f"原标题：{variants.original}",
+                f"原标题收敛兜底：{variants.fallback}",
+                f"当前使用（克制版）：{variants.restrained}",
+                f"冲版备选：{punchy}",
+                f"当前来源：{variants.source}",
+                f"回退/拒绝原因：{reasons}",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
 
 
 def build_note_title(
@@ -451,12 +648,13 @@ def build_cards(
     *,
     condenser: XHSCondenser | None = None,
     cover_template: CoverTemplate = "classic",
+    v2_cover_title: str | None = None,
 ) -> list[Card]:
     validate_cover_template(cover_template)
     if cover_template == "single-hook":
         cover = single_hook_cover_card(issue, condenser=condenser)
     elif cover_template == "v2":
-        cover = v2_cover_card(issue, condenser=condenser)
+        cover = v2_cover_card(issue, condenser=condenser, title_override=v2_cover_title)
     else:
         cover = cover_card(issue)
     cards = [cover]
@@ -554,14 +752,19 @@ def single_hook_cover_card(issue: Issue, *, condenser: XHSCondenser | None = Non
     return Card(kind="cover2", html_body=body)
 
 
-def v2_cover_card(issue: Issue, *, condenser: XHSCondenser | None = None) -> Card:
+def v2_cover_card(
+    issue: Issue,
+    *,
+    condenser: XHSCondenser | None = None,
+    title_override: str | None = None,
+) -> Card:
     if not issue.headlines:
         return cover_card(issue)
 
     article = issue.headlines[0]
     hook_min, hook_max = SLOT_RANGES["cover_hook"]
     sub_min, sub_max = SLOT_RANGES["cover_sub"]
-    hook = condense_slot(
+    fallback_hook = condense_slot(
         article.title_zh,
         slot_id="cover_hook",
         slot_type="cover_hook",
@@ -570,6 +773,7 @@ def v2_cover_card(issue: Issue, *, condenser: XHSCondenser | None = None) -> Car
         title=article.title_zh,
         condenser=condenser,
     )
+    hook = title_override or fallback_hook
     sub = condense_slot(
         article.summary_zh,
         slot_id="cover_sub",
@@ -1002,7 +1206,11 @@ def emphasize_cover_text(text: str, emphasis_terms: Sequence[str]) -> str:
 
 
 def emphasize_v2_cover_text(text: str, emphasis_terms: Sequence[str]) -> str:
-    terms = sorted({compact_text(term) for term in emphasis_terms if compact_text(term) in text}, key=len, reverse=True)
+    terms: list[str] = []
+    for term in emphasis_terms:
+        value = compact_text(term)
+        if value and value in text and value not in terms:
+            terms.append(value)
     match: re.Match[str] | None = None
     if terms:
         match = re.search(re.escape(terms[0]), text)
@@ -1018,6 +1226,136 @@ def emphasize_v2_cover_text(text: str, emphasis_terms: Sequence[str]) -> str:
             escape(text[match.end() :]),
         ]
     )
+
+
+def validate_magnetized_title(
+    title: str,
+    *,
+    original_title: str,
+    summary: str,
+    restrained: bool,
+) -> list[str]:
+    reasons: list[str] = []
+    value = compact_text(title)
+    min_chars, max_chars = SLOT_RANGES["cover_hook"]
+    source_text = f"{original_title} {summary}"
+
+    if not value:
+        return ["输出为空"]
+    if "\n" in title or "\r" in title:
+        reasons.append("包含换行")
+    if "…" in value or "..." in value:
+        reasons.append("包含省略号")
+    if not min_chars <= len(value) <= max_chars:
+        reasons.append(f"长度 {len(value)} 不在 {min_chars}-{max_chars} 字区间")
+
+    if not normalized_numbers(value).issubset(normalized_numbers(source_text)):
+        reasons.append("出现原文没有的数字")
+
+    source_anchors = subject_anchors(source_text)
+    candidate_anchors = subject_anchors(value)
+    if not source_anchors or not candidate_anchors or not source_anchors.intersection(candidate_anchors):
+        reasons.append("未保留可验证的原文主体")
+    primary_anchor = primary_subject_anchor(value)
+    if primary_anchor is None or primary_anchor.casefold() not in unicodedata.normalize("NFKC", source_text).casefold():
+        reasons.append("候选标题的首个主体不在原文中")
+
+    source_latin = latin_entity_terms(source_text)
+    candidate_latin = latin_entity_terms(value)
+    unknown_latin = candidate_latin - source_latin
+    if unknown_latin:
+        reasons.append(f"出现原文没有的英文主体：{', '.join(sorted(unknown_latin))}")
+
+    if restrained:
+        banned = [term for term in MAGNETIZE_RESTRAINED_BANNED_TERMS if term in value]
+        if banned:
+            reasons.append(f"克制版命中情绪词：{', '.join(banned)}")
+
+    if any(term in original_title for term in MAGNETIZE_FUTURE_SOURCE_TERMS) and not any(
+        term in value for term in MAGNETIZE_FUTURE_OUTPUT_TERMS
+    ):
+        reasons.append("丢失计划/目标等未来语气")
+
+    unsupported_absolute = [
+        term
+        for term in MAGNETIZE_ABSOLUTE_TERMS
+        if term in value
+        and not any(source_term in source_text for source_term in MAGNETIZE_ABSOLUTE_EQUIVALENTS.get(term, (term,)))
+    ]
+    if unsupported_absolute:
+        reasons.append(f"新增原文没有的程度词：{', '.join(unsupported_absolute)}")
+    return reasons
+
+
+def normalized_numbers(text: str) -> set[str]:
+    normalized = unicodedata.normalize("NFKC", text)
+    return numbers_in_text(normalized)
+
+
+def latin_entity_terms(text: str) -> set[str]:
+    normalized = unicodedata.normalize("NFKC", text)
+    terms = {
+        match.group(0).strip().casefold()
+        for match in re.finditer(
+            r"(?<![A-Za-z0-9])[A-Za-z][A-Za-z0-9.+-]*(?:\s+[A-Za-z][A-Za-z0-9.+-]*)?(?![A-Za-z0-9])",
+            normalized,
+        )
+    }
+    return {term for term in terms if term.upper() not in MAGNETIZE_ENTITY_STOPWORDS}
+
+
+def subject_anchors(text: str) -> set[str]:
+    normalized = unicodedata.normalize("NFKC", compact_text(text))
+    anchors = set(latin_entity_terms(normalized))
+    fragments = re.split(
+        r"[，,：:|；;。！？!?()（）“”\"'、]"
+        r"|把|向|由|与|及|发布|宣布|曝光|获批|获备案|计划|目标|预计|暂停|遭|起诉|投资|收购|推出|回应",
+        normalized,
+    )
+    for fragment in fragments:
+        value = re.sub(r"^\d+(?:\.\d+)?(?:年|月|日|小时|倍)?", "", fragment).strip()
+        for qualifier in MAGNETIZE_ENTITY_QUALIFIERS:
+            if value.startswith(qualifier):
+                value = value[len(qualifier) :]
+                break
+        value = re.split(r"等\d*款|等|和", value, maxsplit=1)[0]
+        cjk_runs = re.findall(r"[一-鿿]{2,12}", value)
+        if not cjk_runs:
+            continue
+        run = cjk_runs[0]
+        for length in (2, 3, 4):
+            if len(run) >= length:
+                anchor = run[:length]
+                if anchor not in MAGNETIZE_ENTITY_STOPWORDS:
+                    anchors.add(anchor)
+    return anchors
+
+
+def primary_subject_anchor(text: str) -> str | None:
+    normalized = unicodedata.normalize("NFKC", compact_text(text))
+    for fragment in re.split(r"[，,：:；;。！？!?()（）“”\"'、]", normalized):
+        value = re.sub(r"^\d+(?:\.\d+)?(?:到|至|-)?\d*(?:年|月|日|小时|倍|%|亿|万)?", "", fragment).strip()
+        if any(value.startswith(term) for term in MAGNETIZE_RESTRAINED_BANNED_TERMS):
+            continue
+        for qualifier in MAGNETIZE_ENTITY_QUALIFIERS:
+            if value.startswith(qualifier):
+                value = value[len(qualifier) :]
+                break
+        latin = re.search(
+            r"(?<![A-Za-z0-9])[A-Za-z][A-Za-z0-9.+-]*(?:\s+[A-Za-z][A-Za-z0-9.+-]*)?(?![A-Za-z0-9])",
+            value,
+        )
+        cjk = re.search(r"[一-鿿]{2,}", value)
+        candidates = [match for match in (latin, cjk) if match is not None]
+        if not candidates:
+            continue
+        first = min(candidates, key=lambda match: match.start())
+        anchor = first.group(0)
+        if re.fullmatch(r"[一-鿿]+", anchor):
+            anchor = anchor[:2]
+        if anchor.upper() not in MAGNETIZE_ENTITY_STOPWORDS:
+            return anchor
+    return None
 
 
 def validate_cover_template(cover_template: str) -> None:

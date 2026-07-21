@@ -6,8 +6,10 @@ from pathlib import Path
 from daily_news.ai_engine import (
     AIEngineError,
     XHSCondenseOutput,
+    XHSMagnetizeOutput,
     XHSNoteTitleOutput,
     build_xhs_condense_file_prompt,
+    build_xhs_magnetize_prompt,
     build_xhs_note_title_prompt,
 )
 from daily_news.config import PipelineConfig
@@ -20,7 +22,9 @@ from daily_news.xhs_export import (
     NOTE_HASHTAGS,
     XHS_PUBLICATION_NAME,
     XHSCondenser,
+    XHSCoverTitleVariants,
     build_xhs_condense_input,
+    build_xhs_magnetize_input,
     build_xhs_note_title_input,
     build_caption,
     build_cards,
@@ -34,7 +38,9 @@ from daily_news.xhs_export import (
     is_valid_note_title,
     paginate_briefs,
     prepare_xhs_condenser,
+    prepare_v2_cover_title_variants,
     render_cards_html,
+    validate_magnetized_title,
 )
 
 
@@ -238,6 +244,20 @@ def test_xhs_note_title_prompt_contains_hard_limit_and_input_path(tmp_path: Path
     assert '{"title": "不超过20字的中文标题"}' in prompt
 
 
+def test_xhs_magnetize_prompt_contains_contract_and_examples(tmp_path: Path) -> None:
+    input_path = tmp_path / "xhs_magnetize_input.json"
+    input_path.write_text("{}", encoding="utf-8")
+
+    prompt = build_xhs_magnetize_prompt(input_path)
+
+    assert str(input_path) in prompt
+    assert "restrained" in prompt
+    assert "punchy" in prompt
+    assert "12-24 字" in prompt
+    assert "事实层铁律" in prompt
+    assert "智谱估值暴涨15倍" in prompt
+
+
 def test_build_xhs_note_title_input_contains_only_needed_issue_context() -> None:
     issue = sample_issue()
 
@@ -249,6 +269,18 @@ def test_build_xhs_note_title_input_contains_only_needed_issue_context() -> None
     assert payload["headlines"][0]["summary_zh"] == issue.headlines[0].summary_zh
     assert payload["brief_titles"] == [article.title_zh for article in issue.briefs]
     assert "read_body_zh" not in payload["headlines"][0]
+
+
+def test_build_xhs_magnetize_input_contains_only_headline_one_facts() -> None:
+    issue = sample_issue()
+
+    payload = build_xhs_magnetize_input(issue)
+
+    assert payload["title_zh"] == issue.headlines[0].title_zh
+    assert payload["summary_zh"] == issue.headlines[0].summary_zh
+    assert payload["target_min"] == 12
+    assert payload["target_max"] == 24
+    assert "ai_impact" not in payload
 
 
 def test_note_title_validator_rejects_overlimit_and_new_numbers() -> None:
@@ -297,6 +329,158 @@ def test_prepare_xhs_condenser_falls_back_when_batch_ai_fails(monkeypatch, tmp_p
     assert (tmp_path / "xhs_condense_input.json").exists()
 
 
+def test_prepare_v2_cover_title_variants_uses_valid_ai_output(monkeypatch, tmp_path: Path) -> None:
+    issue = sample_issue()
+    issue.headlines[0].title_zh = "谷歌自研新芯片Frozen v2曝光，目标2028年让Gemini能效提升6至10倍"
+    issue.headlines[0].summary_zh = "谷歌计划在2028年前后推出Frozen v2，目标能效提升6至10倍。"
+
+    monkeypatch.setattr(
+        "daily_news.xhs_export.run_ai_task",
+        lambda **kwargs: (
+            XHSMagnetizeOutput(
+                restrained="谷歌自研芯片曝光，能效目标提升6至10倍",
+                punchy="6到10倍！谷歌要给Gemini换颗自研芯",
+            ),
+            object(),
+        ),
+    )
+    monkeypatch.setattr("daily_news.xhs_export.save_ai_task_run", lambda *args, **kwargs: None)
+
+    variants = prepare_v2_cover_title_variants(
+        issue,
+        out_dir=tmp_path,
+        condenser=None,
+        config=PipelineConfig(),
+        ai_enabled=True,
+    )
+
+    assert variants.source == "ai"
+    assert variants.restrained.startswith("谷歌")
+    assert variants.punchy is not None
+    assert not variants.rejection_reasons
+    assert (tmp_path / "xhs_magnetize_input.json").exists()
+
+
+def test_prepare_v2_cover_title_variants_falls_back_when_provider_fails(monkeypatch, tmp_path: Path) -> None:
+    issue = sample_issue()
+
+    def fail_run_ai_task(**kwargs):  # noqa: ANN001
+        raise AIEngineError("provider unavailable")
+
+    monkeypatch.setattr("daily_news.xhs_export.run_ai_task", fail_run_ai_task)
+
+    variants = prepare_v2_cover_title_variants(
+        issue,
+        out_dir=tmp_path,
+        condenser=None,
+        config=PipelineConfig(),
+        ai_enabled=True,
+    )
+
+    assert variants.source == "fallback"
+    assert variants.restrained == variants.fallback
+    assert variants.punchy is None
+    assert any("provider 失败" in reason for reason in variants.rejection_reasons)
+
+
+def test_magnetize_validator_rejects_drift_and_restrained_hype() -> None:
+    source_title = "谷歌自研新芯片曝光，目标能效提升6至10倍"
+    summary = "谷歌计划在2028年前后推出Frozen v2，目标能效提升6至10倍。"
+
+    valid = validate_magnetized_title(
+        "谷歌自研芯片曝光，能效目标提升6至10倍",
+        original_title=source_title,
+        summary=summary,
+        restrained=True,
+    )
+    new_number = validate_magnetized_title(
+        "谷歌自研芯片曝光，能效目标提升20倍",
+        original_title=source_title,
+        summary=summary,
+        restrained=True,
+    )
+    wrong_subject = validate_magnetized_title(
+        "微软自研芯片曝光，能效目标提升6至10倍",
+        original_title=source_title,
+        summary=summary,
+        restrained=True,
+    )
+    hype = validate_magnetized_title(
+        "震惊！谷歌芯片能效目标提升6至10倍",
+        original_title=source_title,
+        summary=summary,
+        restrained=True,
+    )
+    lost_plan = validate_magnetized_title(
+        "谷歌自研芯片能效提升6至10倍",
+        original_title=source_title,
+        summary=summary,
+        restrained=True,
+    )
+
+    assert valid == []
+    assert any("数字" in reason for reason in new_number)
+    assert any("主体" in reason for reason in wrong_subject)
+    assert any("情绪词" in reason for reason in hype)
+    assert any("未来语气" in reason for reason in lost_plan)
+
+
+def test_magnetize_validator_accepts_supported_absolute_and_emotional_prefix() -> None:
+    copyright_title = "Anthropic 15亿美元版权和解获终审批准，每部赔3000美元"
+    kimi_title = "Kimi K3发布48小时算力告急：月之暗面暂停新订阅"
+
+    assert (
+        validate_magnetized_title(
+            "美国版权史最大和解：Anthropic赔15亿",
+            original_title=copyright_title,
+            summary="这是美国版权史上最大规模的AI版权和解。",
+            restrained=False,
+        )
+        == []
+    )
+    assert (
+        validate_magnetized_title(
+            "太火了！Kimi K3发布48小时，算力就顶不住",
+            original_title=kimi_title,
+            summary="Kimi K3发布后算力告急。",
+            restrained=False,
+        )
+        == []
+    )
+
+
+def test_only_v2_prepares_magnetized_title_variants(monkeypatch, tmp_path: Path) -> None:
+    issue = sample_issue()
+    calls: list[str] = []
+
+    monkeypatch.setattr("daily_news.xhs_export.RUNS_DIR", tmp_path)
+    monkeypatch.setattr("daily_news.xhs_export.render_card_images", lambda html_path, output_dir, count: [])
+    monkeypatch.setattr("daily_news.xhs_export.prepare_xhs_condenser", lambda *args, **kwargs: XHSCondenser({}))
+    monkeypatch.setattr("daily_news.xhs_export.build_note_title", lambda *args, **kwargs: fallback_note_title(issue))
+
+    def fake_variants(*args, **kwargs):  # noqa: ANN002, ANN003
+        calls.append("v2")
+        return XHSCoverTitleVariants(
+            original=issue.headlines[0].title_zh,
+            fallback="原标题收敛兜底文案",
+            restrained="克制版封面标题文案",
+            punchy="冲版封面标题文案",
+            source="ai",
+        )
+
+    monkeypatch.setattr("daily_news.xhs_export.prepare_v2_cover_title_variants", fake_variants)
+
+    export_xhs_issue(issue, config=PipelineConfig(), ai_condense=True, cover_template="classic")
+    export_xhs_issue(issue, config=PipelineConfig(), ai_condense=True, cover_template="single-hook")
+    v2 = export_xhs_issue(issue, config=PipelineConfig(), ai_condense=True, cover_template="v2")
+
+    assert calls == ["v2"]
+    assert not (tmp_path / "xhs" / "2026-06-23" / "cover_title_variants.txt").exists()
+    assert not (tmp_path / "xhs" / "2026-06-23-single-hook" / "cover_title_variants.txt").exists()
+    assert (v2.output_dir / "cover_title_variants.txt").exists()
+    assert "克制版封面标题文案" in v2.html_path.read_text(encoding="utf-8")
+
+
 def test_xhs_condense_schema_is_strict_for_codex_response_format() -> None:
     schema = XHSCondenseOutput.model_json_schema()
 
@@ -339,6 +523,14 @@ def test_xhs_note_title_schema_is_strict_for_codex_response_format() -> None:
     assert schema["type"] == "object"
     assert schema["additionalProperties"] is False
     assert schema["properties"]["title"]["type"] == "string"
+
+
+def test_xhs_magnetize_schema_is_strict_for_codex_response_format() -> None:
+    schema = XHSMagnetizeOutput.model_json_schema()
+
+    assert schema["type"] == "object"
+    assert schema["additionalProperties"] is False
+    assert set(schema["required"]) == {"restrained", "punchy"}
 
 
 def test_render_xhs_cards_html_contains_fixed_card_size_and_prototype_classes() -> None:

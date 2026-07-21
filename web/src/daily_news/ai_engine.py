@@ -77,6 +77,13 @@ class XHSNoteTitleOutput(BaseModel):
     title: str
 
 
+class XHSMagnetizeOutput(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    restrained: str
+    punchy: str
+
+
 def extract_json_object(output: str) -> dict[str, Any]:
     stripped = output.strip()
     try:
@@ -148,6 +155,10 @@ def _looks_like_ai_output(value: dict[str, Any]) -> bool:
         "drop_item_ids",
         "headline_item_ids",
         "brief_item_ids",
+        "slots",
+        "title",
+        "restrained",
+        "punchy",
     }
     return bool(expected_keys.intersection(value))
 
@@ -665,6 +676,49 @@ def build_xhs_note_title_prompt(input_path: Path) -> str:
 输出要求：
 - 只输出一个 JSON 对象，不要 Markdown，不要解释。
 - JSON schema：{{"title": "不超过20字的中文标题"}}
+""".strip()
+
+
+def build_xhs_magnetize_prompt(input_path: Path) -> str:
+    return f"""
+你是《AI科技日报》的小红书封面标题编辑。请读取本地 JSON 文件，只基于头条 1 的标题和事实摘要，输出两条封面标题。
+
+输入文件：
+{input_path}
+
+事实层铁律：
+1. 数字、金额、百分比、主体公司/人物、时间、来源和程度不得新增、替换或改写。
+2. “计划/目标/预计/可能”不得改成“已实现/正式上线”；“逼近”不得改成“超过”。
+3. 只允许调整表述：冲击数/反常点前置、去通稿腔、突出原文已有的反差/痛点、留不欺骗的信息缺口。
+4. 两条都必须保留输入中的真实主体，禁止加入输入不存在的公司、人物或对比对象。
+
+两档要求：
+- restrained：克制版，默认上封面；12-24 字，专业、抓眼，不用震惊、太火了、暴涨、崩盘、吊打、秒杀、逆天等情绪词。
+- punchy：冲版，只存作备选；12-24 字，可有限口语化，但事实层同样锁死。
+- 不要省略号、Markdown、换行或解释。
+
+正例（原标题 → 克制版 ｜ 冲版）：
+- 谷歌自研新芯片Frozen v2曝光，目标2028年让Gemini能效提升6至10倍
+  → 谷歌自研新芯片曝光，能效目标提升6至10倍 ｜ 6到10倍！谷歌要给Gemini换颗自研芯
+- 国行苹果智能等7款手机端侧AI获备案，三星把端侧大脑交给国产面壁MiniCPM
+  → 苹果等7款端侧AI获备案，国行AI要来了 ｜ 三星把手机AI大脑，交给了国产面壁
+- Anthropic 15亿美元版权和解获终审批准，每部赔3000美元、覆盖约50万部作品
+  → Anthropic 15亿美元版权和解获批，每部赔3000美元 ｜ 美国版权史最大和解：Anthropic赔15亿
+- 黄仁勋两天扫遍日本产业界：万亿日元押注主权“物理AI”，底座仍是英伟达芯片
+  → 黄仁勋两天扫遍日本，万亿日元押注“物理AI” ｜ 黄仁勋两天扫遍日本，砸下万亿日元
+- Kimi K3发布48小时算力告急：月之暗面暂停新订阅，评测逼近前沿引芯片股回调
+  → Kimi K3发布48小时算力告急，月之暗面暂停新订阅 ｜ 太火了！Kimi K3发布48小时，算力就顶不住
+- 智谱 ARR 半年增长 15 倍达 10 亿美元，追平 Anthropic 的代码变现速度
+  → 智谱ARR半年增长15倍，达10亿美元 ｜ 半年翻15倍，智谱ARR冲到10亿美元
+
+反例：
+- 智谱估值暴涨15倍：ARR 被偷换成估值。
+- 震惊！智谱ARR暴涨：震惊体且程度夸大。
+- 谷歌芯片吊打英伟达：无中生有的对比和主体。
+
+输出要求：
+- 只输出一个 JSON 对象，不要 Markdown，不要解释。
+- JSON schema：{{"restrained": "12-24字克制版", "punchy": "12-24字冲版"}}
 """.strip()
 
 
