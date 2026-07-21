@@ -73,6 +73,11 @@ COVER_HOOK_LARGE_MAX_CHARS = 16
 COVER_SAFE_TOP = 180
 COVER_SAFE_BOTTOM = 1260
 V2_TITLE_FONT_SIZES = (100, 90, 82)
+V2_MAX_EMPHASIS_MARKS = 2
+V2_NUMBER_PATTERN = re.compile(
+    r"\d+(?:\.\d+)?(?:\s*(?:至|到|[-–—])\s*\d+(?:\.\d+)?)?"
+    r"(?:万亿|亿美元|亿元|万股|亿股|亿|万|%|倍|美元|元|股|年|月|日|小时)?"
+)
 MAGNETIZE_RESTRAINED_BANNED_TERMS = (
     "震惊",
     "太火了",
@@ -1211,21 +1216,42 @@ def emphasize_v2_cover_text(text: str, emphasis_terms: Sequence[str]) -> str:
         value = compact_text(term)
         if value and value in text and value not in terms:
             terms.append(value)
-    match: re.Match[str] | None = None
+    selected: list[tuple[int, int]] = []
     if terms:
-        match = re.search(re.escape(terms[0]), text)
-    if match is None:
-        number_pattern = r"\d+(?:\.\d+)?(?:万亿|亿美元|亿元|万股|亿股|亿|万|%|美元|元|股)?"
-        match = re.search(number_pattern, text)
-    if match is None:
+        subject_match = re.search(re.escape(terms[0]), text)
+        if subject_match is not None:
+            selected.append((subject_match.start(), subject_match.end()))
+
+    number_matches = list(V2_NUMBER_PATTERN.finditer(text))
+    number_matches.sort(key=lambda match: (-v2_number_emphasis_score(match.group(0)), match.start()))
+    for number_match in number_matches:
+        span = (number_match.start(), number_match.end())
+        if any(span[0] < end and span[1] > start for start, end in selected):
+            continue
+        selected.append(span)
+        break
+
+    if not selected:
         return escape(text)
-    return "".join(
-        [
-            escape(text[: match.start()]),
-            f'<span class="mark">{escape(text[match.start() : match.end()])}</span>',
-            escape(text[match.end() :]),
-        ]
-    )
+    selected = sorted(selected[:V2_MAX_EMPHASIS_MARKS])
+    parts: list[str] = []
+    cursor = 0
+    for start, end in selected:
+        parts.append(escape(text[cursor:start]))
+        parts.append(f'<span class="mark">{escape(text[start:end])}</span>')
+        cursor = end
+    parts.append(escape(text[cursor:]))
+    return "".join(parts)
+
+
+def v2_number_emphasis_score(value: str) -> int:
+    if re.search(r"(?:至|到|[-–—])", value):
+        return 4
+    if re.search(r"(?:万亿|亿美元|亿元|万股|亿股|亿|万|%|倍|美元|元|股)$", value):
+        return 3
+    if re.search(r"(?:年|月|日|小时)$", value):
+        return 1
+    return 2
 
 
 def validate_magnetized_title(
@@ -1816,6 +1842,7 @@ body{
   color:var(--seal);
   font-style:normal;
   font-weight:inherit;
+  white-space:nowrap;
   text-decoration:underline;
   text-decoration-color:var(--seal);
   text-decoration-thickness:11px;

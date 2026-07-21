@@ -504,17 +504,29 @@ def test_cover_emphasis_only_adds_markup_without_changing_text() -> None:
     assert html.unescape(re.sub(r"</?em>", "", numeric_fallback)) == original
 
 
-def test_v2_cover_emphasis_uses_one_mark_without_changing_text() -> None:
+def test_v2_cover_emphasis_marks_subject_and_key_number_without_changing_text() -> None:
     original = "SK海力士拟发行1780万股ADR"
 
     marked = emphasize_v2_cover_text(original, ["SK海力士", "1780万"])
     numeric_fallback = emphasize_v2_cover_text(original, [])
 
-    assert marked.count('class="mark"') == 1
+    assert marked.count('class="mark"') == 2
     assert '<span class="mark">SK海力士</span>' in marked
+    assert '<span class="mark">1780万股</span>' in marked
     assert '<span class="mark">1780万股</span>' in numeric_fallback
     assert html.unescape(re.sub(r'</?span(?: class="mark")?>', "", marked)) == original
     assert html.unescape(re.sub(r'</?span(?: class="mark")?>', "", numeric_fallback)) == original
+
+
+def test_v2_cover_emphasis_prefers_numeric_range_and_caps_at_two_marks() -> None:
+    original = "谷歌自研新芯片曝光，能效目标提升6至10倍"
+
+    marked = emphasize_v2_cover_text(original, ["谷歌", "自研新芯片"])
+
+    assert marked.count('class="mark"') == 2
+    assert '<span class="mark">谷歌</span>' in marked
+    assert '<span class="mark">6至10倍</span>' in marked
+    assert html.unescape(re.sub(r'</?span(?: class="mark")?>', "", marked)) == original
 
 
 def test_xhs_note_title_schema_is_strict_for_codex_response_format() -> None:
@@ -541,6 +553,7 @@ def test_render_xhs_cards_html_contains_fixed_card_size_and_prototype_classes() 
     assert "height:1440px" in html
     assert ".hl-body" in html
     assert ".brief-list" in html
+    assert "white-space:nowrap" in html
     assert XHS_PUBLICATION_NAME in html
     assert "Tourbillion News" not in html
     assert 'id="card-1"' in html
