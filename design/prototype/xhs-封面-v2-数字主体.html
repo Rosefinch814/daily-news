@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>小红书封面 v2 · 标题即主视觉（再收敛版）</title>
+<!--
+  小红书封面 v2 · 再收敛版 —— 设计对话探索原型。
+  用户反馈层层收敛：情绪前缀 / 引号锚 / 关联签 / 数字领读 全部去掉——封面就靠标题本身。
+  最终 = 品类眉题 + 大标题（关键词朱红底线）+ 支撑句，垂直居中、文案放足。
+  简报：docs/design-briefs/小红书封面-v2-数字主体.md。权威：design §12.2 / spec §3.3·§4·§7。
+  只改封面；零新增裸值/新色，红全部来自 --seal。
+  ⚠ 一路砍到这里，v2 与线上 T15 已很接近——净差别：① 关键词"换色"升级为"朱红粗底线"；② 文案放足、标题字号更大。
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,900&family=JetBrains+Mono:wght@500;700&family=Noto+Serif+SC:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F4EFE3; --ink:#1A1714; --ink-2:#3D372F; --ink-3:#5A5247;
+  --muted:#8E836F; --rule:#D2C8B2; --rule-2:#B7AB90;
+  --seal:#A6342B; --seal-soft:#F0DCD5; --ai-bg:#ECE7DA; --field:#FBF8EF;
+  --sans:"Noto Serif SC","Songti SC",serif;
+  --disp:"Fraunces","Georgia",serif;
+  --mono:"JetBrains Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box;}
+body{margin:0;background:#cfc6b2;color:var(--ink);font-family:var(--sans);padding:44px;}
+.page-head{max-width:1500px;margin:0 auto 30px;font-family:var(--mono);color:#4a4234;}
+.page-head h1{font-family:var(--disp);font-weight:900;color:#3a3226;margin:0 0 6px;font-size:26px;}
+.page-head p{margin:2px 0;font-size:13px;line-height:1.6;}
+.page-head .seal{color:var(--seal);font-weight:700;}
+
+.gallery{display:flex;flex-wrap:wrap;gap:48px;justify-content:center;}
+.item{display:flex;flex-direction:column;align-items:center;gap:12px;}
+.item .cap{font-family:var(--mono);font-size:13px;color:#4a4234;max-width:454px;text-align:center;}
+.item .cap b{color:var(--seal);}
+.shrink{width:453.6px;height:604.8px;overflow:hidden;box-shadow:0 18px 46px rgba(40,30,15,.32);position:relative;}
+.shrink .card{transform:scale(.42);transform-origin:top left;}
+.safe-badge{position:absolute;left:8px;top:calc(180px * .42 + 8px);z-index:5;
+  font-family:var(--mono);font-size:10px;letter-spacing:.05em;color:var(--seal);
+  background:rgba(244,239,227,.82);border:1px solid var(--seal);border-radius:4px;padding:2px 6px;}
+.safe-line{position:absolute;left:0;right:0;z-index:4;border-top:1.5px dashed rgba(166,52,43,.45);pointer-events:none;}
+.safe-line.top{top:calc(180px * .42);}
+.safe-line.bot{top:calc(1260px * .42);}
+
+/* ============ 卡片基座 ============ */
+.card{width:1080px;height:1440px;background:var(--paper);color:var(--ink);position:relative;overflow:hidden;}
+.coverv2{display:flex;flex-direction:column;}
+
+/* 顶部品牌骨架条 + 报头线 */
+.cv2-head{position:relative;z-index:2;flex:none;display:flex;justify-content:space-between;align-items:center;
+  padding:56px 84px 28px;border-bottom:3px solid var(--rule-2);}
+.cv2-brand{display:flex;align-items:center;gap:18px;}
+.cv2-brand .seal-mark{width:26px;height:26px;background:var(--seal);flex:none;}
+.cv2-brand .name{font-family:var(--sans);font-weight:900;font-size:36px;letter-spacing:.03em;color:var(--ink-2);}
+.cv2-date{display:flex;align-items:baseline;gap:16px;}
+.cv2-date .d{font-family:var(--mono);font-weight:700;font-size:40px;letter-spacing:.02em;color:var(--seal);line-height:1;}
+.cv2-date .dow{font-family:var(--sans);font-weight:900;font-size:28px;color:var(--ink-3);line-height:1;}
+
+/* 内容区：垂直居中（内容够厚不飘、落 feed 取中裁切正中） */
+.hook3{position:relative;z-index:2;flex:1 1 auto;display:flex;flex-direction:column;justify-content:center;padding:30px 84px;min-height:0;}
+.eyebrow{align-self:flex-start;font-family:var(--mono);font-weight:700;font-size:26px;letter-spacing:.16em;
+  color:var(--seal);margin-bottom:28px;text-transform:uppercase;}
+
+/* 大标题 = 主视觉（数字不再单独放大，标题本身即主体） */
+.title3{font-family:var(--sans);font-weight:900;font-size:100px;line-height:1.16;letter-spacing:.008em;color:var(--ink);margin:0;}
+/* 关键词图形高亮：粗朱红底线（升级 T15 仅换色）——报纸化，一条即可、别滥标 */
+.mark{color:var(--seal);font-style:normal;font-weight:inherit;
+  text-decoration:underline;text-decoration-color:var(--seal);
+  text-decoration-thickness:11px;text-underline-offset:10px;text-decoration-skip-ink:none;}
+/* 支撑句：给足上下文两三行，靠内容长满版心 */
+.sub3{margin:34px 0 0;font-family:var(--sans);font-weight:500;font-size:40px;line-height:1.44;color:var(--ink-3);}
+
+/* 底部功能条（无关联签） */
+.foot3{position:relative;z-index:2;flex:none;padding:26px 84px 56px;border-top:3px solid var(--rule-2);}
+.foot3 .row{display:flex;justify-content:space-between;align-items:center;
+  font-family:var(--mono);font-weight:700;font-size:22px;letter-spacing:.06em;color:var(--muted);}
+.foot3 .swipe{display:flex;align-items:center;gap:14px;color:var(--seal);text-transform:uppercase;}
+.foot3 .swipe svg{color:var(--seal);}
+</style>
+</head>
+<body>
+
+<div class="page-head">
+  <h1>小红书封面 v2 · 标题即主视觉（再收敛版）</h1>
+  <p>据反馈层层收敛：<span class="seal">情绪前缀 / 引号锚 / 关联签 / 数字领读 全部去掉</span>——封面就靠<span class="seal">标题本身</span>。= 品类眉题 + 大标题（关键词朱红底线）+ 支撑句，垂直居中、文案放足。</p>
+  <p>标题 <span class="seal">100px 为主视觉</span>；支撑句给足上下文两三行，靠内容长满版心、不靠拉字号硬撑。<b>一路砍下来，v2 与线上 T15 已很接近</b>——净差别只剩 ① 关键词底线（升级换色）② 文案更足、标题更大。</p>
+</div>
+
+<div class="gallery">
+
+  <!-- ============ ① 标题含数字（数字不再单独放大，仅在句中） ============ -->
+  <div class="item">
+    <div class="cap"><b>① 标题含数字</b> —— 数字回归句中、不单独放大</div>
+    <div class="shrink">
+      <div class="safe-badge">方形安全区</div>
+      <div class="safe-line top"></div>
+      <div class="safe-line bot"></div>
+      <div class="card coverv2">
+        <div class="cv2-head">
+          <div class="cv2-brand"><span class="seal-mark"></span><span class="name">AI科技日报</span></div>
+          <div class="cv2-date"><span class="d">2026.07.07</span><span class="dow">周二</span></div>
+        </div>
+        <div class="hook3">
+          <div class="eyebrow">半导体 · 今日头条</div>
+          <h1 class="title3"><span class="mark">宏芯宇</span>四个月净赚 38 亿，递表港交所冲刺 IPO</h1>
+          <p class="sub3">上市前四个月营收同比翻倍，主营企业级存储主控芯片，客户已覆盖头部云厂商与服务器品牌</p>
+        </div>
+        <div class="foot3">
+          <div class="row"><span>+2 条头条 · 11 速览 · 约 6 分钟</span>
+            <span class="swipe">左滑翻阅<svg width="66" height="22" viewBox="0 0 66 22" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 4l7 7-7 7"/><path d="M25 4l7 7-7 7"/><path d="M44 4l7 7-7 7"/></svg></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ ② 标题无数字 ============ -->
+  <div class="item">
+    <div class="cap"><b>② 标题无数字</b> —— 同一套，不再"两张脸"</div>
+    <div class="shrink">
+      <div class="safe-badge">方形安全区</div>
+      <div class="safe-line top"></div>
+      <div class="safe-line bot"></div>
+      <div class="card coverv2">
+        <div class="cv2-head">
+          <div class="cv2-brand"><span class="seal-mark"></span><span class="name">AI科技日报</span></div>
+          <div class="cv2-date"><span class="d">2026.07.07</span><span class="dow">周二</span></div>
+        </div>
+        <div class="hook3">
+          <div class="eyebrow">AI 公司 · 今日头条</div>
+          <h1 class="title3">谷歌重组 AI 团队，模型研发统一并入 <span class="mark">DeepMind</span></h1>
+          <p class="sub3">原 Bard 与 Assistant 团队整体并入，统一向 DeepMind 汇报，结束多线并行的内耗与重复投入</p>
+        </div>
+        <div class="foot3">
+          <div class="row"><span>+2 条头条 · 11 速览 · 约 6 分钟</span>
+            <span class="swipe">左滑翻阅<svg width="66" height="22" viewBox="0 0 66 22" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 4l7 7-7 7"/><path d="M25 4l7 7-7 7"/><path d="M44 4l7 7-7 7"/></svg></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ ③ 观点/访谈类（较长标题） ============ -->
+  <div class="item">
+    <div class="cap"><b>③ 观点类 · 较长标题</b> —— 关键词一条底线</div>
+    <div class="shrink">
+      <div class="safe-badge">方形安全区</div>
+      <div class="safe-line top"></div>
+      <div class="safe-line bot"></div>
+      <div class="card coverv2">
+        <div class="cv2-head">
+          <div class="cv2-brand"><span class="seal-mark"></span><span class="name">AI科技日报</span></div>
+          <div class="cv2-date"><span class="d">2026.07.07</span><span class="dow">周二</span></div>
+        </div>
+        <div class="hook3">
+          <div class="eyebrow">AI 访谈 · 今日头条</div>
+          <h1 class="title3">Vercel CEO：模型正与 <span class="mark">Agent 解耦</span>，实验室护城河正在松动</h1>
+          <p class="sub3">当写代码的 Agent 成为 token 消耗主引擎，议价权正从前沿实验室向做编排与基础设施的中间层转移</p>
+        </div>
+        <div class="foot3">
+          <div class="row"><span>+2 条头条 · 11 速览 · 约 6 分钟</span>
+            <span class="swipe">左滑翻阅<svg width="66" height="22" viewBox="0 0 66 22" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 4l7 7-7 7"/><path d="M25 4l7 7-7 7"/><path d="M44 4l7 7-7 7"/></svg></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

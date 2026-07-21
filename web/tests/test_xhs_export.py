@@ -28,6 +28,7 @@ from daily_news.xhs_export import (
     collect_condense_slots,
     condense_slot,
     emphasize_cover_text,
+    emphasize_v2_cover_text,
     export_xhs_issue,
     fallback_note_title,
     is_valid_note_title,
@@ -83,6 +84,23 @@ def test_single_hook_cover_is_additive_and_keeps_content_cards_identical() -> No
     assert f"+{max(0, min(3, len(issue.headlines)) - 1)} 条头条" in single_hook_cards[0].html_body
 
 
+def test_v2_cover_is_additive_and_keeps_existing_templates_unchanged() -> None:
+    issue = sample_issue()
+
+    classic_cards = build_cards(issue, cover_template="classic")
+    single_hook_cards = build_cards(issue, cover_template="single-hook")
+    v2_cards = build_cards(issue, cover_template="v2")
+
+    assert classic_cards[0].kind == "cover"
+    assert single_hook_cards[0].kind == "cover2"
+    assert v2_cards[0].kind == "coverv2"
+    assert classic_cards[1:] == single_hook_cards[1:] == v2_cards[1:]
+    assert 'class="title3"' in v2_cards[0].html_body
+    assert 'class="eyebrow"' in v2_cards[0].html_body
+    assert 'class="bar"' not in v2_cards[0].html_body
+    assert 'class="cv2-big m"' in single_hook_cards[0].html_body
+
+
 def test_single_hook_cover_uses_large_size_for_short_hook() -> None:
     issue = sample_issue()
     issue.headlines[0].title_zh = "芯片巨头集体涨价"
@@ -99,11 +117,14 @@ def test_single_hook_output_directory_does_not_replace_classic(monkeypatch, tmp_
 
     classic = export_xhs_issue(issue, cover_template="classic")
     single_hook = export_xhs_issue(issue, cover_template="single-hook")
+    v2 = export_xhs_issue(issue, cover_template="v2")
 
     assert classic.output_dir == tmp_path / "xhs" / "2026-06-23"
     assert single_hook.output_dir == tmp_path / "xhs" / "2026-06-23-single-hook"
+    assert v2.output_dir == tmp_path / "xhs" / "2026-06-23-v2"
     assert "class=\"card cover\"" in classic.html_path.read_text(encoding="utf-8")
     assert "class=\"card cover2\"" in single_hook.html_path.read_text(encoding="utf-8")
+    assert "class=\"card coverv2\"" in v2.html_path.read_text(encoding="utf-8")
 
 
 def test_condense_slot_keeps_complete_text_inside_contract() -> None:
@@ -297,6 +318,19 @@ def test_cover_emphasis_only_adds_markup_without_changing_text() -> None:
     assert "<em>1780万</em>" in numeric_fallback
     assert html.unescape(re.sub(r"</?em>", "", marked)) == original
     assert html.unescape(re.sub(r"</?em>", "", numeric_fallback)) == original
+
+
+def test_v2_cover_emphasis_uses_one_mark_without_changing_text() -> None:
+    original = "SK海力士拟发行1780万股ADR"
+
+    marked = emphasize_v2_cover_text(original, ["SK海力士", "1780万"])
+    numeric_fallback = emphasize_v2_cover_text(original, [])
+
+    assert marked.count('class="mark"') == 1
+    assert '<span class="mark">SK海力士</span>' in marked
+    assert '<span class="mark">1780万股</span>' in numeric_fallback
+    assert html.unescape(re.sub(r'</?span(?: class="mark")?>', "", marked)) == original
+    assert html.unescape(re.sub(r'</?span(?: class="mark")?>', "", numeric_fallback)) == original
 
 
 def test_xhs_note_title_schema_is_strict_for_codex_response_format() -> None:

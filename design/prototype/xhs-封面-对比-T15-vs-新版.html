@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>小红书封面对比 · 线上 T15 vs 新版</title>
+<!--
+  并排对比：左＝线上 T15（单钩子大字报，复刻）；右＝新版（标题即主视觉）。同一条新闻，只让样式差异说话。
+  净差别 4 处：① 品类眉题 填充红章→平文红字；② 关键词 仅换色→朱红粗底线；③ 标题 94px→100px；④ 文案 短→放足；⑤ 页脚 有红小节棒→无。
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,900&family=JetBrains+Mono:wght@500;700&family=Noto+Serif+SC:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F4EFE3; --ink:#1A1714; --ink-2:#3D372F; --ink-3:#5A5247;
+  --muted:#8E836F; --rule:#D2C8B2; --rule-2:#B7AB90;
+  --seal:#A6342B; --seal-soft:#F0DCD5; --ai-bg:#ECE7DA; --field:#FBF8EF;
+  --sans:"Noto Serif SC","Songti SC",serif;
+  --disp:"Fraunces","Georgia",serif;
+  --mono:"JetBrains Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box;}
+body{margin:0;background:#cfc6b2;color:var(--ink);font-family:var(--sans);padding:44px;}
+.page-head{max-width:1100px;margin:0 auto 26px;font-family:var(--mono);color:#4a4234;}
+.page-head h1{font-family:var(--disp);font-weight:900;color:#3a3226;margin:0 0 6px;font-size:26px;}
+.page-head p{margin:2px 0;font-size:13px;line-height:1.6;}
+.page-head .seal{color:var(--seal);font-weight:700;}
+
+.gallery{display:flex;flex-wrap:wrap;gap:56px;justify-content:center;align-items:flex-start;}
+.item{display:flex;flex-direction:column;align-items:center;gap:14px;}
+.item .cap{font-family:var(--mono);font-size:15px;color:#3a3226;font-weight:700;}
+.item .cap.now{color:var(--muted);}
+.item .cap .seal{color:var(--seal);}
+.shrink{width:453.6px;height:604.8px;overflow:hidden;box-shadow:0 18px 46px rgba(40,30,15,.32);position:relative;}
+.shrink .card{transform:scale(.42);transform-origin:top left;}
+
+.card{width:1080px;height:1440px;background:var(--paper);color:var(--ink);position:relative;overflow:hidden;}
+.coverv2{display:flex;flex-direction:column;}
+
+/* 共用：品牌骨架条 + 报头线 */
+.cv2-head{flex:none;display:flex;justify-content:space-between;align-items:center;
+  padding:56px 84px 28px;border-bottom:3px solid var(--rule-2);}
+.cv2-brand{display:flex;align-items:center;gap:18px;}
+.cv2-brand .seal-mark{width:26px;height:26px;background:var(--seal);flex:none;}
+.cv2-brand .name{font-family:var(--sans);font-weight:900;font-size:36px;letter-spacing:.03em;color:var(--ink-2);}
+.cv2-date{display:flex;align-items:baseline;gap:16px;}
+.cv2-date .d{font-family:var(--mono);font-weight:700;font-size:40px;letter-spacing:.02em;color:var(--seal);line-height:1;}
+.cv2-date .dow{font-family:var(--sans);font-weight:900;font-size:28px;color:var(--ink-3);line-height:1;}
+
+.hook{flex:1 1 auto;display:flex;flex-direction:column;justify-content:center;padding:30px 84px;min-height:0;}
+.sub{font-family:var(--sans);font-weight:500;font-size:40px;line-height:1.44;color:var(--ink-3);}
+
+/* 共用：底部功能条 */
+.foot{flex:none;padding:26px 84px 56px;border-top:3px solid var(--rule-2);}
+.foot .bar{height:6px;width:120px;background:var(--seal);margin-bottom:22px;}   /* 仅 T15 用 */
+.foot .row{display:flex;justify-content:space-between;align-items:center;
+  font-family:var(--mono);font-weight:700;font-size:22px;letter-spacing:.06em;color:var(--muted);}
+.foot .swipe{display:flex;align-items:center;gap:14px;color:var(--seal);text-transform:uppercase;}
+
+/* ===== 线上 T15 专属 ===== */
+.t15 .kicker{align-self:flex-start;font-family:var(--mono);font-weight:700;font-size:26px;letter-spacing:.14em;
+  color:var(--paper);background:var(--seal);padding:11px 22px;border-radius:6px;margin-bottom:44px;text-transform:uppercase;}
+.t15 .big{font-family:var(--sans);font-weight:900;font-size:94px;line-height:1.14;letter-spacing:.01em;color:var(--ink);margin:0;}
+.t15 .big em{color:var(--seal);font-style:normal;}   /* 关键词：仅换红色 */
+.t15 .sub{margin-top:36px;}
+
+/* ===== 新版专属 ===== */
+.nu .eyebrow{align-self:flex-start;font-family:var(--mono);font-weight:700;font-size:26px;letter-spacing:.16em;
+  color:var(--seal);margin-bottom:28px;text-transform:uppercase;}   /* 平文红字，非填充 */
+.nu .big{font-family:var(--sans);font-weight:900;font-size:100px;line-height:1.16;letter-spacing:.008em;color:var(--ink);margin:0;}
+.nu .mark{color:var(--seal);font-style:normal;
+  text-decoration:underline;text-decoration-color:var(--seal);
+  text-decoration-thickness:11px;text-underline-offset:10px;text-decoration-skip-ink:none;}   /* 关键词：朱红粗底线 */
+.nu .sub{margin-top:34px;}
+
+.legend{max-width:1000px;margin:34px auto 0;font-family:var(--mono);font-size:14px;line-height:1.9;color:#3a3226;}
+.legend b{color:var(--seal);}
+.legend .g{color:var(--muted);}
+</style>
+</head>
+<body>
+
+<div class="page-head">
+  <h1>小红书封面对比 · 线上 T15 vs 新版</h1>
+  <p>同一条新闻「谷歌重组 AI 团队…DeepMind」，只让样式差异说话（按 <span class="seal">0.42</span> 取景）。</p>
+</div>
+
+<div class="gallery">
+
+  <!-- ===== 线上 T15 ===== -->
+  <div class="item">
+    <div class="cap now">现在 · 线上 <span class="seal">T15</span></div>
+    <div class="shrink">
+      <div class="card coverv2 t15">
+        <div class="cv2-head">
+          <div class="cv2-brand"><span class="seal-mark"></span><span class="name">AI科技日报</span></div>
+          <div class="cv2-date"><span class="d">2026.07.07</span><span class="dow">周二</span></div>
+        </div>
+        <div class="hook">
+          <div class="kicker">AI 公司 · 今日头条</div>
+          <h1 class="big">谷歌重组 AI 团队，模型研发统一并入 <em>DeepMind</em></h1>
+          <p class="sub">原 Bard 与 Assistant 团队并入，向 DeepMind 汇报</p>
+        </div>
+        <div class="foot">
+          <div class="bar"></div>
+          <div class="row"><span>+2 条头条 · 11 速览 · 约 6 分钟</span>
+            <span class="swipe">左滑翻阅<svg width="66" height="22" viewBox="0 0 66 22" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 4l7 7-7 7"/><path d="M25 4l7 7-7 7"/><path d="M44 4l7 7-7 7"/></svg></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 新版 ===== -->
+  <div class="item">
+    <div class="cap">新版 · <span class="seal">标题即主视觉</span></div>
+    <div class="shrink">
+      <div class="card coverv2 nu">
+        <div class="cv2-head">
+          <div class="cv2-brand"><span class="seal-mark"></span><span class="name">AI科技日报</span></div>
+          <div class="cv2-date"><span class="d">2026.07.07</span><span class="dow">周二</span></div>
+        </div>
+        <div class="hook">
+          <div class="eyebrow">AI 公司 · 今日头条</div>
+          <h1 class="big">谷歌重组 AI 团队，模型研发统一并入 <span class="mark">DeepMind</span></h1>
+          <p class="sub">原 Bard 与 Assistant 团队整体并入，统一向 DeepMind 汇报，结束多线并行的内耗与重复投入</p>
+        </div>
+        <div class="foot">
+          <div class="row"><span>+2 条头条 · 11 速览 · 约 6 分钟</span>
+            <span class="swipe">左滑翻阅<svg width="66" height="22" viewBox="0 0 66 22" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 4l7 7-7 7"/><path d="M25 4l7 7-7 7"/><path d="M44 4l7 7-7 7"/></svg></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="legend">
+  <div>净差别（左 → 右）：</div>
+  <div>① 品类眉题：<b>填充红章</b>「AI 公司·今日头条」 → <b>平文红字</b>（不抢标题）</div>
+  <div>② 关键词 DeepMind：<b>仅换红色</b> → <b>朱红粗底线</b>（图形高亮）</div>
+  <div>③ 标题字号：<b>94px</b> → <b>100px</b>（略大）</div>
+  <div>④ 支撑句：<b>短一句</b> → <b>放足两三行</b>（填满版心）</div>
+  <div>⑤ 页脚：<b>有红小节棒</b> → <b>去掉</b>（更简）</div>
+  <div class="g">—— 其余（品牌骨架条 / 居中 / 报纸感 / token / 底部功能条）完全一致。</div>
+</div>
+
+</body>
+</html>

@@ -1836,9 +1836,9 @@ def build_parser() -> argparse.ArgumentParser:
     export_xhs_parser.add_argument("--provider", choices=["claude", "codex"], help="Override xhs_condense provider")
     export_xhs_parser.add_argument(
         "--cover-template",
-        choices=["classic", "single-hook"],
+        choices=["classic", "single-hook", "v2"],
         default="classic",
-        help="Cover template; single-hook writes to a separate <date>-single-hook directory by default",
+        help="Cover template; alternate templates write to separate <date>-<template> directories by default",
     )
     export_xhs_parser.add_argument("--no-ai-condense", action="store_true", help="Use deterministic card text fallback only")
     export_xhs_parser.set_defaults(func=export_xhs)

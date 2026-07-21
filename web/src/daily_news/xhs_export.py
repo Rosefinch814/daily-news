@@ -57,7 +57,7 @@ GENERIC_NOTE_TITLE_TERMS = (
 WEEKDAYS_CN = ["周一", "周二", "周三", "周四", "周五", "周六", "周日"]
 LOGGER = logging.getLogger(__name__)
 
-CoverTemplate = Literal["classic", "single-hook"]
+CoverTemplate = Literal["classic", "single-hook", "v2"]
 SlotType = Literal["cover_hook", "cover_sub", "headline_summary", "headline_impact", "brief_summary"]
 SLOT_RANGES: dict[SlotType, tuple[int, int]] = {
     "cover_hook": (12, 24),
@@ -69,6 +69,7 @@ SLOT_RANGES: dict[SlotType, tuple[int, int]] = {
 COVER_HOOK_LARGE_MAX_CHARS = 16
 COVER_SAFE_TOP = 180
 COVER_SAFE_BOTTOM = 1260
+V2_TITLE_FONT_SIZES = (100, 90, 82)
 
 
 @dataclass(frozen=True)
@@ -164,6 +165,8 @@ def export_xhs_issue(
     default_dir_name = issue.issue_date.isoformat()
     if cover_template == "single-hook":
         default_dir_name += "-single-hook"
+    elif cover_template == "v2":
+        default_dir_name += "-v2"
     out_dir = output_dir or RUNS_DIR / "xhs" / default_dir_name
     out_dir.mkdir(parents=True, exist_ok=True)
     for old in out_dir.glob("*.png"):
@@ -209,7 +212,7 @@ def prepare_xhs_condenser(
     provider: ProviderName | None = None,
     cover_template: CoverTemplate = "classic",
 ) -> XHSCondenser:
-    slots = collect_condense_slots(issue, include_cover=cover_template == "single-hook")
+    slots = collect_condense_slots(issue, include_cover=cover_template in {"single-hook", "v2"})
     input_path = out_dir / "xhs_condense_input.json"
     input_path.write_text(json.dumps(build_xhs_condense_input(issue, slots), ensure_ascii=False, indent=2), encoding="utf-8")
     selected_provider: ProviderName = provider or config.ai.stage_providers.get("xhs_condense") or config.ai.default_provider
@@ -450,7 +453,12 @@ def build_cards(
     cover_template: CoverTemplate = "classic",
 ) -> list[Card]:
     validate_cover_template(cover_template)
-    cover = single_hook_cover_card(issue, condenser=condenser) if cover_template == "single-hook" else cover_card(issue)
+    if cover_template == "single-hook":
+        cover = single_hook_cover_card(issue, condenser=condenser)
+    elif cover_template == "v2":
+        cover = v2_cover_card(issue, condenser=condenser)
+    else:
+        cover = cover_card(issue)
     cards = [cover]
     for index, article in enumerate(issue.headlines[:MAX_HEADLINE_CARDS], start=1):
         cards.append(headline_card(issue, article, index, condenser=condenser))
@@ -544,6 +552,59 @@ def single_hook_cover_card(issue: Issue, *, condenser: XHSCondenser | None = Non
       </div>
     """
     return Card(kind="cover2", html_body=body)
+
+
+def v2_cover_card(issue: Issue, *, condenser: XHSCondenser | None = None) -> Card:
+    if not issue.headlines:
+        return cover_card(issue)
+
+    article = issue.headlines[0]
+    hook_min, hook_max = SLOT_RANGES["cover_hook"]
+    sub_min, sub_max = SLOT_RANGES["cover_sub"]
+    hook = condense_slot(
+        article.title_zh,
+        slot_id="cover_hook",
+        slot_type="cover_hook",
+        min_chars=hook_min,
+        max_chars=hook_max,
+        title=article.title_zh,
+        condenser=condenser,
+    )
+    sub = condense_slot(
+        article.summary_zh,
+        slot_id="cover_sub",
+        slot_type="cover_sub",
+        min_chars=sub_min,
+        max_chars=sub_max,
+        title=article.title_zh,
+        condenser=condenser,
+    )
+    emphasis_terms = condenser.emphasis_terms("cover_hook") if condenser else []
+    hook_html = emphasize_v2_cover_text(hook, emphasis_terms)
+    kicker = f"{article.kicker} · 今日头条" if article.kicker else "今日头条"
+    remaining_headlines = max(0, min(len(issue.headlines), MAX_HEADLINE_CARDS) - 1)
+    body = f"""
+      <div class="cv2-head">
+        <div class="cv2-brand"><span class="seal-mark"></span><span class="name">{escape(XHS_PUBLICATION_NAME)}</span></div>
+        <div class="cv2-date"><span class="d">{escape(date_dot(issue))}</span><span class="dow">{escape(weekday_cn(issue))}</span></div>
+      </div>
+      <div class="hook3">
+        <div class="eyebrow">{escape(kicker)}</div>
+        <h1 class="title3">{hook_html}</h1>
+        <p class="sub3">{escape(sub)}</p>
+      </div>
+      <div class="foot3">
+        <div class="row">
+          <span>+{remaining_headlines} 条头条 · {len(issue.briefs)} 速览 · 约 {estimate_reading_minutes(issue)} 分钟</span>
+          <span class="swipe">左滑翻阅
+            <svg width="66" height="22" viewBox="0 0 66 22" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M6 4l7 7-7 7"/><path d="M25 4l7 7-7 7"/><path d="M44 4l7 7-7 7"/>
+            </svg>
+          </span>
+        </div>
+      </div>
+    """
+    return Card(kind="coverv2", html_body=body)
 
 
 def headline_card(
@@ -724,6 +785,7 @@ def render_card_images(html_path: Path, output_dir: Path, count: int) -> list[Pa
         )
         page.goto(html_path.resolve().as_uri(), wait_until="networkidle")
         validate_single_hook_layout(page)
+        validate_v2_cover_layout(page)
         for index in range(1, count + 1):
             output_path = output_dir / f"{index:02d}.png"
             page.locator(f"#card-{index}").screenshot(path=str(output_path))
@@ -751,6 +813,30 @@ def validate_single_hook_layout(page: object) -> None:
         cover.locator(".cv2-big").evaluate("element => { element.classList.remove('l'); element.classList.add('m'); }")
     if not content_fits():
         raise RuntimeError("single-hook cover content exceeds the 1080x1080 feed safe area")
+
+
+def validate_v2_cover_layout(page: object) -> None:
+    cover = page.locator("#card-1.coverv2")  # type: ignore[attr-defined]
+    if cover.count() == 0:
+        return
+
+    title = cover.locator(".title3")
+
+    def content_fits() -> bool:
+        card_box = cover.bounding_box()
+        title_box = title.bounding_box()
+        sub_box = cover.locator(".sub3").bounding_box()
+        if card_box is None or title_box is None or sub_box is None:
+            return False
+        content_top = min(title_box["y"], sub_box["y"]) - card_box["y"]
+        content_bottom = max(title_box["y"] + title_box["height"], sub_box["y"] + sub_box["height"]) - card_box["y"]
+        return content_top >= COVER_SAFE_TOP and content_bottom <= COVER_SAFE_BOTTOM
+
+    for font_size in V2_TITLE_FONT_SIZES:
+        title.evaluate("(element, size) => { element.style.fontSize = `${size}px`; }", font_size)
+        if content_fits():
+            return
+    raise RuntimeError("v2 cover content exceeds the 1080x1080 feed safe area")
 
 
 def paginate_briefs(items: Sequence[BriefArticle], *, condenser: XHSCondenser | None = None) -> list[list[BriefArticle]]:
@@ -915,8 +1001,27 @@ def emphasize_cover_text(text: str, emphasis_terms: Sequence[str]) -> str:
     return "".join(parts)
 
 
+def emphasize_v2_cover_text(text: str, emphasis_terms: Sequence[str]) -> str:
+    terms = sorted({compact_text(term) for term in emphasis_terms if compact_text(term) in text}, key=len, reverse=True)
+    match: re.Match[str] | None = None
+    if terms:
+        match = re.search(re.escape(terms[0]), text)
+    if match is None:
+        number_pattern = r"\d+(?:\.\d+)?(?:万亿|亿美元|亿元|万股|亿股|亿|万|%|美元|元|股)?"
+        match = re.search(number_pattern, text)
+    if match is None:
+        return escape(text)
+    return "".join(
+        [
+            escape(text[: match.start()]),
+            f'<span class="mark">{escape(text[match.start() : match.end()])}</span>',
+            escape(text[match.end() :]),
+        ]
+    )
+
+
 def validate_cover_template(cover_template: str) -> None:
-    if cover_template not in {"classic", "single-hook"}:
+    if cover_template not in {"classic", "single-hook", "v2"}:
         raise ValueError(f"Unsupported XHS cover template: {cover_template}")
 
 
@@ -1329,6 +1434,89 @@ body{
   text-transform:uppercase;
 }
 .cv2-foot .swipe svg{
+  color:var(--seal);
+}
+.coverv2{
+  display:flex;
+  flex-direction:column;
+}
+.coverv2 .cv2-head{
+  position:relative;
+  z-index:2;
+  padding:56px 84px 28px;
+}
+.hook3{
+  position:relative;
+  z-index:2;
+  flex:1 1 auto;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  padding:30px 84px;
+  min-height:0;
+}
+.eyebrow{
+  align-self:flex-start;
+  font-family:var(--mono);
+  font-weight:700;
+  font-size:26px;
+  letter-spacing:.16em;
+  color:var(--seal);
+  margin-bottom:28px;
+  text-transform:uppercase;
+}
+.title3{
+  font-family:var(--sans);
+  font-weight:900;
+  font-size:100px;
+  line-height:1.16;
+  letter-spacing:.008em;
+  color:var(--ink);
+  margin:0;
+}
+.mark{
+  color:var(--seal);
+  font-style:normal;
+  font-weight:inherit;
+  text-decoration:underline;
+  text-decoration-color:var(--seal);
+  text-decoration-thickness:11px;
+  text-underline-offset:10px;
+  text-decoration-skip-ink:none;
+}
+.sub3{
+  margin:34px 0 0;
+  font-family:var(--sans);
+  font-weight:500;
+  font-size:40px;
+  line-height:1.44;
+  color:var(--ink-3);
+}
+.foot3{
+  position:relative;
+  z-index:2;
+  flex:none;
+  padding:26px 84px 56px;
+  border-top:3px solid var(--rule-2);
+}
+.foot3 .row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  font-family:var(--mono);
+  font-weight:700;
+  font-size:22px;
+  letter-spacing:.06em;
+  color:var(--muted);
+}
+.foot3 .swipe{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  color:var(--seal);
+  text-transform:uppercase;
+}
+.foot3 .swipe svg{
   color:var(--seal);
 }
 .headline{
