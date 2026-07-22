@@ -6,6 +6,7 @@ WEB_DIR="$ROOT_DIR/web"
 DAILY_NEWS="$WEB_DIR/.venv/bin/daily-news"
 
 ISSUE_DATE="${1:-$(TZ=Asia/Shanghai date +%F)}"
+XHS_PROVIDER="${XHS_PROVIDER:-codex}"
 
 if [[ ! -x "$DAILY_NEWS" ]]; then
   echo "daily-news command not found: $DAILY_NEWS" >&2
@@ -29,11 +30,9 @@ if [[ "${XHS_NO_AI_CONDENSE:-0}" == "1" ]]; then
   args+=(--no-ai-condense)
 fi
 
-if [[ -n "${XHS_PROVIDER:-}" ]]; then
-  args+=(--provider "$XHS_PROVIDER")
-fi
+args+=(--provider "$XHS_PROVIDER")
 
-echo "==> Exporting Xiaohongshu cards: date=$ISSUE_DATE"
+echo "==> Exporting Xiaohongshu cards: date=$ISSUE_DATE provider=$XHS_PROVIDER"
 "$DAILY_NEWS" "${args[@]}"
 
 echo "==> Done"

@@ -9,6 +9,7 @@ ISSUE_DATE="${1:-$(TZ=Asia/Shanghai date +%F)}"
 SECTION="${SECTION:-tech}"
 EXPORT_XHS="${EXPORT_XHS:-1}"
 RENDER_OWNER="${RENDER_OWNER:-0}"
+AI_PROVIDER="${AI_PROVIDER:-codex}"
 
 if [[ ! -x "$DAILY_NEWS" ]]; then
   echo "daily-news command not found: $DAILY_NEWS" >&2
@@ -22,13 +23,16 @@ pipeline_args=(
   run-pipeline
   --section "$SECTION"
   --date "$ISSUE_DATE"
+  --ai-shortlist-provider "$AI_PROVIDER"
+  --ai-select-provider "$AI_PROVIDER"
+  --ai-compose-provider "$AI_PROVIDER"
 )
 
 if [[ "$RENDER_OWNER" == "1" ]]; then
   pipeline_args+=(--render-owner)
 fi
 
-echo "==> Generating daily issue: section=$SECTION date=$ISSUE_DATE"
+echo "==> Generating daily issue: section=$SECTION date=$ISSUE_DATE provider=$AI_PROVIDER"
 "$DAILY_NEWS" "${pipeline_args[@]}"
 
 issue_json="$WEB_DIR/dist/data/issues/$ISSUE_DATE.json"
@@ -38,7 +42,7 @@ if [[ ! -f "$issue_json" ]]; then
 fi
 
 if [[ "$EXPORT_XHS" == "1" ]]; then
-  xhs_args=(export-xhs --date "$ISSUE_DATE")
+  xhs_args=(export-xhs --date "$ISSUE_DATE" --provider "$AI_PROVIDER")
   if [[ "${XHS_NO_AI_CONDENSE:-0}" == "1" ]]; then
     xhs_args+=(--no-ai-condense)
   fi

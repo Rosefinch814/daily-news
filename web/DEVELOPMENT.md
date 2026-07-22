@@ -175,9 +175,9 @@ web/runs/<run_id>/02_codex_shortlist.json
 - AI 粗筛负责英文理解、聚合快讯拆解、同主题识别、规则误判纠偏。
 - 校验器要求顶层 `keep/maybe/drop` 列表与 `items[]` 完全一致，避免漏项。
 
-后续自动化替换点：
+当前自动化落点：
 
-- 用 `claude -p` 或其他 AI API 生成 `02_codex_shortlist.json`。
+- 默认用 `codex exec` 生成 `02_codex_shortlist.json`；通过 `ai_engine` 保留 provider 可替换边界。
 - prompt 输入应包含：标题、RSS 摘要、来源、发布时间、规则分数、规则命中原因、关注清单、不想看清单。
 - prompt 输出必须严格符合 `CodexShortlistOutput` schema。
 
