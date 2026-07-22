@@ -472,6 +472,7 @@ def build_issue_file_prompt(
     selection_path: Path,
     enriched_candidates_path: Path,
     style_profile_path: Path | None = None,
+    chinese_editor_rules_path: Path | None = None,
 ) -> str:
     payload = _section_payload(section)
     style_profile = _read_profile_text(style_profile_path)
@@ -481,6 +482,15 @@ def build_issue_file_prompt(
             "priority": "Use this to shape wording, length, explanation depth, and translation style. Product rules about factual accuracy, field boundaries, and Chinese readability override style preferences.",
             "content_md": style_profile,
         }
+    editor_rules_block = ""
+    if chinese_editor_rules_path is not None:
+        editor_rules_block = f"""
+
+中文新闻编辑规则：
+{chinese_editor_rules_path}
+
+请在写作前完整读取该规则文件。该文件用于把事实写成自然、易懂的中文新闻；本 prompt 的事实红线、字段边界和 JSON 结构仍是更高优先级。
+""".rstrip()
     return f"""
 你是《我的日报·科技》的新闻编辑。请读取本地 JSON 文件，并基于已确定的选题结构和候选原文生成 v1 科技日报结构化 JSON。
 
@@ -489,6 +499,7 @@ def build_issue_file_prompt(
 
 候选原文文件：
 {enriched_candidates_path}
+{editor_rules_block}
 
 板块和关注配置：
 {json.dumps(payload, ensure_ascii=False, indent=2)}
@@ -547,6 +558,102 @@ JSON schema 形状：
     {{"source_item_ids": ["...", "..."], "reason": "同一事件"}}
   ]
 }}
+""".strip()
+
+
+def build_issue_humanize_prompt(
+    draft_issue_path: Path,
+    chinese_editor_rules_path: Path,
+) -> str:
+    return f"""
+你是《我的日报·科技》的中文编辑。请读取已完成事实核对的日报初稿，只调整中文表达，输出与初稿同结构的严格 JSON。
+
+日报初稿：
+{draft_issue_path}
+
+中文新闻编辑规则：
+{chinese_editor_rules_path}
+
+执行步骤：
+1. 完整读取初稿和编辑规则。
+2. 逐条判断哪些句子有翻译腔、抽象名词堆叠、英文语序或机械套话。
+3. 只在确定不改变事实时改写；不确定就保留原句。
+4. 输出前逐字自查所有数字、主体、时间、程度限定和因果，不得新增、替换或升格。
+
+唯一可修改的字段：
+- headlines[].title_zh
+- headlines[].summary_zh
+- headlines[].read_body_zh
+- headlines[].ai_impact
+- briefs[].title_zh
+- briefs[].summary_zh
+
+必须原样保留的字段：
+- 所有条目的 source_item_ids、sources、relevance_score、importance_score
+- 头条的 kicker 和 pullquote
+- discarded 和 merged_sources 整个数组
+- headlines / briefs 的数量和顺序
+
+事实安全铁律：
+- 禁止新增数字、公司、人物、产品、时间、地点、来源和因果。
+- “计划/目标/预计/可能/据称/尚未”不得改成已发生的确定事实。
+- 事实摘要和精读不得加入新判断；影响分析可改表达，但不得添加初稿中没有的推断。
+
+输出要求：
+- 只输出一个 JSON 对象，不要 Markdown，不要解释。
+- 根层只包含 headlines、briefs、discarded、merged_sources。
+- 字段形状与初稿完全一致。
+""".strip()
+
+
+def build_issue_hybrid_edit_prompt(
+    draft_issue_path: Path,
+    enriched_candidates_path: Path,
+    chinese_editor_rules_path: Path,
+) -> str:
+    return f"""
+你是《我的日报·科技》的中文主编。请在已完成的事实稿上做中等幅度的中文编辑：比逐句校对更自然，但不像重新 compose 那样重新取舍整篇事实。输出与事实稿同结构的严格 JSON。
+
+事实稿（定义成稿的内容范围）：
+{draft_issue_path}
+
+候选原文（只用于核对事实）：
+{enriched_candidates_path}
+
+中文新闻编辑规则：
+{chinese_editor_rules_path}
+
+编辑自由度：
+- 允许拆句、合句、调整信息顺序和删除重复表达。
+- 允许把抽象名词改成具体动作、成本、结果或对象。
+- 允许重写整个句子或段落，不要为了“少改”保留翻译腔。
+- 不限制句子数，也不要机械保持原句长度。
+
+事实边界：
+1. 事实稿决定“这篇要讲哪些事实”。候选原文只用来确认表达是否准确，不得把事实稿未选用的次要细节新增到成稿。
+2. 可以删除重复，但不得删除理解事件所必需的主体、动作、结果、关键数字、时间和限定条件。
+3. 事件结果必须保真：“已成功/已发生/已取得”不得降格成“试图/计划/可能”；反过来也不得升格。
+4. 禁止从“原文没说”推出“某事没有发生”或“某数据未披露”。没有明确依据的否定句不能新增。
+5. 事实字段只改表达；`ai_impact` 可以重组原有分析，但不得新增具体事实或新因果。
+
+输出前在内部完成三步回对（不要输出回对过程）：
+1. 从事实稿逐条列出主体、核心动作、最终结果、数字、时间和程度限定。
+2. 对照候选原文，确认没有把“已发生”、“尚未”、“计划”、“可能”或“预测”写错。
+3. 对照改写稿，确认每个核心事实仍然存在，且没有新增无依据断言。
+
+唯一可修改的字段：
+- headlines[].title_zh / summary_zh / read_body_zh / ai_impact
+- briefs[].title_zh / summary_zh
+
+必须原样保留：
+- source_item_ids、sources、relevance_score、importance_score
+- kicker、pullquote、discarded、merged_sources
+- headlines / briefs 的数量和顺序
+
+输出要求：
+- 只输出一个 JSON 对象，不要 Markdown，不要解释。
+- 根层只包含 headlines、briefs、discarded、merged_sources。
+- 字段形状与事实稿完全一致。
 """.strip()
 
 

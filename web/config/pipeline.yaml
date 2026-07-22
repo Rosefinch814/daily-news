@@ -4,6 +4,7 @@ ai:
     semantic_shortlist: codex
     selection: codex
     issue_compose: codex
+    issue_humanize: codex
     digest_feedback: codex
     xhs_condense: codex
     xhs_note_title: codex

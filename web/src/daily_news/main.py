@@ -21,6 +21,8 @@ from daily_news.ai_engine import (
     ProviderName,
     build_digest_file_prompt,
     build_issue_file_prompt,
+    build_issue_hybrid_edit_prompt,
+    build_issue_humanize_prompt,
     build_selection_file_prompt,
     build_shortlist_file_prompt,
     extract_json_object,
@@ -50,6 +52,7 @@ from daily_news.storage.local import (
     load_codex_shortlist,
     load_enriched_candidates,
     load_issue_from_run,
+    load_issue_draft_from_run,
     load_profiles,
     load_recent_issue_history,
     load_recent_issue_selection_index,
@@ -62,6 +65,7 @@ from daily_news.storage.local import (
     save_codex_shortlist,
     save_enriched_candidates,
     save_issue,
+    save_issue_draft,
     save_selection,
     save_selection_history_index,
     save_raw_items,
@@ -76,6 +80,17 @@ from daily_news.xhs_export import (
     export_xhs_issue,
     load_issue_for_xhs,
 )
+from daily_news.zh_editor import (
+    HumanizeValidationReport,
+    build_blind_mapping,
+    build_blind_review,
+    guarded_hybrid_output,
+    guarded_humanized_output,
+    issue_to_ai_output,
+    validate_variant_against_sources,
+    with_ai_output,
+    write_json,
+)
 
 
 WEEKDAYS_CN = ["周一", "周二", "周三", "周四", "周五", "周六", "周日"]
@@ -86,14 +101,16 @@ PipelineStage = Literal[
     "enrich",
     "ai_select",
     "ai_compose",
+    "ai_humanize",
     "publish_frontend",
 ]
-AIStage = Literal["ai_shortlist", "ai_select", "ai_compose"]
-AITaskType = Literal["semantic_shortlist", "selection", "issue_compose", "digest_feedback"]
+AIStage = Literal["ai_shortlist", "ai_select", "ai_compose", "ai_humanize"]
+AITaskType = Literal["semantic_shortlist", "selection", "issue_compose", "issue_humanize", "digest_feedback"]
 AI_STAGE_TASKS: dict[AIStage, AITaskType] = {
     "ai_shortlist": "semantic_shortlist",
     "ai_select": "selection",
     "ai_compose": "issue_compose",
+    "ai_humanize": "issue_humanize",
 }
 PIPELINE_STAGES: list[PipelineStage] = [
     "fetch",
@@ -102,6 +119,7 @@ PIPELINE_STAGES: list[PipelineStage] = [
     "enrich",
     "ai_select",
     "ai_compose",
+    "ai_humanize",
     "publish_frontend",
 ]
 
@@ -643,6 +661,7 @@ def run_ai_compose_stage(
     issue_number: int | None,
     config: PipelineConfig,
     provider: ProviderName,
+    save_as_draft: bool = False,
 ) -> tuple[Issue, Path, Path]:
     candidates = load_enriched_candidates(run_id)
     selection = load_selection(run_id)
@@ -685,7 +704,7 @@ def run_ai_compose_stage(
         debug_path = save_ai_debug(run_id, "05_ai_issue", failed_run, config)
         print(f"Debug: {debug_path}")
         raise
-    saved_output_path = save_issue(run_id, issue)
+    saved_output_path = save_issue_draft(run_id, issue) if save_as_draft else save_issue(run_id, issue)
     debug_path = save_ai_debug(run_id, "05_ai_issue", ai_run, config)
     return issue, saved_output_path, debug_path
 
@@ -708,6 +727,336 @@ def ai_compose(args: argparse.Namespace) -> int:
     print(f"Saved: {saved_output_path}")
     print(f"Debug: {debug_path}")
     summarize_issue(issue)
+    return 0
+
+
+def run_ai_humanize_stage(
+    *,
+    run_id: str,
+    config: PipelineConfig,
+    provider: ProviderName,
+) -> tuple[Issue, list[Path], HumanizeValidationReport]:
+    draft_path = artifact_path(run_id, "05_issue_draft.json")
+    if draft_path.exists():
+        draft = load_issue_draft_from_run(run_id)
+    else:
+        # Compatibility for a run created before the draft/final split.
+        draft_path = artifact_path(run_id, "05_issue.json")
+        draft = load_issue_from_run(run_id)
+        save_issue_draft(run_id, draft)
+        draft_path = artifact_path(run_id, "05_issue_draft.json")
+    validate_issue_content(draft)
+    candidates_path = artifact_path(run_id, "03_enriched_candidates.json")
+    if not candidates_path.exists():
+        raise FileNotFoundError(f"Enriched candidates not found: {candidates_path}")
+    rules_path = WEB_DIR / "prompts" / "zh_news_editor.md"
+    if not rules_path.exists():
+        raise FileNotFoundError(f"Chinese editor rules not found: {rules_path}")
+    prompt = build_issue_hybrid_edit_prompt(
+        draft_path.resolve(),
+        candidates_path.resolve(),
+        rules_path.resolve(),
+    )
+    outputs: list[Path] = []
+    try:
+        candidate_output, ai_run = run_ai_task(
+            task_type="issue_humanize",
+            prompt=prompt,
+            output_model=AIIssueOutput,
+            provider=provider,
+            config=config,
+            use_output_schema=False,
+        )
+        candidate_path = write_json(
+            output_dir(run_id) / "05_issue_humanize_candidate.json",
+            candidate_output.model_dump(mode="json"),
+        )
+        final_output, report = guarded_hybrid_output(issue_to_ai_output(draft), candidate_output)
+        debug_path = save_ai_debug(run_id, "05_ai_issue_humanize", ai_run, config)
+        outputs.extend([candidate_path, debug_path])
+    except AIEngineError as exc:
+        final_output = issue_to_ai_output(draft)
+        report = HumanizeValidationReport(
+            valid=True,
+            fallback_used=True,
+            violations=[f"issue_humanize 调用失败，整期使用事实稿: {exc}"],
+            checks={
+                "final_output_valid": True,
+                "fallback_articles": ["整期"],
+                "ai_call": "failed",
+                "per_article_fallback": False,
+            },
+        )
+        if exc.record:
+            outputs.append(save_ai_debug(run_id, "05_ai_issue_humanize", exc.record, config))
+
+    final_issue = with_ai_output(draft, final_output)
+    validate_issue_content(final_issue)
+    saved_output_path = save_issue(run_id, final_issue)
+    validation_path = write_json(
+        output_dir(run_id) / "05_humanize_validation.json",
+        report.to_dict(),
+    )
+    outputs.extend([saved_output_path, validation_path])
+    return final_issue, outputs, report
+
+
+def ai_humanize(args: argparse.Namespace) -> int:
+    load_dotenv(WEB_DIR / ".env")
+    config = load_pipeline_config(Path(args.config) if args.config else None)
+    provider = resolve_stage_provider(config, "issue_humanize", args.provider)
+    issue, outputs, report = run_ai_humanize_stage(
+        run_id=args.run_id,
+        config=config,
+        provider=provider,
+    )
+    print(f"Provider: {provider}")
+    print(f"Fallback articles: {report.checks.get('fallback_articles', [])}")
+    for path in outputs:
+        print(f"Saved: {path}")
+    summarize_issue(issue)
+    return 0
+
+
+def zh_editor_eval(args: argparse.Namespace) -> int:
+    """Generate private A/B/C Chinese-editing variants without touching publication artifacts."""
+    load_dotenv(WEB_DIR / ".env")
+    section = load_section(args.section)
+    config = load_pipeline_config(Path(args.config) if args.config else None)
+    baseline_path = artifact_path(args.run_id, "05_issue.json")
+    baseline_bytes = baseline_path.read_bytes()
+    baseline = load_issue_from_run(args.run_id)
+    validate_issue_content(baseline)
+    selection = load_selection(args.run_id)
+    candidates = load_enriched_candidates(args.run_id)
+    validate_selection_ids(selection, candidates)
+
+    rules_path = (WEB_DIR / "prompts" / "zh_news_editor.md").resolve()
+    if not rules_path.exists():
+        raise FileNotFoundError(f"Chinese editor rules not found: {rules_path}")
+
+    eval_dir = run_dir(args.run_id) / "zh-editor-eval"
+    eval_dir.mkdir(parents=True, exist_ok=True)
+    baseline_output = issue_to_ai_output(baseline)
+    variant_a_path = write_json(eval_dir / "variant-a-baseline.json", baseline.model_dump(mode="json"))
+
+    compose_provider = resolve_stage_provider(config, "issue_compose", args.provider)
+    compose_prompt = build_issue_file_prompt(
+        section,
+        artifact_path(args.run_id, "04_selection.json").resolve(),
+        artifact_path(args.run_id, "03_enriched_candidates.json").resolve(),
+        style_profile_path=(WEB_DIR / "profiles" / section.slug / "style.md"),
+        chinese_editor_rules_path=rules_path,
+    )
+    variant_b_output, variant_b_run = run_ai_task(
+        task_type="issue_compose",
+        prompt=compose_prompt,
+        output_model=AIIssueOutput,
+        provider=compose_provider,
+        config=config,
+        use_output_schema=False,
+    )
+    variant_b = with_ai_output(baseline, variant_b_output)
+    validate_issue_content(variant_b)
+    variant_b_violations = validate_variant_against_sources(baseline, variant_b, candidates)
+    if variant_b_violations:
+        failed_run = mark_ai_run_failed(variant_b_run, ValueError("; ".join(variant_b_violations)))
+        save_ai_debug(args.run_id, "05b_ai_issue_zh_rules", failed_run, config)
+        raise ValueError("B variant changed the selected article structure: " + "; ".join(variant_b_violations))
+    variant_b_path = write_json(eval_dir / "variant-b-compose.json", variant_b.model_dump(mode="json"))
+    variant_b_debug = save_ai_debug(args.run_id, "05b_ai_issue_zh_rules", variant_b_run, config)
+
+    humanize_provider = resolve_stage_provider(config, "issue_humanize", args.provider)
+    humanize_prompt = build_issue_humanize_prompt(variant_a_path.resolve(), rules_path)
+    variant_c_candidate_path: Path | None = None
+    variant_c_debug: Path | None = None
+    variant_c_duration_ms: int | None = None
+    try:
+        variant_c_candidate, variant_c_run = run_ai_task(
+            task_type="issue_humanize",
+            prompt=humanize_prompt,
+            output_model=AIIssueOutput,
+            provider=humanize_provider,
+            config=config,
+            use_output_schema=False,
+        )
+        variant_c_candidate_path = write_json(
+            eval_dir / "variant-c-humanize-candidate.json",
+            variant_c_candidate.model_dump(mode="json"),
+        )
+        variant_c_output, humanize_report = guarded_humanized_output(baseline_output, variant_c_candidate)
+        variant_c_duration_ms = variant_c_run.duration_ms
+        variant_c_debug = save_ai_debug(args.run_id, "05c_ai_issue_humanize", variant_c_run, config)
+    except AIEngineError as exc:
+        if exc.record:
+            variant_c_debug = save_ai_debug(args.run_id, "05c_ai_issue_humanize", exc.record, config)
+        variant_c_output = baseline_output
+        humanize_report = HumanizeValidationReport(
+            valid=False,
+            fallback_used=True,
+            violations=[f"issue_humanize 调用失败: {exc}"],
+            checks={"ai_call": "failed"},
+        )
+
+    variant_c = with_ai_output(baseline, variant_c_output)
+    validate_issue_content(variant_c)
+    variant_c_path = write_json(eval_dir / "variant-c-humanize.json", variant_c.model_dump(mode="json"))
+    validation_path = write_json(
+        eval_dir / "validation.json",
+        {
+            "variant_b": {
+                "valid": True,
+                "same_selection": True,
+                "sources_numbers_entities_checked": True,
+                "violations": [],
+            },
+            "variant_c": humanize_report.to_dict(),
+        },
+    )
+
+    mapping = build_blind_mapping(args.run_id)
+    blind_map_path = write_json(eval_dir / "blind-map.json", mapping)
+    blind_review_path = eval_dir / "blind-review.md"
+    blind_review_path.write_text(
+        build_blind_review(
+            {"A": baseline, "B": variant_b, "C": variant_c},
+            mapping,
+            headline_limit=args.headlines,
+            brief_limit=args.briefs,
+        ),
+        encoding="utf-8",
+    )
+    manifest_path = write_json(
+        eval_dir / "manifest.json",
+        {
+            "run_id": args.run_id,
+            "source_issue": str(baseline_path.resolve()),
+            "source_issue_unchanged": baseline_path.read_bytes() == baseline_bytes,
+            "rules": str(rules_path),
+            "providers": {"variant_b": compose_provider, "variant_c": humanize_provider},
+            "duration_ms": {
+                "variant_b": variant_b_run.duration_ms,
+                "variant_c": variant_c_duration_ms,
+                "total": (variant_b_run.duration_ms or 0) + (variant_c_duration_ms or 0),
+                "within_ten_minutes": (
+                    (variant_b_run.duration_ms or 0) + (variant_c_duration_ms or 0) <= 600_000
+                ),
+            },
+            "sample": {"headlines": args.headlines, "briefs": args.briefs},
+            "variant_c_valid": humanize_report.valid,
+            "variant_c_fallback_used": humanize_report.fallback_used,
+            "artifacts": {
+                "variant_a": str(variant_a_path),
+                "variant_b": str(variant_b_path),
+                "variant_c_candidate": str(variant_c_candidate_path) if variant_c_candidate_path else None,
+                "variant_c": str(variant_c_path),
+                "validation": str(validation_path),
+                "blind_review": str(blind_review_path),
+                "blind_map": str(blind_map_path),
+                "variant_b_debug": str(variant_b_debug),
+                "variant_c_debug": str(variant_c_debug) if variant_c_debug else None,
+            },
+        },
+    )
+    if baseline_path.read_bytes() != baseline_bytes:
+        raise RuntimeError("Offline evaluation unexpectedly modified the source 05_issue.json")
+
+    print(f"B provider: {compose_provider}")
+    print(f"C provider: {humanize_provider}")
+    print(f"C guard: {'passed' if humanize_report.valid else 'failed; baseline fallback used'}")
+    print(f"Blind review: {blind_review_path}")
+    print(f"Validation: {validation_path}")
+    print(f"Manifest: {manifest_path}")
+    return 0
+
+
+def zh_editor_hybrid_eval(args: argparse.Namespace) -> int:
+    """Generate the A-grounded, B-style hybrid variant D without publishing."""
+    load_dotenv(WEB_DIR / ".env")
+    config = load_pipeline_config(Path(args.config) if args.config else None)
+    baseline_path = artifact_path(args.run_id, "05_issue.json")
+    baseline_bytes = baseline_path.read_bytes()
+    baseline = load_issue_from_run(args.run_id)
+    validate_issue_content(baseline)
+    eval_dir = run_dir(args.run_id) / "zh-editor-eval"
+    eval_dir.mkdir(parents=True, exist_ok=True)
+    variant_a_path = eval_dir / "variant-a-baseline.json"
+    if not variant_a_path.exists():
+        write_json(variant_a_path, baseline.model_dump(mode="json"))
+    candidates_path = artifact_path(args.run_id, "03_enriched_candidates.json").resolve()
+    rules_path = (WEB_DIR / "prompts" / "zh_news_editor.md").resolve()
+    prompt = build_issue_hybrid_edit_prompt(variant_a_path.resolve(), candidates_path, rules_path)
+    provider = resolve_stage_provider(config, "issue_humanize", args.provider)
+    try:
+        candidate_output, ai_run = run_ai_task(
+            task_type="issue_hybrid_edit",
+            prompt=prompt,
+            output_model=AIIssueOutput,
+            provider=provider,
+            config=config,
+            use_output_schema=False,
+        )
+    except AIEngineError as exc:
+        if exc.record:
+            debug_path = save_ai_debug(args.run_id, "05e_ai_issue_hybrid", exc.record, config)
+            print(f"Debug: {debug_path}")
+        raise
+
+    candidate_path = write_json(
+        eval_dir / "variant-d-hybrid-candidate.json",
+        candidate_output.model_dump(mode="json"),
+    )
+    final_output, report = guarded_hybrid_output(issue_to_ai_output(baseline), candidate_output)
+    variant_d = with_ai_output(baseline, final_output)
+    validate_issue_content(variant_d)
+    variant_d_path = write_json(eval_dir / "variant-d-hybrid.json", variant_d.model_dump(mode="json"))
+    validation_path = write_json(eval_dir / "variant-d-validation.json", report.to_dict())
+    debug_path = save_ai_debug(args.run_id, "05e_ai_issue_hybrid", ai_run, config)
+
+    comparison_variants = {"D": variant_d}
+    comparison_mapping = {"混合 D": "D"}
+    variant_b_path = eval_dir / "variant-b-compose.json"
+    variant_c_path = eval_dir / "variant-c-humanize.json"
+    if variant_b_path.exists():
+        comparison_variants["B"] = Issue.model_validate_json(variant_b_path.read_text(encoding="utf-8"))
+        comparison_mapping = {"B 自由重写": "B", **comparison_mapping}
+    if variant_c_path.exists():
+        comparison_variants["C"] = Issue.model_validate_json(variant_c_path.read_text(encoding="utf-8"))
+        comparison_mapping = {"C 保守编辑": "C", **comparison_mapping}
+    review_path = eval_dir / "hybrid-review.md"
+    review_path.write_text(
+        build_blind_review(
+            comparison_variants,
+            comparison_mapping,
+            headline_limit=args.headlines,
+            brief_limit=args.briefs,
+        ).replace("Codex 中文编辑盲评稿", "Codex 中文编辑 B/C/D 对比稿")
+        .replace("请先不看方案映射，", ""),
+        encoding="utf-8",
+    )
+    manifest_path = write_json(
+        eval_dir / "variant-d-manifest.json",
+        {
+            "run_id": args.run_id,
+            "provider": provider,
+            "duration_ms": ai_run.duration_ms,
+            "source_issue_unchanged": baseline_path.read_bytes() == baseline_bytes,
+            "fallback_used": report.fallback_used,
+            "fallback_articles": report.checks.get("fallback_articles", []),
+            "candidate": str(candidate_path),
+            "final": str(variant_d_path),
+            "validation": str(validation_path),
+            "review": str(review_path),
+            "debug": str(debug_path),
+        },
+    )
+    if baseline_path.read_bytes() != baseline_bytes:
+        raise RuntimeError("Hybrid evaluation unexpectedly modified the source 05_issue.json")
+    print(f"Provider: {provider}")
+    print(f"Fallback articles: {report.checks.get('fallback_articles', [])}")
+    print(f"Review: {review_path}")
+    print(f"Validation: {validation_path}")
+    print(f"Manifest: {manifest_path}")
     return 0
 
 
@@ -1451,6 +1800,7 @@ class PipelineRunner:
                 issue_number=self.args.issue_number,
                 config=self.config,
                 provider=provider,
+                save_as_draft=True,
             )
             summarize_issue(issue)
             return {
@@ -1463,6 +1813,30 @@ class PipelineRunner:
                     "provider": provider,
                     "headlines": len(issue.headlines),
                     "briefs": len(issue.briefs),
+                },
+            }
+
+        if stage == "ai_humanize":
+            provider = self._provider_for_stage(stage, self.args.ai_humanize_provider)
+            issue, outputs, report = run_ai_humanize_stage(
+                run_id=self.run_id,
+                config=self.config,
+                provider=provider,
+            )
+            summarize_issue(issue)
+            return {
+                "inputs": [
+                    artifact_path(self.run_id, "05_issue_draft.json"),
+                    artifact_path(self.run_id, "03_enriched_candidates.json"),
+                    WEB_DIR / "prompts" / "zh_news_editor.md",
+                ],
+                "outputs": outputs,
+                "metadata": {
+                    "provider": provider,
+                    "headlines": len(issue.headlines),
+                    "briefs": len(issue.briefs),
+                    "fallback_used": report.fallback_used,
+                    "fallback_articles": report.checks.get("fallback_articles", []),
                 },
             }
 
@@ -1508,9 +1882,19 @@ class PipelineRunner:
             validate_selection_ids(selection, load_enriched_candidates(self.run_id))
             return True
         if stage == "ai_compose":
-            issue = load_issue_from_run(self.run_id)
+            draft_path = artifact_path(self.run_id, "05_issue_draft.json")
+            issue = (
+                load_issue_draft_from_run(self.run_id)
+                if draft_path.exists()
+                else load_issue_from_run(self.run_id)
+            )
             validate_issue_content(issue)
             return True
+        if stage == "ai_humanize":
+            issue = load_issue_from_run(self.run_id)
+            validate_issue_content(issue)
+            validation_path = artifact_path(self.run_id, "05_humanize_validation.json")
+            return validation_path.exists()
         if stage == "publish_frontend":
             issue = load_issue_from_run(self.run_id)
             data_path = DIST_DIR / "data" / "issues" / f"{issue.issue_date.isoformat()}.json"
@@ -1627,6 +2011,9 @@ OUTPUT_ARTIFACT_FILENAMES = [
     "02_codex_shortlist.json",
     "03_enriched_candidates.json",
     "04_selection.json",
+    "05_issue_draft.json",
+    "05_issue_humanize_candidate.json",
+    "05_humanize_validation.json",
     "05_issue.json",
 ]
 
@@ -1746,6 +2133,7 @@ def build_parser() -> argparse.ArgumentParser:
     run_pipeline_parser.add_argument("--ai-shortlist-provider", choices=["claude", "codex"])
     run_pipeline_parser.add_argument("--ai-select-provider", choices=["claude", "codex"])
     run_pipeline_parser.add_argument("--ai-compose-provider", choices=["claude", "codex"])
+    run_pipeline_parser.add_argument("--ai-humanize-provider", choices=["claude", "codex"])
     run_pipeline_parser.add_argument(
         "--render-owner",
         action="store_true",
@@ -1822,6 +2210,38 @@ def build_parser() -> argparse.ArgumentParser:
     ai_compose_parser.add_argument("--config", help="Pipeline config path; defaults to web/config/pipeline.yaml")
     ai_compose_parser.add_argument("--issue-number", type=int)
     ai_compose_parser.set_defaults(func=ai_compose)
+
+    ai_humanize_parser = subparsers.add_parser(
+        "ai-humanize",
+        help="Rewrite a saved fact draft in natural Chinese and save the guarded final issue",
+    )
+    ai_humanize_parser.add_argument("--run-id", required=True)
+    ai_humanize_parser.add_argument("--provider", choices=["claude", "codex"])
+    ai_humanize_parser.add_argument("--config", help="Pipeline config path; defaults to web/config/pipeline.yaml")
+    ai_humanize_parser.set_defaults(func=ai_humanize)
+
+    zh_editor_eval_parser = subparsers.add_parser(
+        "zh-editor-eval",
+        help="Generate private A/B/C Chinese editing variants without publishing",
+    )
+    zh_editor_eval_parser.add_argument("--section", default="tech")
+    zh_editor_eval_parser.add_argument("--run-id", required=True)
+    zh_editor_eval_parser.add_argument("--provider", choices=["claude", "codex"])
+    zh_editor_eval_parser.add_argument("--config", help="Pipeline config path; defaults to web/config/pipeline.yaml")
+    zh_editor_eval_parser.add_argument("--headlines", type=int, default=4)
+    zh_editor_eval_parser.add_argument("--briefs", type=int, default=6)
+    zh_editor_eval_parser.set_defaults(func=zh_editor_eval)
+
+    zh_editor_hybrid_parser = subparsers.add_parser(
+        "zh-editor-hybrid-eval",
+        help="Generate private A-grounded, B-style hybrid variant D without publishing",
+    )
+    zh_editor_hybrid_parser.add_argument("--run-id", required=True)
+    zh_editor_hybrid_parser.add_argument("--provider", choices=["claude", "codex"])
+    zh_editor_hybrid_parser.add_argument("--config", help="Pipeline config path; defaults to web/config/pipeline.yaml")
+    zh_editor_hybrid_parser.add_argument("--headlines", type=int, default=4)
+    zh_editor_hybrid_parser.add_argument("--briefs", type=int, default=6)
+    zh_editor_hybrid_parser.set_defaults(func=zh_editor_hybrid_eval)
 
     ai_file_read_parser = subparsers.add_parser("ai-file-read-test", help="Debug AI local JSON file reading")
     ai_file_read_parser.add_argument("--provider", choices=["claude", "codex"])

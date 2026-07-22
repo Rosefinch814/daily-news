@@ -24,6 +24,7 @@ class PipelineAIConfig(BaseModel):
             "semantic_shortlist",
             "selection",
             "issue_compose",
+            "issue_humanize",
             "digest_feedback",
             "xhs_condense",
             "xhs_note_title",

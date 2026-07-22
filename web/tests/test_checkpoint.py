@@ -8,6 +8,7 @@ import pytest
 
 from daily_news.main import (
     ai_compose,
+    ai_humanize,
     ai_select,
     ai_shortlist,
     ai_file_read_test,
@@ -23,7 +24,7 @@ from daily_news.main import (
     validate_selection_ids,
     validate_shortlist_ids,
 )
-from daily_news.ai_engine import ProviderRunResult
+from daily_news.ai_engine import AIEngineError, ProviderRunResult
 from daily_news.config import PipelineConfig
 from daily_news.models import (
     AIIssueOutput,
@@ -520,6 +521,109 @@ def test_ai_compose_reads_selection_and_enriched_file_paths(
     assert (tmp_path / "logs" / run_id / "ai" / "05_ai_issue_prompt.md").exists()
 
 
+def test_ai_humanize_saves_guarded_final_and_preserves_fact_draft(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(local_storage, "RUNS_DIR", tmp_path / "runs")
+    monkeypatch.setattr(local_storage, "LOGS_DIR", tmp_path / "logs")
+    run_id = "tech-2026-06-24-101218"
+    draft_output = AIIssueOutput.model_validate_json(
+        (Path(__file__).parent / "fixtures" / "sample_ai_output.json").read_text(encoding="utf-8")
+    )
+    draft = make_issue(
+        draft_output,
+        section_slug="tech",
+        publication_name="我的日报·科技",
+        issue_date=datetime(2026, 6, 24, tzinfo=timezone.utc).date(),
+        volume=1,
+        number=1,
+    )
+    local_storage.save_issue_draft(run_id, draft)
+    local_storage.save_enriched_candidates(run_id, [_candidate("item-1"), _candidate("item-2")])
+    revised = draft_output.model_copy(
+        update={
+            "headlines": [
+                draft_output.headlines[0].model_copy(
+                    update={"title_zh": "英伟达推出新一代 AI 芯片 Rubin"}
+                )
+            ]
+        }
+    )
+
+    def fake_run_ai_task(*, task_type: str, prompt: str, use_output_schema: bool, **kwargs):  # noqa: ANN003
+        assert task_type == "issue_humanize"
+        assert use_output_schema is False
+        assert "05_issue_draft.json" in prompt
+        assert "03_enriched_candidates.json" in prompt
+        now = datetime.now(timezone.utc)
+        return revised, AIRunRecord(
+            task_type=task_type,
+            prompt_version="test",
+            prompt=prompt,
+            raw_output=revised.model_dump_json(),
+            parsed_output=revised.model_dump(mode="json"),
+            status="success",
+            started_at=now,
+            finished_at=now,
+            provider="codex",
+            attempt_count=1,
+            duration_ms=10,
+            prompt_chars=len(prompt),
+            raw_output_chars=len(revised.model_dump_json()),
+        )
+
+    monkeypatch.setattr("daily_news.main.run_ai_task", fake_run_ai_task)
+    args = build_parser().parse_args(["ai-humanize", "--run-id", run_id, "--provider", "codex"])
+
+    assert ai_humanize(args) == 0
+
+    assert local_storage.load_issue_draft_from_run(run_id) == draft
+    final_issue = local_storage.load_issue_from_run(run_id)
+    assert final_issue.headlines[0].title_zh == "英伟达推出新一代 AI 芯片 Rubin"
+    outputs_dir = tmp_path / "runs" / run_id / "outputs"
+    assert (outputs_dir / "05_issue_humanize_candidate.json").exists()
+    validation = json.loads((outputs_dir / "05_humanize_validation.json").read_text(encoding="utf-8"))
+    assert validation["valid"] is True
+    assert validation["fallback_used"] is False
+
+
+def test_ai_humanize_call_failure_uses_whole_fact_draft(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(local_storage, "RUNS_DIR", tmp_path / "runs")
+    monkeypatch.setattr(local_storage, "LOGS_DIR", tmp_path / "logs")
+    run_id = "tech-2026-06-24-101218"
+    draft_output = AIIssueOutput.model_validate_json(
+        (Path(__file__).parent / "fixtures" / "sample_ai_output.json").read_text(encoding="utf-8")
+    )
+    draft = make_issue(
+        draft_output,
+        section_slug="tech",
+        publication_name="我的日报·科技",
+        issue_date=datetime(2026, 6, 24, tzinfo=timezone.utc).date(),
+        volume=1,
+        number=1,
+    )
+    local_storage.save_issue_draft(run_id, draft)
+    local_storage.save_enriched_candidates(run_id, [_candidate("item-1")])
+
+    def fail_run_ai_task(**kwargs):  # noqa: ANN003
+        raise AIEngineError("编辑调用超时")
+
+    monkeypatch.setattr("daily_news.main.run_ai_task", fail_run_ai_task)
+    args = build_parser().parse_args(["ai-humanize", "--run-id", run_id, "--provider", "codex"])
+
+    assert ai_humanize(args) == 0
+    assert local_storage.load_issue_from_run(run_id) == draft
+    validation_path = tmp_path / "runs" / run_id / "outputs" / "05_humanize_validation.json"
+    validation = json.loads(validation_path.read_text(encoding="utf-8"))
+    assert validation["valid"] is True
+    assert validation["fallback_used"] is True
+    assert validation["checks"]["fallback_articles"] == ["整期"]
+
+
 def test_stage_provider_priority() -> None:
     config = PipelineConfig()
     config.ai.default_provider = "claude"
@@ -837,6 +941,8 @@ def test_clean_run_packs_logs_without_deleting_outputs(
     run_dir.mkdir(parents=True)
     outputs_dir = run_dir / "outputs"
     (run_dir / "05_issue.json").write_text("{}", encoding="utf-8")
+    (run_dir / "05_issue_draft.json").write_text("{}", encoding="utf-8")
+    (run_dir / "05_humanize_validation.json").write_text("{}", encoding="utf-8")
     (run_dir / "05_ai_issue_raw.txt").write_text("legacy raw", encoding="utf-8")
     (tmp_path / "logs" / run_id).mkdir(parents=True)
     (tmp_path / "logs" / run_id / "pipeline.log").write_text("ok", encoding="utf-8")
@@ -845,6 +951,8 @@ def test_clean_run_packs_logs_without_deleting_outputs(
 
     assert clean_run(args) == 0
     assert (outputs_dir / "05_issue.json").exists()
+    assert (outputs_dir / "05_issue_draft.json").exists()
+    assert (outputs_dir / "05_humanize_validation.json").exists()
     assert not (run_dir / "05_issue.json").exists()
     assert not (run_dir / "05_ai_issue_raw.txt").exists()
     assert (tmp_path / "logs" / run_id / "legacy" / "05_ai_issue_raw.txt").exists()

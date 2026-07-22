@@ -10,6 +10,8 @@ from daily_news.ai_engine import (
     _provider_result_from_codex,
     _without_model_arg,
     build_issue_file_prompt,
+    build_issue_hybrid_edit_prompt,
+    build_issue_humanize_prompt,
     build_provider_command,
     build_repair_prompt,
     build_selection_file_prompt,
@@ -206,6 +208,46 @@ def test_issue_file_prompt_includes_style_profile_when_present(tmp_path: Path) -
     assert "翻译更口语" in prompt
     assert "精读段落更短" in prompt
     assert "不能覆盖以上事实红线和字段边界" in prompt
+
+
+def test_issue_file_prompt_can_include_project_chinese_editor_rules() -> None:
+    section = load_section("tech")
+    prompt = build_issue_file_prompt(
+        section,
+        Path("/tmp/04_selection.json"),
+        Path("/tmp/03_enriched_candidates.json"),
+        chinese_editor_rules_path=Path("/tmp/zh_news_editor.md"),
+    )
+
+    assert "/tmp/zh_news_editor.md" in prompt
+    assert "完整读取该规则文件" in prompt
+
+
+def test_issue_humanize_prompt_locks_non_text_fields() -> None:
+    prompt = build_issue_humanize_prompt(
+        Path("/tmp/variant-a.json"),
+        Path("/tmp/zh_news_editor.md"),
+    )
+
+    assert "/tmp/variant-a.json" in prompt
+    assert "唯一可修改的字段" in prompt
+    assert "source_item_ids、sources、relevance_score、importance_score" in prompt
+    assert "禁止新增数字、公司、人物" in prompt
+
+
+def test_issue_hybrid_prompt_balances_rewrite_freedom_and_fact_scope() -> None:
+    prompt = build_issue_hybrid_edit_prompt(
+        Path("/tmp/variant-a.json"),
+        Path("/tmp/03_enriched_candidates.json"),
+        Path("/tmp/zh_news_editor.md"),
+    )
+
+    assert "/tmp/variant-a.json" in prompt
+    assert "/tmp/03_enriched_candidates.json" in prompt
+    assert "允许拆句、合句、调整信息顺序" in prompt
+    assert "事实稿决定“这篇要讲哪些事实”" in prompt
+    assert "已成功/已发生/已取得" in prompt
+    assert "没有明确依据的否定句不能新增" in prompt
 
 
 def test_issue_file_prompt_ignores_missing_style_profile() -> None:

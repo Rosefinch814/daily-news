@@ -230,6 +230,12 @@ def save_issue(run_id: str, issue: Issue) -> Path:
     return path
 
 
+def save_issue_draft(run_id: str, issue: Issue) -> Path:
+    path = output_path(run_id, "05_issue_draft.json")
+    _write_json(path, issue.model_dump(mode="json"))
+    return path
+
+
 def load_raw_items(run_id: str) -> list[RawItem]:
     path = artifact_path(run_id, "01_raw_items.json")
     if not path.exists():
@@ -272,6 +278,13 @@ def load_issue_from_run(run_id: str) -> Issue:
     path = artifact_path(run_id, "05_issue.json")
     if not path.exists():
         raise FileNotFoundError(f"Issue snapshot not found: {path}")
+    return Issue.model_validate_json(path.read_text(encoding="utf-8"))
+
+
+def load_issue_draft_from_run(run_id: str) -> Issue:
+    path = artifact_path(run_id, "05_issue_draft.json")
+    if not path.exists():
+        raise FileNotFoundError(f"Issue draft snapshot not found: {path}")
     return Issue.model_validate_json(path.read_text(encoding="utf-8"))
 
 
