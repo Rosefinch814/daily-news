@@ -70,7 +70,12 @@ from daily_news.storage.local import (
     write_profiles,
 )
 from daily_news.storage.supabase import SupabaseStore
-from daily_news.xhs_export import XHSExportAIError, export_xhs_issue, load_issue_for_xhs
+from daily_news.xhs_export import (
+    XHSExportAIError,
+    XHSExportConfigurationError,
+    export_xhs_issue,
+    load_issue_for_xhs,
+)
 
 
 WEEKDAYS_CN = ["周一", "周二", "周三", "周四", "周五", "周六", "周日"]
@@ -1703,7 +1708,11 @@ def export_xhs(args: argparse.Namespace) -> int:
             ai_condense=True,
             provider=args.provider,
             cover_template=args.cover_template,
+            cover_headline=args.cover_headline,
         )
+    except XHSExportConfigurationError as exc:
+        print(f"小红书导出参数错误：{exc}", file=sys.stderr)
+        return 2
     except XHSExportAIError as exc:
         print(f"小红书 AI 导出失败：{exc}", file=sys.stderr)
         print("未产出可发布图片或 caption；请恢复 AI 后重试。", file=sys.stderr)
@@ -1843,6 +1852,12 @@ def build_parser() -> argparse.ArgumentParser:
         choices=["classic", "single-hook", "v2"],
         default="classic",
         help="Cover template; alternate templates write to separate <date>-<template> directories by default",
+    )
+    export_xhs_parser.add_argument(
+        "--cover-headline",
+        type=int,
+        default=1,
+        help="1-based original headline number to feature and place first in the XHS export (default: 1)",
     )
     export_xhs_parser.set_defaults(func=export_xhs)
 

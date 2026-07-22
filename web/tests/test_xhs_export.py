@@ -25,6 +25,7 @@ from daily_news.xhs_export import (
     XHS_PUBLICATION_NAME,
     XHSCondenser,
     XHSExportAIError,
+    XHSExportConfigurationError,
     XHSCoverTitleVariants,
     build_xhs_condense_input,
     build_xhs_magnetize_input,
@@ -42,6 +43,7 @@ from daily_news.xhs_export import (
     paginate_briefs,
     prepare_xhs_condenser,
     prepare_v2_cover_title_variants,
+    reorder_issue_for_xhs,
     render_cards_html,
     validate_magnetized_title,
 )
@@ -58,6 +60,17 @@ def sample_issue():
         volume=1,
         number=7,
     )
+
+
+def sample_issue_with_three_headlines():
+    issue = sample_issue()
+    base = issue.headlines[0]
+    issue.headlines = [
+        base.model_copy(update={"title_zh": "原头条1：Agent开始接管生产部署"}),
+        base.model_copy(update={"title_zh": "原头条2：模型部署速度再提升"}),
+        base.model_copy(update={"title_zh": "原头条3：AI基础设施进入新阶段"}),
+    ]
+    return issue
 
 
 def test_build_xhs_cards_uses_design_cards_and_dynamic_briefs() -> None:
@@ -244,6 +257,7 @@ def test_xhs_note_title_prompt_contains_hard_limit_and_input_path(tmp_path: Path
     assert "阻断整次导出" in prompt
     assert "忠实、不标题党、不新增事实" in prompt
     assert "不要概括整期" in prompt
+    assert "只能使用输入文件 `headlines[0]`" in prompt or "只允许使用输入文件 `headlines[0]`" in prompt
     assert "AI科技日报今日看点" in prompt
     assert '{"title": "不超过20字的中文标题"}' in prompt
 
@@ -271,10 +285,48 @@ def test_build_xhs_note_title_input_contains_only_needed_issue_context() -> None
 
     assert payload["publication_name"] == XHS_PUBLICATION_NAME
     assert payload["title_max_chars"] == 20
+    assert len(payload["headlines"]) == 1
     assert payload["headlines"][0]["title"] == issue.headlines[0].title_zh
     assert payload["headlines"][0]["summary_zh"] == issue.headlines[0].summary_zh
-    assert payload["brief_titles"] == [article.title_zh for article in issue.briefs]
+    assert "brief_titles" not in payload
     assert "read_body_zh" not in payload["headlines"][0]
+
+
+def test_cover_headline_reorders_only_xhs_view_and_all_inputs() -> None:
+    issue = sample_issue_with_three_headlines()
+    original_titles = [article.title_zh for article in issue.headlines]
+
+    xhs_issue, order = reorder_issue_for_xhs(issue, cover_headline=2)
+    slots = collect_condense_slots(xhs_issue, include_cover=True)
+    condense_payload = build_xhs_condense_input(xhs_issue, slots)
+    magnetize_payload = build_xhs_magnetize_input(xhs_issue)
+    note_payload = build_xhs_note_title_input(xhs_issue)
+    caption = build_caption(xhs_issue, title="小红书 AI 标题")
+    cards = build_cards(xhs_issue, cover_template="v2")
+
+    assert order[:3] == [2, 1, 3]
+    assert [article.title_zh for article in issue.headlines] == original_titles
+    assert [article.title_zh for article in xhs_issue.headlines[:3]] == [
+        original_titles[1],
+        original_titles[0],
+        original_titles[2],
+    ]
+    assert condense_payload["slots"][0]["title"] == original_titles[1]
+    assert magnetize_payload["title_zh"] == original_titles[1]
+    assert note_payload["headlines"][0]["title"] == original_titles[1]
+    assert original_titles[1] in cards[1].html_body
+    assert original_titles[0] in cards[2].html_body
+    assert original_titles[2] in cards[3].html_body
+    assert original_titles[1] in caption.splitlines()[5]
+    assert original_titles[0] in caption.splitlines()[6]
+    assert original_titles[2] in caption.splitlines()[7]
+
+
+def test_cover_headline_rejects_out_of_range_before_export() -> None:
+    issue = sample_issue_with_three_headlines()
+
+    with pytest.raises(XHSExportConfigurationError, match="--cover-headline"):
+        reorder_issue_for_xhs(issue, cover_headline=4)
 
 
 def test_build_xhs_magnetize_input_contains_only_headline_one_facts() -> None:
@@ -527,7 +579,7 @@ def test_magnetize_validator_accepts_supported_absolute_and_emotional_prefix() -
 
 
 def test_only_v2_prepares_magnetized_title_variants(monkeypatch, tmp_path: Path) -> None:
-    issue = sample_issue()
+    issue = sample_issue_with_three_headlines()
     calls: list[str] = []
 
     monkeypatch.setattr("daily_news.xhs_export.RUNS_DIR", tmp_path)
@@ -549,7 +601,13 @@ def test_only_v2_prepares_magnetized_title_variants(monkeypatch, tmp_path: Path)
 
     export_xhs_issue(issue, config=PipelineConfig(), ai_condense=True, cover_template="classic")
     export_xhs_issue(issue, config=PipelineConfig(), ai_condense=True, cover_template="single-hook")
-    v2 = export_xhs_issue(issue, config=PipelineConfig(), ai_condense=True, cover_template="v2")
+    v2 = export_xhs_issue(
+        issue,
+        config=PipelineConfig(),
+        ai_condense=True,
+        cover_template="v2",
+        cover_headline=2,
+    )
 
     assert calls == ["v2"]
     assert not (tmp_path / "xhs" / "2026-06-23" / "cover_title_variants.txt").exists()
@@ -561,6 +619,9 @@ def test_only_v2_prepares_magnetized_title_variants(monkeypatch, tmp_path: Path)
     assert '"xhs_condense": "success"' in provenance
     assert '"xhs_magnetize": "success"' in provenance
     assert '"xhs_note_title": "success"' in provenance
+    assert '"cover_headline": 2' in provenance
+    assert '"headline_order": [' in provenance
+    assert "2,\n    1,\n    3" in provenance
 
 
 def test_xhs_condense_schema_is_strict_for_codex_response_format() -> None:

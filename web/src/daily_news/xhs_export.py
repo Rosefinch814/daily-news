@@ -122,6 +122,10 @@ class XHSExportAIError(RuntimeError):
     """发布导出的必需 AI 阶段未成功，不得生成可发布产物。"""
 
 
+class XHSExportConfigurationError(ValueError):
+    """小红书导出参数与当期内容不匹配。"""
+
+
 @dataclass(frozen=True)
 class XHSCoverTitleVariants:
     original: str
@@ -209,6 +213,28 @@ def load_issue_for_xhs(issue_date: str, *, dist_dir: Path = DIST_DIR) -> Issue:
     return Issue.model_validate_json(issue_path.read_text(encoding="utf-8"))
 
 
+def reorder_issue_for_xhs(issue: Issue, *, cover_headline: int = 1) -> tuple[Issue, list[int]]:
+    exportable_count = min(len(issue.headlines), MAX_HEADLINE_CARDS)
+    if exportable_count == 0:
+        if cover_headline != 1:
+            raise XHSExportConfigurationError("当期没有可选头条")
+        return issue, []
+    if not 1 <= cover_headline <= exportable_count:
+        raise XHSExportConfigurationError(
+            f"--cover-headline 必须在 1-{exportable_count} 之间，当前为 {cover_headline}"
+        )
+
+    original_order = list(range(1, len(issue.headlines) + 1))
+    selected_index = cover_headline - 1
+    headline_order = [
+        original_order[selected_index],
+        *original_order[:selected_index],
+        *original_order[selected_index + 1 :],
+    ]
+    reordered_headlines = [issue.headlines[index - 1] for index in headline_order]
+    return issue.model_copy(update={"headlines": reordered_headlines}), headline_order
+
+
 def export_xhs_issue(
     issue: Issue,
     *,
@@ -217,8 +243,10 @@ def export_xhs_issue(
     ai_condense: bool = False,
     provider: ProviderName | None = None,
     cover_template: CoverTemplate = "classic",
+    cover_headline: int = 1,
 ) -> XHSExportResult:
     validate_cover_template(cover_template)
+    xhs_issue, headline_order = reorder_issue_for_xhs(issue, cover_headline=cover_headline)
     default_dir_name = issue.issue_date.isoformat()
     if cover_template == "single-hook":
         default_dir_name += "-single-hook"
@@ -231,7 +259,7 @@ def export_xhs_issue(
     try:
         condenser = (
             prepare_xhs_condenser(
-                issue,
+                xhs_issue,
                 out_dir=out_dir,
                 config=config,
                 provider=provider,
@@ -243,7 +271,7 @@ def export_xhs_issue(
         cover_title_variants = None
         if cover_template == "v2" and issue.headlines:
             cover_title_variants = prepare_v2_cover_title_variants(
-                issue,
+                xhs_issue,
                 out_dir=out_dir,
                 condenser=condenser,
                 config=config,
@@ -251,13 +279,13 @@ def export_xhs_issue(
                 ai_enabled=ai_condense and config is not None,
             )
         cards = build_cards(
-            issue,
+            xhs_issue,
             condenser=condenser,
             cover_template=cover_template,
             v2_cover_title=cover_title_variants.restrained if cover_title_variants else None,
         )
         note_title = build_note_title(
-            issue,
+            xhs_issue,
             out_dir=out_dir,
             config=config,
             provider=provider,
@@ -267,16 +295,18 @@ def export_xhs_issue(
         if cover_title_variants is not None:
             write_cover_title_variants(out_dir / "cover_title_variants.txt", cover_title_variants)
         html_path = out_dir / "cards.html"
-        html_path.write_text(render_cards_html(issue, cards), encoding="utf-8")
+        html_path.write_text(render_cards_html(xhs_issue, cards), encoding="utf-8")
         caption_path = out_dir / "caption.txt"
-        caption_path.write_text(build_caption(issue, title=note_title), encoding="utf-8")
+        caption_path.write_text(build_caption(xhs_issue, title=note_title), encoding="utf-8")
         image_paths = render_card_images(html_path, out_dir, len(cards))
         if ai_condense and config is not None:
             write_ai_provenance(
                 out_dir / "ai_provenance.json",
-                issue=issue,
+                issue=xhs_issue,
                 cover_template=cover_template,
                 provider=provider or config.ai.default_provider,
+                cover_headline=cover_headline,
+                headline_order=headline_order[:MAX_HEADLINE_CARDS],
             )
         return XHSExportResult(
             output_dir=out_dir,
@@ -304,6 +334,8 @@ def write_ai_provenance(
     issue: Issue,
     cover_template: CoverTemplate,
     provider: ProviderName,
+    cover_headline: int,
+    headline_order: Sequence[int],
 ) -> None:
     stages = ["xhs_condense"]
     if cover_template == "v2":
@@ -315,6 +347,8 @@ def write_ai_provenance(
                 "issue_date": issue.issue_date.isoformat(),
                 "cover_template": cover_template,
                 "provider": provider,
+                "cover_headline": cover_headline,
+                "headline_order": list(headline_order),
                 "strict_ai": True,
                 "status": "success",
                 "stages": {stage: "success" for stage in stages},
@@ -567,9 +601,8 @@ def build_xhs_note_title_input(issue: Issue) -> dict[str, object]:
                 "ai_impact": compact_text(article.ai_impact),
                 "sources": source_payload(article.sources),
             }
-            for index, article in enumerate(issue.headlines[:MAX_HEADLINE_CARDS], start=1)
+            for index, article in enumerate(issue.headlines[:1], start=1)
         ],
-        "brief_titles": [article.title_zh for article in issue.briefs],
     }
 
 
@@ -995,9 +1028,8 @@ def is_valid_note_title(title: str, issue: Issue) -> bool:
         ]
         + [
             f"{article.title_zh} {article.summary_zh} {article.ai_impact}"
-            for article in issue.headlines[:MAX_HEADLINE_CARDS]
+            for article in issue.headlines[:1]
         ]
-        + [article.title_zh for article in issue.briefs]
     )
     return numbers_in_text(title).issubset(numbers_in_text(allowed_text))
 

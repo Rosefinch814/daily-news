@@ -10,6 +10,8 @@ SECTION="${SECTION:-tech}"
 EXPORT_XHS="${EXPORT_XHS:-1}"
 RENDER_OWNER="${RENDER_OWNER:-0}"
 AI_PROVIDER="${AI_PROVIDER:-codex}"
+XHS_COVER_TEMPLATE="${XHS_COVER_TEMPLATE:-v2}"
+XHS_COVER_HEADLINE="${XHS_COVER_HEADLINE:-1}"
 
 if [[ ! -x "$DAILY_NEWS" ]]; then
   echo "daily-news command not found: $DAILY_NEWS" >&2
@@ -42,7 +44,13 @@ if [[ ! -f "$issue_json" ]]; then
 fi
 
 if [[ "$EXPORT_XHS" == "1" ]]; then
-  xhs_args=(export-xhs --date "$ISSUE_DATE" --provider "$AI_PROVIDER")
+  xhs_args=(
+    export-xhs
+    --date "$ISSUE_DATE"
+    --provider "$AI_PROVIDER"
+    --cover-template "$XHS_COVER_TEMPLATE"
+    --cover-headline "$XHS_COVER_HEADLINE"
+  )
 
   echo "==> Exporting Xiaohongshu cards: date=$ISSUE_DATE"
   "$DAILY_NEWS" "${xhs_args[@]}"
@@ -52,5 +60,9 @@ echo "==> Done"
 echo "Issue JSON: $issue_json"
 echo "Public app: $WEB_DIR/dist/issues/$ISSUE_DATE.html"
 if [[ "$EXPORT_XHS" == "1" ]]; then
-  echo "XHS output: $WEB_DIR/runs/xhs/$ISSUE_DATE"
+  output_suffix=""
+  if [[ "$XHS_COVER_TEMPLATE" != "classic" ]]; then
+    output_suffix="-$XHS_COVER_TEMPLATE"
+  fi
+  echo "XHS output: $WEB_DIR/runs/xhs/$ISSUE_DATE$output_suffix"
 fi
