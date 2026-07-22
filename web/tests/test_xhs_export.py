@@ -3,6 +3,8 @@ import re
 from datetime import date
 from pathlib import Path
 
+import pytest
+
 from daily_news.ai_engine import (
     AIEngineError,
     XHSCondenseOutput,
@@ -22,6 +24,7 @@ from daily_news.xhs_export import (
     NOTE_HASHTAGS,
     XHS_PUBLICATION_NAME,
     XHSCondenser,
+    XHSExportAIError,
     XHSCoverTitleVariants,
     build_xhs_condense_input,
     build_xhs_magnetize_input,
@@ -237,7 +240,8 @@ def test_xhs_note_title_prompt_contains_hard_limit_and_input_path(tmp_path: Path
     prompt = build_xhs_note_title_prompt(input_path)
 
     assert str(input_path) in prompt
-    assert "不超过 20 个中文字符" in prompt
+    assert "不超过 20 个字符" in prompt
+    assert "阻断整次导出" in prompt
     assert "忠实、不标题党、不新增事实" in prompt
     assert "不要概括整期" in prompt
     assert "AI科技日报今日看点" in prompt
@@ -254,6 +258,8 @@ def test_xhs_magnetize_prompt_contains_contract_and_examples(tmp_path: Path) -> 
     assert "restrained" in prompt
     assert "punchy" in prompt
     assert "12-24 字" in prompt
+    assert "Python `len()`" in prompt
+    assert "不得截断英文单词" in prompt
     assert "事实层铁律" in prompt
     assert "智谱估值暴涨15倍" in prompt
 
@@ -294,7 +300,7 @@ def test_note_title_validator_rejects_overlimit_and_new_numbers() -> None:
     assert not is_valid_note_title("今日AI速览", issue)
 
 
-def test_build_note_title_falls_back_when_ai_disabled_or_provider_fails(monkeypatch, tmp_path: Path) -> None:
+def test_build_note_title_uses_preview_fallback_only_when_ai_disabled(monkeypatch, tmp_path: Path) -> None:
     issue = sample_issue()
 
     assert build_note_title(issue, out_dir=tmp_path, config=PipelineConfig(), ai_enabled=False) == fallback_note_title(issue)
@@ -304,29 +310,78 @@ def test_build_note_title_falls_back_when_ai_disabled_or_provider_fails(monkeypa
 
     monkeypatch.setattr("daily_news.xhs_export.run_ai_task", fail_run_ai_task)
 
-    assert build_note_title(issue, out_dir=tmp_path, config=PipelineConfig(), ai_enabled=True) == fallback_note_title(issue)
+    with pytest.raises(XHSExportAIError, match="xhs_note_title 失败"):
+        build_note_title(issue, out_dir=tmp_path, config=PipelineConfig(), ai_enabled=True)
     assert (tmp_path / "xhs_note_title_input.json").exists()
 
 
-def test_prepare_xhs_condenser_falls_back_when_batch_ai_fails(monkeypatch, tmp_path: Path) -> None:
+def test_build_note_title_blocks_invalid_ai_title(monkeypatch, tmp_path: Path) -> None:
+    issue = sample_issue()
+    monkeypatch.setattr(
+        "daily_news.xhs_export.run_ai_task",
+        lambda **kwargs: (
+            XHSNoteTitleOutput(title="这是一条明确超过二十个中文字符的小红书标题"),
+            object(),
+        ),
+    )
+    monkeypatch.setattr("daily_news.xhs_export.save_ai_task_run", lambda *args, **kwargs: None)
+
+    with pytest.raises(XHSExportAIError, match="xhs_note_title 未通过校验"):
+        build_note_title(issue, out_dir=tmp_path, config=PipelineConfig(), ai_enabled=True)
+
+
+def test_prepare_xhs_condenser_blocks_export_when_batch_ai_fails(monkeypatch, tmp_path: Path) -> None:
     issue = sample_issue()
 
     def fail_run_ai_task(**kwargs):  # noqa: ANN001
         raise AIEngineError("provider unavailable")
 
     monkeypatch.setattr("daily_news.xhs_export.run_ai_task", fail_run_ai_task)
-    condenser = prepare_xhs_condenser(issue, out_dir=tmp_path, config=PipelineConfig())
+    with pytest.raises(XHSExportAIError, match="xhs_condense 失败"):
+        prepare_xhs_condenser(issue, out_dir=tmp_path, config=PipelineConfig())
+    assert (tmp_path / "xhs_condense_input.json").exists()
+
+
+def test_strict_condenser_blocks_missing_or_invalid_ai_slots() -> None:
     request = CondenseRequest(
         slot_id="brief_01_summary",
         slot_type="brief_summary",
         title="测试标题",
-        original_text="这是一段超过目标长度的原始文本，用来验证 AI provider 失败时导出仍然可以回落到确定性兜底，不会崩溃。",
+        original_text="这是一段明显超过目标长度的原始文本，需要 AI 完整地收敛后才能进入小红书发布图组，不能被规则截断或静默改用兜底文案冒充成功的 AI 产物。",
         min_chars=22,
         max_chars=52,
     )
 
-    assert condenser.condense(request, "确定性兜底文本。") == "确定性兜底文本。"
-    assert (tmp_path / "xhs_condense_input.json").exists()
+    with pytest.raises(XHSExportAIError, match="缺少必需槽位"):
+        XHSCondenser({}, strict=True).condense(request, "规则兜底。")
+    with pytest.raises(XHSExportAIError, match="未通过校验"):
+        XHSCondenser({"brief_01_summary": "没说完的文案"}, strict=True).condense(request, "规则兜底。")
+
+
+def test_ai_export_failure_removes_publishable_artifacts(monkeypatch, tmp_path: Path) -> None:
+    issue = sample_issue()
+    for filename in ("01.png", "cards.html", "caption.txt", "cover_title_variants.txt", "ai_provenance.json"):
+        (tmp_path / filename).write_text("stale", encoding="utf-8")
+
+    def fail_condenser(*args, **kwargs):  # noqa: ANN002, ANN003
+        raise XHSExportAIError("xhs_condense 失败")
+
+    monkeypatch.setattr("daily_news.xhs_export.prepare_xhs_condenser", fail_condenser)
+
+    with pytest.raises(XHSExportAIError, match="xhs_condense 失败"):
+        export_xhs_issue(
+            issue,
+            output_dir=tmp_path,
+            config=PipelineConfig(),
+            ai_condense=True,
+            cover_template="v2",
+        )
+
+    assert not list(tmp_path.glob("*.png"))
+    assert not (tmp_path / "cards.html").exists()
+    assert not (tmp_path / "caption.txt").exists()
+    assert not (tmp_path / "cover_title_variants.txt").exists()
+    assert not (tmp_path / "ai_provenance.json").exists()
 
 
 def test_prepare_v2_cover_title_variants_uses_valid_ai_output(monkeypatch, tmp_path: Path) -> None:
@@ -361,7 +416,7 @@ def test_prepare_v2_cover_title_variants_uses_valid_ai_output(monkeypatch, tmp_p
     assert (tmp_path / "xhs_magnetize_input.json").exists()
 
 
-def test_prepare_v2_cover_title_variants_falls_back_when_provider_fails(monkeypatch, tmp_path: Path) -> None:
+def test_prepare_v2_cover_title_variants_blocks_export_when_provider_fails(monkeypatch, tmp_path: Path) -> None:
     issue = sample_issue()
 
     def fail_run_ai_task(**kwargs):  # noqa: ANN001
@@ -369,18 +424,40 @@ def test_prepare_v2_cover_title_variants_falls_back_when_provider_fails(monkeypa
 
     monkeypatch.setattr("daily_news.xhs_export.run_ai_task", fail_run_ai_task)
 
-    variants = prepare_v2_cover_title_variants(
-        issue,
-        out_dir=tmp_path,
-        condenser=None,
-        config=PipelineConfig(),
-        ai_enabled=True,
-    )
+    with pytest.raises(XHSExportAIError, match="xhs_magnetize 失败"):
+        prepare_v2_cover_title_variants(
+            issue,
+            out_dir=tmp_path,
+            condenser=None,
+            config=PipelineConfig(),
+            ai_enabled=True,
+        )
 
-    assert variants.source == "fallback"
-    assert variants.restrained == variants.fallback
-    assert variants.punchy is None
-    assert any("provider 失败" in reason for reason in variants.rejection_reasons)
+
+def test_prepare_v2_cover_title_variants_blocks_invalid_restrained_output(monkeypatch, tmp_path: Path) -> None:
+    issue = sample_issue()
+    issue.headlines[0].title_zh = "谷歌自研新芯片曝光，目标能效提升6至10倍"
+    issue.headlines[0].summary_zh = "谷歌计划推出自研芯片，目标能效提升6至10倍。"
+    monkeypatch.setattr(
+        "daily_news.xhs_export.run_ai_task",
+        lambda **kwargs: (
+            XHSMagnetizeOutput(
+                restrained="震惊！谷歌芯片能效目标提升6至10倍",
+                punchy="6到10倍！谷歌要换自研芯片",
+            ),
+            object(),
+        ),
+    )
+    monkeypatch.setattr("daily_news.xhs_export.save_ai_task_run", lambda *args, **kwargs: None)
+
+    with pytest.raises(XHSExportAIError, match="克制版未通过校验"):
+        prepare_v2_cover_title_variants(
+            issue,
+            out_dir=tmp_path,
+            condenser=None,
+            config=PipelineConfig(),
+            ai_enabled=True,
+        )
 
 
 def test_magnetize_validator_rejects_drift_and_restrained_hype() -> None:
@@ -479,6 +556,11 @@ def test_only_v2_prepares_magnetized_title_variants(monkeypatch, tmp_path: Path)
     assert not (tmp_path / "xhs" / "2026-06-23-single-hook" / "cover_title_variants.txt").exists()
     assert (v2.output_dir / "cover_title_variants.txt").exists()
     assert "克制版封面标题文案" in v2.html_path.read_text(encoding="utf-8")
+    provenance = (v2.output_dir / "ai_provenance.json").read_text(encoding="utf-8")
+    assert '"strict_ai": true' in provenance
+    assert '"xhs_condense": "success"' in provenance
+    assert '"xhs_magnetize": "success"' in provenance
+    assert '"xhs_note_title": "success"' in provenance
 
 
 def test_xhs_condense_schema_is_strict_for_codex_response_format() -> None:

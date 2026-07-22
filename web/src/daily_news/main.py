@@ -70,7 +70,7 @@ from daily_news.storage.local import (
     write_profiles,
 )
 from daily_news.storage.supabase import SupabaseStore
-from daily_news.xhs_export import export_xhs_issue, load_issue_for_xhs
+from daily_news.xhs_export import XHSExportAIError, export_xhs_issue, load_issue_for_xhs
 
 
 WEEKDAYS_CN = ["周一", "周二", "周三", "周四", "周五", "周六", "周日"]
@@ -1695,14 +1695,19 @@ def export_xhs(args: argparse.Namespace) -> int:
     issue = load_issue_for_xhs(args.date)
     output_dir = Path(args.output_dir) if args.output_dir else None
     config = load_pipeline_config(Path(args.config) if args.config else None)
-    result = export_xhs_issue(
-        issue,
-        output_dir=output_dir,
-        config=config,
-        ai_condense=not args.no_ai_condense,
-        provider=args.provider,
-        cover_template=args.cover_template,
-    )
+    try:
+        result = export_xhs_issue(
+            issue,
+            output_dir=output_dir,
+            config=config,
+            ai_condense=True,
+            provider=args.provider,
+            cover_template=args.cover_template,
+        )
+    except XHSExportAIError as exc:
+        print(f"小红书 AI 导出失败：{exc}", file=sys.stderr)
+        print("未产出可发布图片或 caption；请恢复 AI 后重试。", file=sys.stderr)
+        return 2
     print(f"小红书日报图组已导出（封面：{args.cover_template}）：{result.output_dir}")
     for path in result.image_paths:
         print(f"- {path}")
@@ -1839,7 +1844,6 @@ def build_parser() -> argparse.ArgumentParser:
         default="classic",
         help="Cover template; alternate templates write to separate <date>-<template> directories by default",
     )
-    export_xhs_parser.add_argument("--no-ai-condense", action="store_true", help="Use deterministic card text fallback only")
     export_xhs_parser.set_defaults(func=export_xhs)
 
     validate_parser = subparsers.add_parser("validate-config", help="Validate section config")

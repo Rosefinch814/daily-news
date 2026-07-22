@@ -25,11 +25,6 @@ fi
 cd "$WEB_DIR"
 
 args=(export-xhs --date "$ISSUE_DATE")
-
-if [[ "${XHS_NO_AI_CONDENSE:-0}" == "1" ]]; then
-  args+=(--no-ai-condense)
-fi
-
 args+=(--provider "$XHS_PROVIDER")
 
 echo "==> Exporting Xiaohongshu cards: date=$ISSUE_DATE provider=$XHS_PROVIDER"

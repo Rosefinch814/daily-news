@@ -43,9 +43,6 @@ fi
 
 if [[ "$EXPORT_XHS" == "1" ]]; then
   xhs_args=(export-xhs --date "$ISSUE_DATE" --provider "$AI_PROVIDER")
-  if [[ "${XHS_NO_AI_CONDENSE:-0}" == "1" ]]; then
-    xhs_args+=(--no-ai-condense)
-  fi
 
   echo "==> Exporting Xiaohongshu cards: date=$ISSUE_DATE"
   "$DAILY_NEWS" "${xhs_args[@]}"

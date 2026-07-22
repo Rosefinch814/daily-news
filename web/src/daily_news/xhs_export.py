@@ -118,6 +118,10 @@ class XHSExportResult:
     html_path: Path
 
 
+class XHSExportAIError(RuntimeError):
+    """发布导出的必需 AI 阶段未成功，不得生成可发布产物。"""
+
+
 @dataclass(frozen=True)
 class XHSCoverTitleVariants:
     original: str
@@ -154,8 +158,9 @@ class XHSCondenseSlot:
 
 
 class XHSCondenser:
-    def __init__(self, responses: dict[str, str | XHSCondenseSlotOutput]) -> None:
+    def __init__(self, responses: dict[str, str | XHSCondenseSlotOutput], *, strict: bool = False) -> None:
         self.responses = responses
+        self.strict = strict
         self.cache: dict[str, str] = {}
 
     def condense(self, request: CondenseRequest, fallback: str) -> str:
@@ -172,6 +177,8 @@ class XHSCondenser:
 
         response = self.responses.get(request.slot_id)
         if response is None:
+            if self.strict:
+                raise XHSExportAIError(f"xhs_condense 缺少必需槽位：{request.slot_id}")
             LOGGER.warning("xhs_condense output missing for %s", request.slot_id)
             self.cache[request.slot_id] = fallback
             return fallback
@@ -182,6 +189,8 @@ class XHSCondenser:
             self.cache[request.slot_id] = candidate
             return candidate
 
+        if self.strict:
+            raise XHSExportAIError(f"xhs_condense 槽位未通过校验：{request.slot_id}")
         LOGGER.warning("xhs_condense output rejected for %s: %s", request.slot_id, candidate)
         self.cache[request.slot_id] = fallback
         return fallback
@@ -217,54 +226,104 @@ def export_xhs_issue(
         default_dir_name += "-v2"
     out_dir = output_dir or RUNS_DIR / "xhs" / default_dir_name
     out_dir.mkdir(parents=True, exist_ok=True)
-    for old in out_dir.glob("*.png"):
-        old.unlink()
+    clear_xhs_publishable_artifacts(out_dir)
 
-    condenser = (
-        prepare_xhs_condenser(
-            issue,
-            out_dir=out_dir,
-            config=config,
-            provider=provider,
-            cover_template=cover_template,
+    try:
+        condenser = (
+            prepare_xhs_condenser(
+                issue,
+                out_dir=out_dir,
+                config=config,
+                provider=provider,
+                cover_template=cover_template,
+            )
+            if ai_condense and config
+            else None
         )
-        if ai_condense and config
-        else None
-    )
-    cover_title_variants = None
-    if cover_template == "v2" and issue.headlines:
-        cover_title_variants = prepare_v2_cover_title_variants(
+        cover_title_variants = None
+        if cover_template == "v2" and issue.headlines:
+            cover_title_variants = prepare_v2_cover_title_variants(
+                issue,
+                out_dir=out_dir,
+                condenser=condenser,
+                config=config,
+                provider=provider,
+                ai_enabled=ai_condense and config is not None,
+            )
+        cards = build_cards(
+            issue,
+            condenser=condenser,
+            cover_template=cover_template,
+            v2_cover_title=cover_title_variants.restrained if cover_title_variants else None,
+        )
+        note_title = build_note_title(
             issue,
             out_dir=out_dir,
-            condenser=condenser,
             config=config,
             provider=provider,
             ai_enabled=ai_condense and config is not None,
         )
-        write_cover_title_variants(out_dir / "cover_title_variants.txt", cover_title_variants)
-    cards = build_cards(
-        issue,
-        condenser=condenser,
-        cover_template=cover_template,
-        v2_cover_title=cover_title_variants.restrained if cover_title_variants else None,
-    )
-    html_path = out_dir / "cards.html"
-    html_path.write_text(render_cards_html(issue, cards), encoding="utf-8")
-    caption_path = out_dir / "caption.txt"
-    note_title = build_note_title(
-        issue,
-        out_dir=out_dir,
-        config=config,
-        provider=provider,
-        ai_enabled=ai_condense and config is not None,
-    )
-    caption_path.write_text(build_caption(issue, title=note_title), encoding="utf-8")
-    image_paths = render_card_images(html_path, out_dir, len(cards))
-    return XHSExportResult(
-        output_dir=out_dir,
-        image_paths=image_paths,
-        caption_path=caption_path,
-        html_path=html_path,
+
+        if cover_title_variants is not None:
+            write_cover_title_variants(out_dir / "cover_title_variants.txt", cover_title_variants)
+        html_path = out_dir / "cards.html"
+        html_path.write_text(render_cards_html(issue, cards), encoding="utf-8")
+        caption_path = out_dir / "caption.txt"
+        caption_path.write_text(build_caption(issue, title=note_title), encoding="utf-8")
+        image_paths = render_card_images(html_path, out_dir, len(cards))
+        if ai_condense and config is not None:
+            write_ai_provenance(
+                out_dir / "ai_provenance.json",
+                issue=issue,
+                cover_template=cover_template,
+                provider=provider or config.ai.default_provider,
+            )
+        return XHSExportResult(
+            output_dir=out_dir,
+            image_paths=image_paths,
+            caption_path=caption_path,
+            html_path=html_path,
+        )
+    except Exception:
+        clear_xhs_publishable_artifacts(out_dir)
+        raise
+
+
+def clear_xhs_publishable_artifacts(out_dir: Path) -> None:
+    for old in out_dir.glob("*.png"):
+        old.unlink()
+    for filename in ("cards.html", "caption.txt", "cover_title_variants.txt", "ai_provenance.json"):
+        path = out_dir / filename
+        if path.exists():
+            path.unlink()
+
+
+def write_ai_provenance(
+    path: Path,
+    *,
+    issue: Issue,
+    cover_template: CoverTemplate,
+    provider: ProviderName,
+) -> None:
+    stages = ["xhs_condense"]
+    if cover_template == "v2":
+        stages.append("xhs_magnetize")
+    stages.append("xhs_note_title")
+    path.write_text(
+        json.dumps(
+            {
+                "issue_date": issue.issue_date.isoformat(),
+                "cover_template": cover_template,
+                "provider": provider,
+                "strict_ai": True,
+                "status": "success",
+                "stages": {stage: "success" for stage in stages},
+            },
+            ensure_ascii=False,
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
     )
 
 
@@ -307,9 +366,8 @@ def prepare_xhs_condenser(
                 save_provider_events=config.logging.save_provider_events,
                 append_metrics_jsonl=config.logging.append_metrics_jsonl,
             )
-        LOGGER.warning("xhs_condense batch failed: %s", exc)
-        responses = {}
-    return XHSCondenser(responses)
+        raise XHSExportAIError(f"xhs_condense 失败：{exc}") from exc
+    return XHSCondenser(responses, strict=True)
 
 
 def prepare_v2_cover_title_variants(
@@ -376,15 +434,7 @@ def prepare_v2_cover_title_variants(
                 save_provider_events=config.logging.save_provider_events,
                 append_metrics_jsonl=config.logging.append_metrics_jsonl,
             )
-        LOGGER.warning("xhs_magnetize failed: %s", exc)
-        return XHSCoverTitleVariants(
-            original=fallback_variants.original,
-            fallback=fallback_variants.fallback,
-            restrained=fallback_variants.restrained,
-            punchy=None,
-            source="fallback",
-            rejection_reasons=(f"provider 失败：{exc}",),
-        )
+        raise XHSExportAIError(f"xhs_magnetize 失败：{exc}") from exc
 
     restrained = compact_text(output.restrained)
     punchy = compact_text(output.punchy)
@@ -405,15 +455,17 @@ def prepare_v2_cover_title_variants(
         + [f"冲版：{reason}" for reason in punchy_reasons]
     )
     if restrained_reasons:
-        LOGGER.warning("xhs_magnetize restrained output rejected: %s", "; ".join(restrained_reasons))
+        raise XHSExportAIError(
+            "xhs_magnetize 克制版未通过校验：" + "；".join(restrained_reasons)
+        )
     if punchy_reasons:
         LOGGER.warning("xhs_magnetize punchy output rejected: %s", "; ".join(punchy_reasons))
     return XHSCoverTitleVariants(
         original=article.title_zh,
         fallback=fallback,
-        restrained=fallback if restrained_reasons else restrained,
+        restrained=restrained,
         punchy=None if punchy_reasons else punchy,
-        source="fallback" if restrained_reasons else "ai",
+        source="ai",
         rejection_reasons=reasons,
     )
 
@@ -491,15 +543,13 @@ def build_note_title(
                 save_provider_events=config.logging.save_provider_events,
                 append_metrics_jsonl=config.logging.append_metrics_jsonl,
             )
-        LOGGER.warning("xhs_note_title failed: %s", exc)
-        return fallback
+        raise XHSExportAIError(f"xhs_note_title 失败：{exc}") from exc
 
     title = compact_text(output.title)
     if is_valid_note_title(title, issue):
         return title
 
-    LOGGER.warning("xhs_note_title output rejected: %s", title)
-    return fallback
+    raise XHSExportAIError(f"xhs_note_title 未通过校验：{title}")
 
 
 def build_xhs_note_title_input(issue: Issue) -> dict[str, object]:
