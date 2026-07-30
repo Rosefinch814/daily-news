@@ -19,11 +19,18 @@ TERM_ALIASES = {
     "三星电子": ["samsung", "samsung electronics"],
     "SK海力士": ["sk hynix", "sk hynix inc", "hynix"],
     "美光": ["micron", "micron technology"],
+    "长鑫科技": ["长鑫存储", "cxmt", "changxin memory"],
+    "铠侠": ["kioxia"],
     "AI芯片": ["ai chip", "ai chips", "gpu", "gpus", "accelerator", "accelerators"],
     "大模型进展": ["llm", "llms", "large language model", "foundation model", "openai", "anthropic", "glm"],
     "AI产品发布": ["ai product", "ai feature", "agentic ai", "agent", "agents"],
     "自动驾驶": ["autonomous driving", "self-driving", "autopilot", "robotaxi", "fsd"],
     "半导体": ["semiconductor", "chip", "chips", "memory", "hbm", "ram"],
+    "HBM": ["high bandwidth memory", "高带宽内存"],
+    "DRAM": ["dynamic random access memory", "动态随机存取存储器"],
+    "NAND": ["nand flash", "闪存"],
+    "存储芯片": ["memory chip", "memory chips"],
+    "企业级SSD": ["enterprise ssd", "enterprise ssds", "企业级固态硬盘"],
     "黄仁勋": ["jensen huang"],
     "马斯克": ["elon musk", "musk"],
     "奥特曼": ["sam altman", "altman"],
@@ -118,6 +125,56 @@ HIGH_VALUE_TERMS = [
     "自动驾驶",
 ]
 
+STORAGE_COMPANY_ALIASES = {
+    "SK海力士": ["sk海力士", "sk 海力士", "sk hynix", "hynix"],
+    "美光": ["美光", "micron", "micron technology"],
+    "三星电子": ["三星电子", "三星半导体", "samsung electronics", "samsung semiconductor"],
+    "长鑫科技": ["长鑫科技", "长鑫存储", "cxmt", "changxin memory"],
+    "铠侠": ["铠侠", "kioxia"],
+}
+
+STORAGE_EVENT_TERMS = [
+    "财报",
+    "业绩",
+    "营收",
+    "销售额",
+    "营业利润",
+    "净利润",
+    "亏损",
+    "earnings",
+    "financial results",
+    "revenue",
+    "operating profit",
+    "net profit",
+    "季度业绩",
+    "存储价格",
+    "存储芯片价格",
+    "内存价格",
+    "闪存价格",
+    "memory price",
+    "memory pricing",
+    "dram price",
+    "nand price",
+    "订单",
+    "长约",
+    "出货",
+    "供货",
+    "产能",
+    "扩产",
+    "资本开支",
+    "capex",
+    "量产",
+    "投产",
+    "hbm",
+    "dram",
+    "nand",
+    "企业级ssd",
+    "enterprise ssd",
+]
+
+STORAGE_EVENT_WINDOW_CHARS = 220
+STORAGE_EVENT_SCORE_FLOOR = 42.0
+
 
 def _match_terms(text: str, terms: list[str]) -> list[str]:
     lowered = text.lower()
@@ -132,6 +189,37 @@ def _match_terms(text: str, terms: list[str]) -> list[str]:
 def _match_plain_terms(text: str, terms: list[str]) -> list[str]:
     lowered = text.lower()
     return [term for term in terms if term and term.lower() in lowered]
+
+
+def _nearby_storage_event_signals(text: str) -> list[str]:
+    lowered = text.lower()
+    signals: list[str] = []
+    segments = re.split(r"[。！？!?；;\n\r]+", lowered)
+    for segment in segments:
+        for company, aliases in STORAGE_COMPANY_ALIASES.items():
+            company_positions = [
+                index
+                for alias in aliases
+                for index in (segment.find(alias.lower()),)
+                if index >= 0
+            ]
+            if not company_positions:
+                continue
+            for event_term in STORAGE_EVENT_TERMS:
+                event_start = segment.find(event_term.lower())
+                while event_start >= 0:
+                    if any(
+                        abs(event_start - company_start) <= STORAGE_EVENT_WINDOW_CHARS
+                        for company_start in company_positions
+                    ):
+                        signal = f"{company}×{event_term}"
+                        if signal not in signals:
+                            signals.append(signal)
+                        break
+                    event_start = segment.find(event_term.lower(), event_start + 1)
+                if any(signal.startswith(f"{company}×") for signal in signals):
+                    break
+    return signals
 
 
 def dedupe_url_key(url: str) -> str:
@@ -168,6 +256,7 @@ def score_item(item: RawItem, section: SectionConfig) -> CandidateItem:
     heavy_noise = _match_plain_terms(text, HEAVY_NOISE_TERMS)
     consumer_noise = _match_plain_terms(text, CONSUMER_NOISE_TERMS)
     high_value = _match_plain_terms(text, HIGH_VALUE_TERMS)
+    priority_signals = _nearby_storage_event_signals(text)
 
     source_weight = next(
         (source.weight for source in section.sources if source.id == item.source_id),
@@ -192,6 +281,8 @@ def score_item(item: RawItem, section: SectionConfig) -> CandidateItem:
         score = min(score, 35.0)
     elif aggregate_noise:
         score = min(score, 50.0)
+    if priority_signals:
+        score = max(score, STORAGE_EVENT_SCORE_FLOOR)
 
     reason_parts: list[str] = []
     if matched:
@@ -204,6 +295,8 @@ def score_item(item: RawItem, section: SectionConfig) -> CandidateItem:
         reason_parts.append("消费/娱乐弱相关降权：" + "、".join(consumer_noise))
     if high_value:
         reason_parts.append("高价值主题加权：" + "、".join(high_value[:6]))
+    if priority_signals:
+        reason_parts.append("重点存储事件保护：" + "、".join(priority_signals))
     if not reason_parts:
         reason_parts.append("未命中明确偏好，按源权重保留排序")
 
@@ -212,6 +305,7 @@ def score_item(item: RawItem, section: SectionConfig) -> CandidateItem:
         score=round(score, 2),
         matched_terms=matched,
         avoided_terms=avoided,
+        priority_signals=priority_signals,
         reason="；".join(reason_parts),
         entered_ai=score > 0,
     )
@@ -229,7 +323,10 @@ def rank_candidates(
     historical_title_hashes: set[str] | None = None,
 ) -> list[CandidateItem]:
     candidates = [score_item(item, section) for item in items if item.fetch_status != "failed"]
-    candidates.sort(key=lambda candidate: candidate.score, reverse=True)
+    candidates.sort(
+        key=lambda candidate: (bool(candidate.priority_signals), candidate.score),
+        reverse=True,
+    )
     selected: list[CandidateItem] = []
     seen_urls: set[str] = set(historical_urls or set())
     seen_title_hashes: set[str] = set(historical_title_hashes or set())

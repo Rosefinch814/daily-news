@@ -72,6 +72,89 @@ def test_score_caps_keyword_stuffed_aggregate_news() -> None:
     assert candidate.score <= 35
 
 
+def test_score_rescues_storage_earnings_inside_noisy_aggregate() -> None:
+    section = load_section("tech")
+    item = _item(
+        "8点1氪丨多家公司动态与今日热点导览",
+        (
+            "TOP 3大新闻包含股价、市值、融资和大会消息。" + "其他公司动态。" * 80
+            + "大公司财报：SK海力士第二季度营业利润同比增长557.2%，销售额和净利润同步增长。"
+        ),
+    )
+
+    candidate = score_item(item, section)
+
+    assert candidate.entered_ai is True
+    assert candidate.score >= 42
+    assert candidate.priority_signals
+    assert candidate.priority_signals[0].startswith("SK海力士×")
+    assert "重点存储事件保护" in candidate.reason
+
+
+def test_score_does_not_rescue_storage_stock_chatter() -> None:
+    section = load_section("tech")
+    item = _item(
+        "8点1氪丨SK海力士ADR盘中涨超5%",
+        "今日热点导览只有股价、市值和市场情绪，没有经营或产业进展。",
+    )
+
+    candidate = score_item(item, section)
+
+    assert candidate.priority_signals == []
+    assert candidate.score <= 35
+
+
+def test_score_does_not_join_company_and_unrelated_event_across_sentences() -> None:
+    section = load_section("tech")
+    item = _item(
+        "8点1氪丨长鑫科技上市动态；泡泡玛特城市乐园涨价",
+        "今日热点导览：“工业维生素”价格暴涨，长鑫科技中签号出炉。另一家公司公布季度财报。",
+    )
+
+    candidate = score_item(item, section)
+
+    assert candidate.priority_signals == []
+    assert candidate.score <= 35
+
+
+def test_rank_candidates_reserves_review_for_storage_priority_event() -> None:
+    section = load_section("tech")
+    regular_items = []
+    for index in range(5):
+        raw = _item(
+            f"Nvidia AI chip update {index}",
+            "OpenAI model and data center GPU news.",
+        )
+        regular_items.append(
+            raw.model_copy(
+                update={
+                    "id": f"regular-{index}",
+                    "url": f"https://example.com/regular-{index}",
+                }
+            )
+        )
+    storage_item = _item(
+        "8点1氪丨今日公司动态",
+        "财报：美光季度营收增长，并上调HBM出货预期。",
+    ).model_copy(
+        update={
+            "id": "storage-event",
+            "url": "https://example.com/storage-event",
+        }
+    )
+
+    ranked = rank_candidates(
+        [*regular_items, storage_item],
+        section,
+        max_candidates=4,
+        per_source_limit=4,
+        require_interest_match_when_over_capacity=False,
+    )
+
+    assert "storage-event" in [candidate.raw_item.id for candidate in ranked]
+    assert ranked[0].raw_item.id == "storage-event"
+
+
 def test_score_penalizes_consumer_deals() -> None:
     section = load_section("tech")
     item = _item("Apple Watch SE Prime Day deal sale", "A consumer gadget discount.")

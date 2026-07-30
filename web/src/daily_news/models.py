@@ -96,6 +96,7 @@ class CandidateItem(BaseModel):
     score: float
     matched_terms: list[str] = Field(default_factory=list)
     avoided_terms: list[str] = Field(default_factory=list)
+    priority_signals: list[str] = Field(default_factory=list)
     reason: str
     entered_ai: bool = True
 

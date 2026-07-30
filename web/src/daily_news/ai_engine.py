@@ -181,6 +181,7 @@ def _candidate_payload(config: PipelineConfig, candidates: list[CandidateItem]) 
                 "coarse_reason": candidate.reason,
                 "matched_terms": candidate.matched_terms,
                 "avoided_terms": candidate.avoided_terms,
+                "priority_signals": candidate.priority_signals,
             }
         )
     return payload
@@ -243,6 +244,7 @@ def build_shortlist_prompt(
 3. keep 表示值得抓正文并大概率进入最终选题；maybe 表示值得抓正文但不确定；drop 表示不进入正文补全。
 4. 命中“不想看”应明显降权，但如果事件重大，可以保留并说明理由。
 5. 聚合类新闻需要判断其中是否包含真正命中关注清单的内容。
+6. priority_signals 表示本地发现了需要完整审阅的重点产业事件。它只保证审阅、不保证入选；不得因为载体是聚合稿就直接丢弃，应按具体事件的新鲜度、重要度和产业影响判断。
 
 输出要求：
 - 只输出一个 JSON 对象，不要 Markdown，不要解释。
@@ -295,7 +297,8 @@ def build_shortlist_file_prompt(
 3. keep 表示值得抓正文并大概率进入最终选题；maybe 表示值得抓正文但不确定；drop 表示不进入正文补全。
 4. 命中“不想看”应明显降权，但如果事件重大，可以保留并说明理由。
 5. 聚合类新闻需要判断其中是否包含真正命中关注清单的内容。
-6. 如果板块配置里包含 taste_profile，它是用户反馈沉淀出的软偏好：多看的主题可适度提权，少看的主题可适度降权；但 interests.avoid 仍是硬边界，不能被 taste_profile 翻盘。
+6. priority_signals 表示本地发现了需要完整审阅的重点产业事件。它只保证审阅、不保证入选；不得因为载体是聚合稿就直接丢弃，应按具体事件的新鲜度、重要度和产业影响判断。
+7. 如果板块配置里包含 taste_profile，它是用户反馈沉淀出的软偏好：多看的主题可适度提权，少看的主题可适度降权；但 interests.avoid 仍是硬边界，不能被 taste_profile 翻盘。
 
 输出要求：
 - 只输出一个 JSON 对象，不要 Markdown，不要解释。
@@ -425,6 +428,8 @@ def build_selection_file_prompt(
 5. relevance_score 表示与用户关注点相关度，importance_score 表示事件本身重要度。
 6. 如果板块配置里包含 taste_profile，它是用户反馈沉淀出的软偏好：多看的主题可适度提权，少看的主题可适度降权；但 interests.avoid 仍是硬边界，不能被 taste_profile 翻盘。
 7. 不要把多个历史旧闻揉成一个新头条；合集如果没有新增事实，应丢弃或降为速览。
+8. 存储产业的财报、价格、订单出货、产能、资本开支和量产进展是长期关注方向。有实质候选时不得仅因模型发布或 Agent 类候选数量更多而挤出；但不要设置每日配额，没有新事实就不凑数。
+9. priority_signals 只保证该事件获得审阅，不代表必须入选。若它来自聚合稿，应按其中标出的具体事件判断；重大且有新增事实可进头条，一般进展可进速览，旧闻或无实质变化应丢弃。
 
 输出要求：
 - 只输出一个 JSON 对象，不要 Markdown，不要解释。
