@@ -12,7 +12,9 @@ from daily_news.ai_engine import (
     XHSNoteTitleOutput,
     build_xhs_condense_file_prompt,
     build_xhs_magnetize_prompt,
+    build_xhs_magnetize_repair_prompt,
     build_xhs_note_title_prompt,
+    build_xhs_note_title_repair_prompt,
 )
 from daily_news.config import PipelineConfig
 from daily_news.main import make_issue
@@ -260,6 +262,27 @@ def test_xhs_note_title_prompt_contains_hard_limit_and_input_path(tmp_path: Path
     assert "只能使用输入文件 `headlines[0]`" in prompt or "只允许使用输入文件 `headlines[0]`" in prompt
     assert "AI科技日报今日看点" in prompt
     assert '{"title": "不超过20字的中文标题"}' in prompt
+    assert "未来生效时间" in prompt
+    assert "最早2027年6月PJM缺电时可限供" in prompt
+
+
+def test_xhs_note_title_repair_prompt_contains_failed_output_and_reasons(
+    tmp_path: Path,
+) -> None:
+    input_path = tmp_path / "xhs_note_title_input.json"
+    input_path.write_text("{}", encoding="utf-8")
+    failed_output = XHSNoteTitleOutput(title="PJM缺电时限供50兆瓦以上数据中心")
+
+    prompt = build_xhs_note_title_repair_prompt(
+        input_path,
+        failed_output,
+        ["丢失未来生效时间：2027年6月", "丢失时间限定词：最早"],
+    )
+
+    assert failed_output.title in prompt
+    assert "丢失未来生效时间：2027年6月" in prompt
+    assert "唯一一次语义修正" in prompt
+    assert "不超过 20 个字符" in prompt
 
 
 def test_xhs_magnetize_prompt_contains_contract_and_examples(tmp_path: Path) -> None:
@@ -276,6 +299,28 @@ def test_xhs_magnetize_prompt_contains_contract_and_examples(tmp_path: Path) -> 
     assert "不得截断英文单词" in prompt
     assert "事实层铁律" in prompt
     assert "智谱估值暴涨15倍" in prompt
+    assert "状态/生效时间" in prompt
+    assert "最早2027年6月起，PJM缺电时可限供数据中心" in prompt
+
+
+def test_xhs_magnetize_repair_prompt_contains_failed_output_and_reasons(tmp_path: Path) -> None:
+    input_path = tmp_path / "xhs_magnetize_input.json"
+    input_path.write_text("{}", encoding="utf-8")
+    failed_output = XHSMagnetizeOutput(
+        restrained="PJM缺电时可限供50兆瓦及以上数据中心",
+        punchy="缺电时可限供，PJM把大型数据中心列入范围",
+    )
+
+    prompt = build_xhs_magnetize_repair_prompt(
+        input_path,
+        failed_output,
+        ["丢失未来生效时间：2027年6月", "丢失时间限定词：最早"],
+    )
+
+    assert failed_output.restrained in prompt
+    assert "丢失未来生效时间：2027年6月" in prompt
+    assert "唯一一次语义修正" in prompt
+    assert "不要只补一个“可”字" in prompt
 
 
 def test_build_xhs_note_title_input_contains_only_needed_issue_context() -> None:
@@ -352,6 +397,20 @@ def test_note_title_validator_rejects_overlimit_and_new_numbers() -> None:
     assert not is_valid_note_title("今日AI速览", issue)
 
 
+def test_note_title_validator_protects_future_status_time_and_condition() -> None:
+    issue = sample_issue()
+    issue.headlines[0].title_zh = (
+        "美国最大电网将在缺电时限供大型数据中心，最早2027年6月启动"
+    )
+    issue.headlines[0].summary_zh = (
+        "美国最大电网运营商PJM表示，最早从2027年6月起，一旦电力短缺，"
+        "可削减50兆瓦及以上数据中心等大型用户的用电。"
+    )
+
+    assert not is_valid_note_title("PJM缺电时限供50兆瓦以上数据中心", issue)
+    assert is_valid_note_title("最早2027年6月PJM缺电时可限供", issue)
+
+
 def test_build_note_title_uses_preview_fallback_only_when_ai_disabled(monkeypatch, tmp_path: Path) -> None:
     issue = sample_issue()
 
@@ -380,6 +439,46 @@ def test_build_note_title_blocks_invalid_ai_title(monkeypatch, tmp_path: Path) -
 
     with pytest.raises(XHSExportAIError, match="xhs_note_title 未通过校验"):
         build_note_title(issue, out_dir=tmp_path, config=PipelineConfig(), ai_enabled=True)
+
+
+def test_build_note_title_repairs_lost_future_status_once(monkeypatch, tmp_path: Path) -> None:
+    issue = sample_issue()
+    issue.headlines[0].title_zh = (
+        "美国最大电网将在缺电时限供大型数据中心，最早2027年6月启动"
+    )
+    issue.headlines[0].summary_zh = (
+        "美国最大电网运营商PJM表示，最早从2027年6月起，一旦电力短缺，"
+        "可削减50兆瓦及以上数据中心等大型用户的用电。"
+    )
+    outputs = iter(
+        [
+            XHSNoteTitleOutput(title="PJM缺电时限供50兆瓦以上数据中心"),
+            XHSNoteTitleOutput(title="最早2027年6月PJM缺电时可限供"),
+        ]
+    )
+    task_types: list[str] = []
+
+    def fake_run_ai_task(**kwargs):  # noqa: ANN001
+        task_types.append(kwargs["task_type"])
+        return next(outputs), object()
+
+    saved_stages: list[str] = []
+    monkeypatch.setattr("daily_news.xhs_export.run_ai_task", fake_run_ai_task)
+    monkeypatch.setattr(
+        "daily_news.xhs_export.save_ai_task_run",
+        lambda run_id, stage, ai_run, **kwargs: saved_stages.append(stage),
+    )
+
+    title = build_note_title(
+        issue,
+        out_dir=tmp_path,
+        config=PipelineConfig(),
+        ai_enabled=True,
+    )
+
+    assert title == "最早2027年6月PJM缺电时可限供"
+    assert task_types == ["xhs_note_title", "xhs_note_title_repair"]
+    assert saved_stages == ["xhs_note_title", "xhs_note_title_repair"]
 
 
 def test_prepare_xhs_condenser_blocks_export_when_batch_ai_fails(monkeypatch, tmp_path: Path) -> None:
@@ -512,6 +611,59 @@ def test_prepare_v2_cover_title_variants_blocks_invalid_restrained_output(monkey
         )
 
 
+def test_prepare_v2_cover_title_variants_repairs_lost_future_status_once(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    issue = sample_issue()
+    issue.headlines[0].title_zh = (
+        "美国最大电网将在缺电时限供大型数据中心，最早2027年6月启动"
+    )
+    issue.headlines[0].summary_zh = (
+        "美国最大电网运营商PJM表示，最早从2027年6月起，一旦电力短缺，"
+        "可削减50兆瓦及以上数据中心等大型用户的用电。"
+    )
+    outputs = iter(
+        [
+            XHSMagnetizeOutput(
+                restrained="PJM缺电时可限供50兆瓦及以上数据中心",
+                punchy="缺电时可限供，PJM把大型数据中心列入范围",
+            ),
+            XHSMagnetizeOutput(
+                restrained="最早2027年6月起，PJM缺电时可限供数据中心",
+                punchy="最早2027年6月，PJM缺电时或限供数据中心",
+            ),
+        ]
+    )
+    task_types: list[str] = []
+
+    def fake_run_ai_task(**kwargs):  # noqa: ANN001
+        task_types.append(kwargs["task_type"])
+        return next(outputs), object()
+
+    saved_stages: list[str] = []
+    monkeypatch.setattr("daily_news.xhs_export.run_ai_task", fake_run_ai_task)
+    monkeypatch.setattr(
+        "daily_news.xhs_export.save_ai_task_run",
+        lambda run_id, stage, ai_run, **kwargs: saved_stages.append(stage),
+    )
+
+    variants = prepare_v2_cover_title_variants(
+        issue,
+        out_dir=tmp_path,
+        condenser=None,
+        config=PipelineConfig(),
+        ai_enabled=True,
+    )
+
+    assert task_types == ["xhs_magnetize", "xhs_magnetize_repair"]
+    assert saved_stages == ["xhs_magnetize", "xhs_magnetize_repair"]
+    assert variants.restrained == "最早2027年6月起，PJM缺电时可限供数据中心"
+    assert variants.semantic_repair_used
+    assert any("未来生效时间" in reason for reason in variants.initial_rejection_reasons)
+    assert not variants.rejection_reasons
+
+
 def test_magnetize_validator_rejects_drift_and_restrained_hype() -> None:
     source_title = "谷歌自研新芯片曝光，目标能效提升6至10倍"
     summary = "谷歌计划在2028年前后推出Frozen v2，目标能效提升6至10倍。"
@@ -552,6 +704,39 @@ def test_magnetize_validator_rejects_drift_and_restrained_hype() -> None:
     assert any("主体" in reason for reason in wrong_subject)
     assert any("情绪词" in reason for reason in hype)
     assert any("未来语气" in reason for reason in lost_plan)
+
+
+def test_magnetize_validator_protects_future_time_qualifier_and_condition() -> None:
+    source_title = "美国最大电网将在缺电时限供大型数据中心，最早2027年6月启动"
+    summary = (
+        "美国最大电网运营商PJM表示，最早从2027年6月起，一旦电力短缺，"
+        "可削减50兆瓦及以上数据中心等大型用户的用电。"
+    )
+
+    lost_status = validate_magnetized_title(
+        "PJM缺电时可限供50兆瓦及以上数据中心",
+        original_title=source_title,
+        summary=summary,
+        restrained=True,
+    )
+    protected = validate_magnetized_title(
+        "最早2027年6月起，PJM缺电时可限供数据中心",
+        original_title=source_title,
+        summary=summary,
+        restrained=True,
+    )
+    lost_condition = validate_magnetized_title(
+        "最早2027年6月起，PJM可限供大型数据中心",
+        original_title=source_title,
+        summary=summary,
+        restrained=True,
+    )
+
+    assert any("未来生效时间" in reason for reason in lost_status)
+    assert any("时间限定词" in reason for reason in lost_status)
+    assert any("尚未生效状态" in reason for reason in lost_status)
+    assert protected == []
+    assert any("触发条件" in reason for reason in lost_condition)
 
 
 def test_magnetize_validator_accepts_supported_absolute_and_emotional_prefix() -> None:

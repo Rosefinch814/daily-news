@@ -20,7 +20,9 @@ from daily_news.ai_engine import (
     XHSNoteTitleOutput,
     build_xhs_condense_file_prompt,
     build_xhs_magnetize_prompt,
+    build_xhs_magnetize_repair_prompt,
     build_xhs_note_title_prompt,
+    build_xhs_note_title_repair_prompt,
     run_ai_task,
 )
 from daily_news.config import PipelineConfig
@@ -89,6 +91,12 @@ MAGNETIZE_RESTRAINED_BANNED_TERMS = (
 )
 MAGNETIZE_FUTURE_SOURCE_TERMS = ("计划", "目标", "预计", "预期", "拟", "将", "有望", "可能", "或将", "力争")
 MAGNETIZE_FUTURE_OUTPUT_TERMS = MAGNETIZE_FUTURE_SOURCE_TERMS + ("要", "冲刺")
+MAGNETIZE_FUTURE_TIME_PATTERN = re.compile(
+    r"(?P<qualifier>最早|最快|不早于|最迟|不晚于)?"
+    r"(?:从|于)?"
+    r"(?P<date>\d{4}年(?:\d{1,2}月(?:\d{1,2}日)?)?)"
+    r"(?P<suffix>起|开始|启动|生效)?"
+)
 MAGNETIZE_ABSOLUTE_TERMS = ("已实现", "正式上线", "史上最大", "史最大", "首次", "唯一", "全面", "领先", "超过", "吊打", "碾压")
 MAGNETIZE_ABSOLUTE_EQUIVALENTS = {"史最大": ("史最大", "史上最大")}
 MAGNETIZE_ENTITY_QUALIFIERS = ("国行", "中国", "美国", "韩国", "日本", "全球", "国内", "海外", "当地")
@@ -134,6 +142,8 @@ class XHSCoverTitleVariants:
     punchy: str | None
     source: Literal["ai", "fallback"]
     rejection_reasons: tuple[str, ...] = ()
+    semantic_repair_used: bool = False
+    initial_rejection_reasons: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -470,8 +480,6 @@ def prepare_v2_cover_title_variants(
             )
         raise XHSExportAIError(f"xhs_magnetize 失败：{exc}") from exc
 
-    restrained = compact_text(output.restrained)
-    punchy = compact_text(output.punchy)
     restrained_reasons = validate_magnetized_title(
         output.restrained,
         original_title=article.title_zh,
@@ -484,13 +492,69 @@ def prepare_v2_cover_title_variants(
         summary=article.summary_zh,
         restrained=False,
     )
+    semantic_repair_used = False
+    initial_rejection_reasons: tuple[str, ...] = ()
+    if restrained_reasons:
+        initial_rejection_reasons = tuple(
+            [f"克制版：{reason}" for reason in restrained_reasons]
+            + [f"冲版：{reason}" for reason in punchy_reasons]
+        )
+        try:
+            repaired_output, repair_run = run_ai_task(
+                task_type="xhs_magnetize_repair",
+                prompt=build_xhs_magnetize_repair_prompt(
+                    input_path.resolve(),
+                    output,
+                    restrained_reasons,
+                ),
+                output_model=XHSMagnetizeOutput,
+                provider=selected_provider,
+                config=config,
+            )
+            save_ai_task_run(
+                f"xhs-{issue.issue_date.isoformat()}",
+                "xhs_magnetize_repair",
+                repair_run,
+                save_attempts=config.logging.save_attempts,
+                save_provider_events=config.logging.save_provider_events,
+                append_metrics_jsonl=config.logging.append_metrics_jsonl,
+            )
+        except AIEngineError as exc:
+            if exc.record is not None:
+                save_ai_task_run(
+                    f"xhs-{issue.issue_date.isoformat()}",
+                    "xhs_magnetize_repair",
+                    exc.record,
+                    save_attempts=config.logging.save_attempts,
+                    save_provider_events=config.logging.save_provider_events,
+                    append_metrics_jsonl=config.logging.append_metrics_jsonl,
+                )
+            raise XHSExportAIError(f"xhs_magnetize 自动修正失败：{exc}") from exc
+        output = repaired_output
+        semantic_repair_used = True
+        restrained_reasons = validate_magnetized_title(
+            output.restrained,
+            original_title=article.title_zh,
+            summary=article.summary_zh,
+            restrained=True,
+        )
+        punchy_reasons = validate_magnetized_title(
+            output.punchy,
+            original_title=article.title_zh,
+            summary=article.summary_zh,
+            restrained=False,
+        )
+
+    restrained = compact_text(output.restrained)
+    punchy = compact_text(output.punchy)
     reasons = tuple(
         [f"克制版：{reason}" for reason in restrained_reasons]
         + [f"冲版：{reason}" for reason in punchy_reasons]
     )
     if restrained_reasons:
         raise XHSExportAIError(
-            "xhs_magnetize 克制版未通过校验：" + "；".join(restrained_reasons)
+            "xhs_magnetize 克制版未通过校验（自动修正后仍失败）："
+            + "；".join(restrained_reasons)
         )
     if punchy_reasons:
         LOGGER.warning("xhs_magnetize punchy output rejected: %s", "; ".join(punchy_reasons))
@@ -501,6 +565,8 @@ def prepare_v2_cover_title_variants(
         punchy=None if punchy_reasons else punchy,
         source="ai",
         rejection_reasons=reasons,
+        semantic_repair_used=semantic_repair_used,
+        initial_rejection_reasons=initial_rejection_reasons,
     )
 
 
@@ -520,6 +586,11 @@ def build_xhs_magnetize_input(issue: Issue) -> dict[str, object]:
 def write_cover_title_variants(path: Path, variants: XHSCoverTitleVariants) -> None:
     punchy = variants.punchy or "无（未通过校验或未启用 AI）"
     reasons = "无" if not variants.rejection_reasons else "；".join(variants.rejection_reasons)
+    initial_reasons = (
+        "无"
+        if not variants.initial_rejection_reasons
+        else "；".join(variants.initial_rejection_reasons)
+    )
     path.write_text(
         "\n".join(
             [
@@ -528,6 +599,8 @@ def write_cover_title_variants(path: Path, variants: XHSCoverTitleVariants) -> N
                 f"当前使用（克制版）：{variants.restrained}",
                 f"冲版备选：{punchy}",
                 f"当前来源：{variants.source}",
+                f"自动语义修正：{'是' if variants.semantic_repair_used else '否'}",
+                f"首次拒绝原因：{initial_reasons}",
                 f"回退/拒绝原因：{reasons}",
                 "",
             ]
@@ -580,10 +653,51 @@ def build_note_title(
         raise XHSExportAIError(f"xhs_note_title 失败：{exc}") from exc
 
     title = compact_text(output.title)
-    if is_valid_note_title(title, issue):
+    validation_reasons = validate_note_title(title, issue)
+    if not validation_reasons:
         return title
 
-    raise XHSExportAIError(f"xhs_note_title 未通过校验：{title}")
+    try:
+        repaired_output, repair_run = run_ai_task(
+            task_type="xhs_note_title_repair",
+            prompt=build_xhs_note_title_repair_prompt(
+                input_path.resolve(),
+                output,
+                validation_reasons,
+            ),
+            output_model=XHSNoteTitleOutput,
+            provider=selected_provider,
+            config=config,
+        )
+        save_ai_task_run(
+            f"xhs-{issue.issue_date.isoformat()}",
+            "xhs_note_title_repair",
+            repair_run,
+            save_attempts=config.logging.save_attempts,
+            save_provider_events=config.logging.save_provider_events,
+            append_metrics_jsonl=config.logging.append_metrics_jsonl,
+        )
+    except AIEngineError as exc:
+        if exc.record is not None:
+            save_ai_task_run(
+                f"xhs-{issue.issue_date.isoformat()}",
+                "xhs_note_title_repair",
+                exc.record,
+                save_attempts=config.logging.save_attempts,
+                save_provider_events=config.logging.save_provider_events,
+                append_metrics_jsonl=config.logging.append_metrics_jsonl,
+            )
+        raise XHSExportAIError(f"xhs_note_title 自动修正失败：{exc}") from exc
+
+    repaired_title = compact_text(repaired_output.title)
+    repaired_reasons = validate_note_title(repaired_title, issue)
+    if not repaired_reasons:
+        return repaired_title
+    raise XHSExportAIError(
+        "xhs_note_title 未通过校验（自动修正后仍失败）："
+        + "；".join(repaired_reasons)
+        + f"；标题：{repaired_title}"
+    )
 
 
 def build_xhs_note_title_input(issue: Issue) -> dict[str, object]:
@@ -1014,11 +1128,19 @@ def fallback_note_title(issue: Issue) -> str:
     return f"{XHS_PUBLICATION_NAME} · {issue.issue_date.month}月{issue.issue_date.day}日"
 
 
-def is_valid_note_title(title: str, issue: Issue) -> bool:
-    if not title or len(title) > 20 or "\n" in title or "…" in title or "..." in title:
-        return False
-    if any(term in title for term in GENERIC_NOTE_TITLE_TERMS):
-        return False
+def validate_note_title(title: str, issue: Issue) -> list[str]:
+    reasons: list[str] = []
+    if not title:
+        return ["输出为空"]
+    if len(title) > 20:
+        reasons.append(f"长度 {len(title)} 超过 20 字")
+    if "\n" in title or "\r" in title:
+        reasons.append("包含换行")
+    if "…" in title or "..." in title:
+        reasons.append("包含省略号")
+    generic_terms = [term for term in GENERIC_NOTE_TITLE_TERMS if term in title]
+    if generic_terms:
+        reasons.append(f"命中泛标题词：{', '.join(generic_terms)}")
     allowed_text = " ".join(
         [
             XHS_PUBLICATION_NAME,
@@ -1031,7 +1153,22 @@ def is_valid_note_title(title: str, issue: Issue) -> bool:
             for article in issue.headlines[:1]
         ]
     )
-    return numbers_in_text(title).issubset(numbers_in_text(allowed_text))
+    if not numbers_in_text(title).issubset(numbers_in_text(allowed_text)):
+        reasons.append("出现原文没有的数字")
+    if issue.headlines:
+        article = issue.headlines[0]
+        reasons.extend(
+            validate_protected_status_facts(
+                title,
+                original_title=article.title_zh,
+                summary=article.summary_zh,
+            )
+        )
+    return reasons
+
+
+def is_valid_note_title(title: str, issue: Issue) -> bool:
+    return not validate_note_title(title, issue)
 
 
 def render_cards_html(issue: Issue, cards: Sequence[Card]) -> str:
@@ -1336,6 +1473,60 @@ def v2_number_emphasis_score(value: str) -> int:
     return 2
 
 
+def protected_future_times(text: str) -> list[tuple[str, str | None]]:
+    normalized = unicodedata.normalize("NFKC", text)
+    constraints: list[tuple[str, str | None]] = []
+    for match in MAGNETIZE_FUTURE_TIME_PATTERN.finditer(normalized):
+        qualifier = match.group("qualifier")
+        suffix = match.group("suffix")
+        if qualifier is None and suffix is None:
+            continue
+        constraint = (match.group("date"), qualifier)
+        if constraint not in constraints:
+            constraints.append(constraint)
+    return constraints
+
+
+def protected_trigger_conditions(text: str) -> list[str]:
+    normalized = unicodedata.normalize("NFKC", compact_text(text))
+    conditions: list[str] = []
+    for match in re.finditer(r"(?:在|当)([^，。；：]{2,16}?)时", normalized):
+        condition = f"{match.group(1)}时"
+        if condition not in conditions:
+            conditions.append(condition)
+    return conditions
+
+
+def validate_protected_status_facts(
+    title: str,
+    *,
+    original_title: str,
+    summary: str,
+) -> list[str]:
+    reasons: list[str] = []
+    value = compact_text(title)
+    source_text = f"{original_title} {summary}"
+    future_time_constraints = protected_future_times(source_text)
+    future_time_preserved = bool(future_time_constraints)
+    for future_date, qualifier in future_time_constraints:
+        if future_date not in value:
+            reasons.append(f"丢失未来生效时间：{future_date}")
+            future_time_preserved = False
+        if qualifier is not None and qualifier not in value:
+            reasons.append(f"丢失时间限定词：{qualifier}")
+            future_time_preserved = False
+
+    source_has_future_state = any(term in original_title for term in MAGNETIZE_FUTURE_SOURCE_TERMS)
+    output_has_future_state = any(term in value for term in MAGNETIZE_FUTURE_OUTPUT_TERMS)
+    if source_has_future_state and not output_has_future_state and not future_time_preserved:
+        reasons.append("丢失尚未生效状态（未来语气）")
+
+    for condition in protected_trigger_conditions(original_title):
+        if condition not in value:
+            reasons.append(f"丢失触发条件：{condition}")
+    return reasons
+
+
 def validate_magnetized_title(
     title: str,
     *,
@@ -1379,10 +1570,13 @@ def validate_magnetized_title(
         if banned:
             reasons.append(f"克制版命中情绪词：{', '.join(banned)}")
 
-    if any(term in original_title for term in MAGNETIZE_FUTURE_SOURCE_TERMS) and not any(
-        term in value for term in MAGNETIZE_FUTURE_OUTPUT_TERMS
-    ):
-        reasons.append("丢失计划/目标等未来语气")
+    reasons.extend(
+        validate_protected_status_facts(
+            value,
+            original_title=original_title,
+            summary=summary,
+        )
+    )
 
     unsupported_absolute = [
         term
