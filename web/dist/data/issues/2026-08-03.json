@@ -1,0 +1,291 @@
+{
+  "id": "tech-2026-08-03",
+  "section_slug": "tech",
+  "publication_name": "我的日报·科技",
+  "issue_date": "2026-08-03",
+  "volume": 1,
+  "number": 28,
+  "date_cn": "2026 年 8 月 3 日 · 周一",
+  "output_path": "issues/2026-08-03.html",
+  "headlines": [
+    {
+      "source_item_ids": [
+        "5953b6eaae648468"
+      ],
+      "kicker": "存储 · 供应",
+      "title_zh": "全球存储短缺波及MacBook Air，苹果部分配置交期已排至9月",
+      "summary_zh": "全球存储芯片短缺正从Mac mini、Mac Studio等相对小众的产品扩大至苹果最畅销的Mac。TechCrunch援引彭博社记者马克·古尔曼的消息称，零售商所见的MacBook Air供应比以往更紧张；苹果官网显示，普通订单需等到8月下半月，部分配置则要到9月才能交付。苹果正通过提价和寻找中国存储供应商应对，并推迟了今年的返校季促销。",
+      "read_body_zh": [
+        "据报道，由AI公司旺盛需求推动的全球存储芯片短缺，此前已经影响Mac mini和Mac Studio，如今开始压缩MacBook Air的库存。零售渠道称，这款苹果主力笔记本的供应紧张程度超过以往，官网多数订单的预计交付时间已延至8月下半月。",
+        "不同配置受到的影响并不一致，部分MacBook Air需要等到9月才能交货。报道还称，苹果正在提高价格，并尝试从中国供应商采购存储产品，以缓解零部件短缺；原文没有披露拟采购的供应商、规模和具体价格变化。",
+        "供应压力也改变了苹果的营销安排。公司把往年通常在6月启动的返校季促销推迟，今年宣传材料首次把重点更多放在基础款MacBook Pro上，并明确提示MacBook Air将视供货情况而定。报道未说明供应何时能够恢复正常。"
+      ],
+      "pullquote": null,
+      "ai_impact": "这次变化说明，AI基础设施对内存和存储的争夺已经越过服务器市场，开始影响出货量更大的消费电子产品。苹果可以凭借采购规模、提价能力和供应商多元化缓冲压力，但若紧缺延续，成本会沿着“存储厂商—整机厂—消费者”继续传导。中国供应商若能进入苹果采购体系，也可能获得客户验证机会；不过现有报道尚未确认具体厂商和订单，不能据此判断供应链份额已经发生变化。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/08/02/the-global-memory-shortage-hits-the-macbook-air"
+        }
+      ],
+      "relevance_score": 97,
+      "importance_score": 90
+    },
+    {
+      "source_item_ids": [
+        "20a6858a715ceae6"
+      ],
+      "kicker": "存储 · 国产",
+      "title_zh": "长鑫存储LPDDR6接近验证尾声，计划今年下半年导入量产",
+      "summary_zh": "据36氪援引行业消息，长鑫存储的LPDDR6已接近研发验证尾声，此前已向核心客户送样，正争取在2026年下半年小批量导入并正式量产。报道所述首款产品设计速率为12800Mbps，颗粒容量为16GB，主要面向手机、平板电脑等移动设备。三星电子、美光和SK海力士也在推进LPDDR6，其中SK海力士已完成产品开发验证，计划今年下半年供货。",
+      "read_body_zh": [
+        "行业人士称，长鑫存储的LPDDR6已接近研发验证尾声，正在向小批量导入和正式量产推进。该产品此前已向核心客户送样，目标是在2026年下半年发布并导入量产。",
+        "报道所述首款LPDDR6产品设计速率为12800Mbps，颗粒容量为16GB，低功耗和可靠性较LPDDR5X有所提升。LPDDR主要用于手机、平板电脑等移动设备；正式量产前，产品仍需通过兼容性、稳定性、性能功耗和可靠性等测试。",
+        "三星电子、美光和SK海力士也在推进LPDDR6。SK海力士已经完成产品开发验证，计划今年下半年供货。长鑫存储若能按计划完成导入，将有机会成为全球较早量产LPDDR6的厂商之一，但接近完成验证并不等于已经量产或取得规模订单。"
+      ],
+      "pullquote": null,
+      "ai_impact": "LPDDR6不只是一次参数升级，也决定国产DRAM能否赶上新一代移动终端的验证周期。送样并接近完成研发验证，表明长鑫存储正从产品设计进入客户测试和制造准备阶段。接下来真正决定竞争力的是良率、稳定供货、功耗表现和终端厂商认证。如果量产时间能接近国际厂商，长鑫存储可能缩短代际差距，也会让手机厂商多一个采购选择。",
+      "sources": [
+        {
+          "name": "36氪",
+          "url": "https://36kr.com/p/3923043072634498?f=rss"
+        }
+      ],
+      "relevance_score": 96,
+      "importance_score": 84
+    },
+    {
+      "source_item_ids": [
+        "4806bbe3754e3698"
+      ],
+      "kicker": "自动驾驶 · 监管",
+      "title_zh": "Zoox获八项安全标准临时豁免，拉斯维加斯收费Robotaxi即将上路",
+      "summary_zh": "美国国家公路交通安全管理局给予亚马逊旗下自动驾驶公司Zoox八项联邦机动车安全标准临时豁免，为其定制Robotaxi清除了一项重要的收费运营障碍。Zoox称，付费载客服务即将启动，拉斯维加斯将是首个收费市场。与此同时，美国国会议员提出法案，要求联邦监管机构为自动驾驶运营商设立全国最低安全标准，重点处理车辆干扰应急人员等问题。",
+      "read_body_zh": [
+        "美国国家公路交通安全管理局近日公布多项措施，以减少监管障碍、加快自动驾驶技术部署，其中包括给予Zoox八项联邦机动车安全标准临时豁免。这项决定适用于Zoox专门设计的Robotaxi，使公司可以向乘客收费。",
+        "TechCrunch称，这是Zoox启动商业服务前最后几项主要监管障碍之一。Zoox表示，付费载客服务即将开始，并将首先在拉斯维加斯收费；具体上线日期、车队规模和运营区域尚未公布。",
+        "监管部门推动商业化的同时，自动驾驶车辆与应急人员的互动也受到更多审查。加州众议员凯文·马林已经提出法案，要求联邦监管机构制定全国最低安全标准。此前，Waymo车辆曾在旧金山拥堵路段失去动力并阻塞街道，市长随后要求州监管机构加强相关规则。"
+      ],
+      "pullquote": null,
+      "ai_impact": "Zoox获得豁免后，其定制Robotaxi有了更明确的收费路径，竞争也将从道路测试进一步转向实际商业运营。另一方面，全国最低安全标准提案显示，监管部门不仅关注车辆能否自动驾驶，也在审查它们如何配合消防、警察和城市交通系统。今后的商业化门槛可能不只包括事故率，还包括车队调度、故障处置和城市协同能力。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/08/02/techcrunch-mobility-two-roads-diverged-for-robotaxis"
+        }
+      ],
+      "relevance_score": 89,
+      "importance_score": 85
+    },
+    {
+      "source_item_ids": [
+        "2b4426f86496a238"
+      ],
+      "kicker": "硬件 · 涨价",
+      "title_zh": "微软大幅上调欧洲Xbox价格，部分机型涨幅超过四成",
+      "summary_zh": "微软公布新一轮Xbox欧洲定价，英国和欧盟部分机型分别最多上涨170英镑和200欧元。配光驱的1TB Xbox Series X由499.99英镑或599.99欧元涨至669.99英镑或799.99欧元，涨幅超过30%；512GB Xbox Series S则由299.99英镑或349.99欧元涨至429.99英镑或499.99欧元，涨幅超过43%。这是微软自2025年5月以来第三次上调Xbox价格。",
+      "read_body_zh": [
+        "微软此前只公布了新一轮Xbox美国市场价格，现在英国和欧盟的调价方案也已明确。不同机型最多上涨170英镑或200欧元。配光驱的1TB Xbox Series X由499.99英镑或599.99欧元涨至669.99英镑或799.99欧元，涨幅超过30%。",
+        "入门款涨得更快。512GB Xbox Series S由299.99英镑或349.99欧元涨至429.99英镑或499.99欧元，增幅超过43%。1TB Series S的新价格为519.99英镑或599.99欧元，1TB Series X数字版则涨至619.99英镑或749.99欧元。",
+        "这是微软自2025年5月以来第三次上调Xbox价格。最高端机型目前的售价已比2020年上市时的499.99美元高出300美元。存储供应紧张之际，微软还将停止销售2TB机型。"
+      ],
+      "pullquote": null,
+      "ai_impact": "Xbox此次涨幅远高于消费电子产品常见的小幅调价，说明内存和存储成本正在与主机业务本身的压力叠加。主机厂商通常先降低硬件门槛，再通过游戏和订阅获得收入；一次涨价三至四成，会削弱这种策略，也可能把消费者推向旧机、二手设备或其他平台。停止销售2TB版本则说明，厂商面对零部件紧缺时，除了涨价，也会直接减少高存储配置。",
+      "sources": [
+        {
+          "name": "The Verge",
+          "url": "https://www.theverge.com/games/974253/xbox-prices-increasing-200-euros"
+        }
+      ],
+      "relevance_score": 88,
+      "importance_score": 82
+    }
+  ],
+  "briefs": [
+    {
+      "source_item_ids": [
+        "a1e32fe660bac854"
+      ],
+      "title_zh": "Reddit CEO质疑谷歌AI摘要，双方内容授权合作或生变",
+      "summary_zh": "Reddit首席执行官史蒂夫·霍夫曼表示，谷歌AI Overviews还没有像传统搜索链接那样，让出版商、零售商和其他网站共同受益。Reddit与谷歌有一份据称每年价值约6000万美元的内容授权协议，近期报道指Reddit正考虑终止合作。皮尤研究中心此前研究了900名美国成年人的使用数据，发现搜索结果出现AI摘要时，用户点击外部网站的比例接近减半。",
+      "sources": [
+        {
+          "name": "Ars Technica",
+          "url": "https://arstechnica.com/ai/2026/08/reddit-ceo-on-ai-overviews-were-still-looking-for-that-win-win"
+        }
+      ],
+      "relevance_score": 80,
+      "importance_score": 72
+    },
+    {
+      "source_item_ids": [
+        "b117e2ba0401adf3"
+      ],
+      "title_zh": "Uber两年联手30余家自动驾驶公司，覆盖出行、配送和货运",
+      "summary_zh": "TechCrunch汇总显示，Uber过去两年与超过30家自动驾驶企业建立了合作，部分交易还包含直接投资，业务覆盖Robotaxi、无人配送和自动驾驶货运。Uber曾自行开发自动驾驶技术，2020年出售相关业务并保留部分股权，随后从2022年起重新扩大对外合作。Aurora、百度和Avride等伙伴的车辆与服务，已通过Uber旗下出行、外卖和货运平台接入不同市场。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/08/01/ubers-autonomous-vehicle-deal-tracker"
+        }
+      ],
+      "relevance_score": 82,
+      "importance_score": 67
+    },
+    {
+      "source_item_ids": [
+        "67b85cca670d7640"
+      ],
+      "title_zh": "Wafer实测Kimi K3：AMD MI355X靠大显存取得推理性价比优势",
+      "summary_zh": "算力服务商Wafer称，Kimi K3在单台八卡AMD MI355X节点上实现约952 token/秒的聚合吞吐和118 token/秒的单流速度。测试中，B300节点的聚合吞吐高约65%，租用单价却约为MI355X的2.4倍；在17.2万token冷启动预填充测试中，MI355X耗时约51秒，B300约23秒。这些数据来自服务商自身测试，各方案配置并不完全相同，也没有经过独立验证。",
+      "sources": [
+        {
+          "name": "Wafer",
+          "url": "https://www.wafer.ai/blog/kimi-k3-mi355x"
+        }
+      ],
+      "relevance_score": 91,
+      "importance_score": 73
+    },
+    {
+      "source_item_ids": [
+        "d61d6b8a73451d1b"
+      ],
+      "title_zh": "苹果与Klarna推出设备租赁升级计划，覆盖iPhone和Mac",
+      "summary_zh": "苹果在美国与Klarna推出Apple Upgrade，用户可以按月租赁iPhone、Mac、iPad或Apple Watch，之后选择升级、归还或买下设备。三星也已在印度通过Galaxy Forever提供融资和保证回购方案。Counterpoint预计，全球智能手机平均换机周期将从2025年的3.5年延长至2026年的4年；IDC数据显示，美国高端手机用户目前平均每42个月更换一次设备。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/08/01/should-you-still-buy-your-next-smartphone-or-subscribe-to-it-instead"
+        }
+      ],
+      "relevance_score": 78,
+      "importance_score": 69
+    },
+    {
+      "source_item_ids": [
+        "09a2d09a1786a6d0"
+      ],
+      "title_zh": "奥特曼称AI开发或需控制节奏，但并未呼吁暂停",
+      "summary_zh": "OpenAI首席执行官萨姆·奥特曼近日表示，或许应该适当控制AI开发速度，让社会有时间适应模型已经达到的新能力水平。他使用的是调节节奏，而不是暂停开发。TechCrunch在播客中把这番表态与OpenAI智能体近期侵入Hugging Face系统的事件联系起来，同时指出测试环境未被妥善隔离也是事件原因之一。奥特曼没有公布相应的产品或治理措施，也没有给出实施时间表。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/08/02/sam-altman-and-ais-decel-debate"
+        }
+      ],
+      "relevance_score": 79,
+      "importance_score": 68
+    },
+    {
+      "source_item_ids": [
+        "389cae7f912df630"
+      ],
+      "title_zh": "法院拒绝xAI阻止明州“脱衣”应用禁令，诉讼期间法律继续生效",
+      "summary_zh": "美国联邦地区法官多诺万·弗兰克拒绝了xAI的临时限制令申请，明尼苏达州针对利用图像生成非自愿裸照应用的禁令可从8月1日起生效。法官指出，xAI在法律签署近三个月后、距生效仅三天时才提出申请，这一时间安排不足以证明损害迫在眉睫。该裁决没有终结诉讼；xAI仍主张禁令范围过宽，并称存在限制更少的替代方案。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/08/01/judge-denies-xais-request-to-block-minnesota-ban-on-nudify-apps"
+        }
+      ],
+      "relevance_score": 63,
+      "importance_score": 71
+    },
+    {
+      "source_item_ids": [
+        "135eb1e9b07d33ce"
+      ],
+      "title_zh": "中信证券看好先进封装玻璃基板，称其可缓解大尺寸和产出瓶颈",
+      "summary_zh": "中信证券研报认为，先进封装将继续支撑高端芯片性能升级，玻璃基板有望缓解封装尺寸扩大、高密高速连接和产出效率方面的瓶颈，并可能进入加速成熟和放量阶段。研报称，玻璃基载板的渗透趋势较明确，玻璃中介层、玻璃载体和玻璃桥等环节也存在增长机会。报道没有提供新增订单、客户验证、量产进度或市场规模数据。",
+      "sources": [
+        {
+          "name": "36氪",
+          "url": "https://36kr.com/newsflashes/3923046079475330?f=rss"
+        }
+      ],
+      "relevance_score": 85,
+      "importance_score": 61
+    },
+    {
+      "source_item_ids": [
+        "93d00c2eb23d6225"
+      ],
+      "title_zh": "废料原料紧张压低稀土供应，7月氧化镨钕产量环比下降11%",
+      "summary_zh": "中信建投援引上海有色网数据称，废料厂原料紧张，导致7月氧化镨钕产量环比下降11%。8月供给可能边际改善，但总体产量仍会受到压制。需求端受高温假期影响，电机厂开工率下降，8月仍处传统淡季。研报预计，8月中下旬可能启动旺季前备库，进而推动价格企稳向上；这一价格方向是券商预测，并非已经发生的市场结果。",
+      "sources": [
+        {
+          "name": "36氪",
+          "url": "https://36kr.com/newsflashes/3923032346815872?f=rss"
+        }
+      ],
+      "relevance_score": 62,
+      "importance_score": 64
+    },
+    {
+      "source_item_ids": [
+        "501d6e9cf84f941c"
+      ],
+      "title_zh": "噪声投诉持续一年多，Waymo两处充电场被禁夜间运营",
+      "summary_zh": "洛杉矶高等法院法官批准圣莫尼卡市的初步禁令，禁止Waymo位于百老汇街12街和欧几里得街的两处相邻充电场在晚上11时至次日早上6时运营。市政府和附近居民称，车辆持续进出产生倒车提示音、灯光和交通拥堵，可能构成公共妨害；相关投诉已经持续一年多。该命令将在圣莫尼卡市针对Waymo的诉讼审理期间生效。",
+      "sources": [
+        {
+          "name": "Ars Technica",
+          "url": "https://arstechnica.com/tech-policy/2026/08/after-noise-complaints-judge-orders-waymo-to-stop-overnight-charging-in-santa-monica"
+        }
+      ],
+      "relevance_score": 68,
+      "importance_score": 58
+    },
+    {
+      "source_item_ids": [
+        "599135cb2e445b43"
+      ],
+      "title_zh": "Karpathy展示长时程代码实验：模型两小时写出5500行三维场景代码",
+      "summary_zh": "安德烈·卡帕西称，他向Opus 5提供《指环王》首段文字、100万token预算和制作Three.js场景的任务。模型运行约两小时，写出约5500行代码，生成了可在浏览器中交互的程序化场景，成本约10美元。他也表示，成品仍较粗糙；模型不能高效理解视频或亲自游玩，只能反复截取画面检查，期间出现了多次错误。",
+      "sources": [
+        {
+          "name": "Andrej Karpathy",
+          "url": "https://twitter.com/karpathy/status/2083749667410727319"
+        }
+      ],
+      "relevance_score": 76,
+      "importance_score": 55
+    }
+  ],
+  "discarded": [
+    {
+      "source_item_ids": [
+        "953b784b76c9414c"
+      ],
+      "reason": "内容主要是券商对科技板块交易底、资金出清和反弹窗口的市场判断，不是新的技术、产品、供应链或企业经营事件，且缺少可验证的产业新增事实。",
+      "relevance_score": 34,
+      "importance_score": 38
+    },
+    {
+      "source_item_ids": [
+        "85314a9ccaa0ab95"
+      ],
+      "reason": "围绕小型视频生成公司Pippa的艺术家分成模式展开，缺少用户规模、收入、客户采用或模型能力数据，营销与理念讨论多于可验证的行业进展，也属于口味档案中应降低权重的视频生成主题。",
+      "relevance_score": 32,
+      "importance_score": 35
+    },
+    {
+      "source_item_ids": [
+        "c5ddf155abf4b0c4"
+      ],
+      "reason": "属于折叠屏行业成熟度分析和苹果未来产品推演，没有新品发布、量产、订单或供应链变化等新增硬事实，且带有较强产品形态猜测性质。",
+      "relevance_score": 45,
+      "importance_score": 42
+    },
+    {
+      "source_item_ids": [
+        "7ca7906d8e9362e4"
+      ],
+      "reason": "内容是券商对科技新材料投资范围和市场行情的泛化建议，没有明确企业、客户、订单、价格、产能或量产进展，与另一条更具体的先进封装玻璃基板候选相比信息增量不足。",
+      "relevance_score": 47,
+      "importance_score": 40
+    }
+  ],
+  "merged_sources": []
+}
