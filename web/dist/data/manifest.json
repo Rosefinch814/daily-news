@@ -1,6 +1,14 @@
 {
-  "latest_issue_date": "2026-08-03",
+  "latest_issue_date": "2026-08-04",
   "issues": [
+    {
+      "date": "2026-08-04",
+      "date_cn": "2026 年 8 月 4 日 · 周二",
+      "section_slug": "tech",
+      "title": "Tourbillion News · Technology",
+      "path": "issues/2026-08-04.html",
+      "data_path": "data/issues/2026-08-04.json"
+    },
     {
       "date": "2026-08-03",
       "date_cn": "2026 年 8 月 3 日 · 周一",

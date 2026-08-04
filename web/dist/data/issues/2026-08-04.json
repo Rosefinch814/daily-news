@@ -1,0 +1,374 @@
+{
+  "id": "tech-2026-08-04",
+  "section_slug": "tech",
+  "publication_name": "我的日报·科技",
+  "issue_date": "2026-08-04",
+  "volume": 1,
+  "number": 29,
+  "date_cn": "2026 年 8 月 4 日 · 周二",
+  "output_path": "issues/2026-08-04.html",
+  "headlines": [
+    {
+      "source_item_ids": [
+        "cd1117094f43aec1"
+      ],
+      "kicker": "存储 · 标准",
+      "title_zh": "SK海力士与闪迪发布首个HBF规范，最高容量512GB",
+      "summary_zh": "SK海力士宣布与闪迪联合发布高带宽闪存HBF的首个标准规范。HBF被定位为介于高带宽内存HBM与固态硬盘之间的新存储层级，兼顾高速传输与NAND闪存的容量优势。首版规范包含8层和16层NAND堆叠两种配置，最高容量512GB，并将带宽划分为三个等级，覆盖约0.4TB/s至3.0TB/s。",
+      "read_body_zh": [
+        "SK海力士与闪迪于2025年8月启动HBF标准化合作，并在2026年2月成立联盟。此次规范是双方合作约六个月后公布的首项标准化成果，明确了首批产品可采用的容量配置与带宽分级。",
+        "规范定义了8层和16层NAND芯片堆叠两种方案，最高支持512GB容量。按照两家公司的定位，HBF利用NAND闪存提供高于HBM的容量，同时以更高传输速度缩小传统固态硬盘与HBM之间的性能差距。",
+        "带宽标准被划分为Grade 1至Grade 3三个等级，数据传输能力从约0.4TB/s延伸至3.0TB/s。现有候选原文没有披露首批样品、客户验证、量产时间或具体供应商分工。"
+      ],
+      "pullquote": null,
+      "ai_impact": "HBF试图在昂贵但高速的HBM与容量更大、速度较低的固态硬盘之间增加一个存储层级。统一容量和带宽规格，可降低芯片厂、封装厂与AI系统厂商协同设计时的不确定性，也为NAND进入高价值AI基础设施打开新的产品方向。不过，标准发布只是产业协作的起点，能否形成实际市场仍取决于控制器、封装、功耗、软件适配以及客户验证；在样品和量产计划披露前，不宜把它视为已经成熟的HBM替代方案。",
+      "sources": [
+        {
+          "name": "36氪",
+          "url": "https://36kr.com/newsflashes/3924505733691520?f=rss"
+        }
+      ],
+      "relevance_score": 99,
+      "importance_score": 90
+    },
+    {
+      "source_item_ids": [
+        "525f2b309a03af33"
+      ],
+      "kicker": "大模型 · 成本",
+      "title_zh": "DeepSeek V4 Flash在OpenCode一天消耗8万亿Token",
+      "summary_zh": "开源AI编程工具OpenCode称，DeepSeek V4 Flash正式版在其平台一天消耗了8万亿Token，其中5万亿来自免费额度，3万亿来自付费套餐。爱范儿援引公开价格与第三方评测称，该模型每百万输出Token收费2元；在Artificial Analysis测试中，V4 Flash Max得分50，完成全套测试的调用费约72美元。Claude Opus 4.8 Max得分56，调用费约3753美元。",
+      "read_body_zh": [
+        "这8万亿Token只来自OpenCode一个平台的一天，并不代表DeepSeek的全平台调用量。作为参照，报道提到，聚合400多款模型的OpenRouter每月处理约200万亿Token，日均约6.6万亿，但两者的统计口径和业务范围不同。",
+        "公开价格显示，DeepSeek V4 Flash每百万输出Token收费2元人民币，Claude Opus 4.8的标准输出价格为25美元。第三方评测中，两款模型相差6分，但完成同一套测试所产生的模型调用费相差约52倍。",
+        "DeepSeek在7月31日的更新日志中称，V4 Flash正式版与预览版的结构和规模相同，主要重新进行了后训练，并重点加强编码和Agent任务。报道还称，该模型共有2840亿参数，每个Token激活约130亿参数，官方权重文件合计约167GB。"
+      ],
+      "pullquote": null,
+      "ai_impact": "Agent需要反复读取文件、调用工具并根据结果修正，Token消耗远高于一次问答，模型价差也会在连续执行中不断累积。V4 Flash的竞争力并不在于证明自己适合所有任务，而在于以较低价格承担原本常由旗舰模型执行的编码和长任务。如果它在实际任务中的完成率接近高价模型，企业可能把廉价模型设为默认执行层，只在疑难任务或失败成本较高时切换模型。不过，单个平台的用量会受到免费额度和产品导流影响，还要继续观察付费留存、生产任务成功率和长期服务稳定性。",
+      "sources": [
+        {
+          "name": "爱范儿",
+          "url": "https://www.ifanr.com/1673651"
+        }
+      ],
+      "relevance_score": 96,
+      "importance_score": 87
+    },
+    {
+      "source_item_ids": [
+        "6dd0315d7fb5185f"
+      ],
+      "kicker": "监管 · 透明度",
+      "title_zh": "欧盟AI透明度规则生效：聊天机器人须表明身份",
+      "summary_zh": "欧盟《人工智能法案》的新增透明度义务已于8月2日生效。AI系统提供者须在用户与AI而非真人互动时明确提示，并为合成或修改过的音频、图像、视频和文本加入机器可读标记。使用这些系统的平台和服务还须标注看起来像真实内容的深度合成图像、音频和视频。违规企业最高可能被罚1500万欧元或全球年营业额的3%。",
+      "read_body_zh": [
+        "规则分别约束AI系统的提供者和部署者。提供者负责开发和销售系统；当用户并不能明显判断交互对象是AI时，产品须主动说明，并为合成或修改内容加入技术系统可以识别的标记。",
+        "部署者包括使用AI系统的平台和服务。对于被设计成看起来真实的AI生成或修改图像、音频和视频，部署者须向用户展示标签。欧盟委员会还发布了一套可供采用的披露图标和使用示例。",
+        "8月2日以后推出的AI系统立即适用新规；在此之前上线的模型和服务有四个月宽限期，最迟须在12月2日前完成合规。违反透明度义务的企业最高可能被罚1500万欧元或全球年营业额的3%。"
+      ],
+      "pullquote": null,
+      "ai_impact": "新规把AI标注从平台自愿选择变成可处罚的产品义务，而且同时覆盖交互界面和合成内容的机器识别。大型模型厂商需要在输出过程中保留标记，社交平台和内容服务则负责把标签展示给用户，两端不能互相替代责任。四个月宽限期会促使既有产品集中改造界面、元数据和内容检测流程。执行中的难点包括内容跨平台传播后能否保留标记，以及文本、二次编辑内容和开源模型输出能否被稳定识别。",
+      "sources": [
+        {
+          "name": "The Verge",
+          "url": "https://www.theverge.com/ai-artificial-intelligence/974571/eu-ai-act-transparency-labels-rules-deepfakes"
+        }
+      ],
+      "relevance_score": 81,
+      "importance_score": 92
+    },
+    {
+      "source_item_ids": [
+        "8fa8142e6daa133a"
+      ],
+      "kicker": "芯片 · 封装",
+      "title_zh": "京东方玻璃基封装已送样，TCL华星拟建中试线",
+      "summary_zh": "TCL华星、京东方和深天马都在推进玻璃基先进封装。TCL华星已组建团队验证关键工艺，计划于下半年展示样品并筹建中试线。京东方投资9.93亿元建设的玻璃基封装载板试验线已经向国内客户送样，部分客户通过概念认证后进入技术测试。深天马则已搭建MPG多项目玻璃基板技术平台。",
+      "read_body_zh": [
+        "TCL科技高级副总裁、TCL华星首席执行官赵军在上海ChinaJoy期间表示，公司已组建专业团队验证玻璃基封装的关键工艺，计划于2026年下半年展示样品，同时筹建中试线。",
+        "京东方已为玻璃基封装载板试验线投资9.93亿元。试验线目前已向国内客户送样，部分客户完成概念认证后进入技术测试阶段。",
+        "深天马已搭建MPG多项目玻璃基板技术平台，并把先进封装列为重点方向之一。报道将三家面板厂的动作与AI芯片向更大尺寸、更高算力和更高密度互连发展联系起来。"
+      ],
+      "pullquote": null,
+      "ai_impact": "随着AI芯片尺寸和互连密度上升，传统有机载板对平整度、热稳定性和布线密度的要求也随之提高，玻璃基板因此受到关注。面板厂拥有加工大尺寸玻璃和精密制造的经验，具备跨界基础，但显示面板工艺并不等于已经掌握半导体封装量产能力。目前三家公司分别处于工艺验证、送样测试和平台建设阶段，接下来更应关注客户验证良率、中试线进度以及与封装厂的合作方式，不能只凭投资额判断产业化成熟度。",
+      "sources": [
+        {
+          "name": "36氪",
+          "url": "https://36kr.com/newsflashes/3924485879937413?f=rss"
+        }
+      ],
+      "relevance_score": 91,
+      "importance_score": 80
+    },
+    {
+      "source_item_ids": [
+        "90b388149284348b"
+      ],
+      "kicker": "推理 · 基础设施",
+      "title_zh": "Cloudflare优化Kimi和GLM推理，Kimi峰值吞吐提升约41%",
+      "summary_zh": "Cloudflare公布了在Workers AI上部署Kimi K2.6和GLM 5.2时采用的推理优化。把Kimi的KV缓存从BF16改为FP8后，显存可容纳的上下文由约68.6万Token增至137万Token，并发上限从32个请求增至64个。峰值吞吐达到每秒2192个Token，比BF16高约41%，单Token成本降低约30%。GLM的权重则从FP8压缩为INT4。",
+      "read_body_zh": [
+        "KV缓存保存模型已经处理过的Token。运行长上下文时，它往往比模型权重更早占满显存。Cloudflare把Kimi K2.6的缓存精度从BF16降至FP8，使缓存占用减半。FP8在相同并发水平下略慢，但能让更多请求同时留在显存中。",
+        "在预填充与解码分离的H200部署中，BF16缓存最多支持32个并发请求，FP8则可增至64个。Cloudflare称，两种缓存格式在其评测套件中的结果没有可区分的差异，因此只在更受显存限制的解码阶段使用FP8。",
+        "GLM 5.2的权重从FP8压缩为INT4后，检查点由705GB降至421GB，八路张量并行部署的单卡显存占用从约88GB降至52GB。Cloudflare在解码阶段使用INT4，在计算密集的预填充阶段保留FP8，并为共享KV缓存加入完整性检查。"
+      ],
+      "pullquote": null,
+      "ai_impact": "这些数据表明，开放模型的部署成本不仅取决于模型架构，还受缓存精度、权重压缩和任务调度影响。把预填充与解码分开后，平台可以为两个阶段分别选择更合适的精度，不必让一种压缩方案承担全部性能损失。与此同时，更高并发会增加共享缓存错配或数据串扰的风险。Cloudflare为此加入完整性检查，并称吞吐和尾延迟开销均低于1%。平台能否同时提高效率并保护请求隔离，将直接影响开放模型在生产环境中的价格优势。",
+      "sources": [
+        {
+          "name": "Cloudflare Blog",
+          "url": "https://blog.cloudflare.com/smaller-faster-safer-models"
+        }
+      ],
+      "relevance_score": 94,
+      "importance_score": 82
+    }
+  ],
+  "briefs": [
+    {
+      "source_item_ids": [
+        "5b965874fc94372d"
+      ],
+      "title_zh": "OpenAI集中公布十项数学与理论计算机科学进展",
+      "summary_zh": "OpenAI上线专题页面，集中列出其所称的十项数学与理论计算机科学进展。此次候选材料只抓取到官方页面的标题和链接，未获得正文及各项成果的具体内容，因此暂时无法据此确认所涉问题、模型的参与方式、验证过程和独立评审情况。",
+      "sources": [
+        {
+          "name": "OpenAI",
+          "url": "https://openai.com/index/ten-advances-in-mathematics"
+        }
+      ],
+      "relevance_score": 83,
+      "importance_score": 85
+    },
+    {
+      "source_item_ids": [
+        "407ef9312d40759b",
+        "79041dd9624034d0"
+      ],
+      "title_zh": "千问办公开启公测，打通本地、云端和企业协作",
+      "summary_zh": "阿里企业级Agent产品千问办公开启公测。产品由QoderWork、MuleRun和悟空整合而来，并接入Qwen3.8系列模型。它既能在本地读取文件、执行命令，也能运行云端长任务，还可借助连接器、IM频道、技能和专家套件接入钉钉、飞书、Slack，以及企业文档、审批和知识库等系统。钉钉移动端和PC端入口仍在逐步开放。",
+      "sources": [
+        {
+          "name": "爱范儿",
+          "url": "https://www.ifanr.com/1673793"
+        },
+        {
+          "name": "爱范儿",
+          "url": "https://www.ifanr.com/1673691"
+        }
+      ],
+      "relevance_score": 92,
+      "importance_score": 82
+    },
+    {
+      "source_item_ids": [
+        "84a8d2275c93bbb1"
+      ],
+      "title_zh": "新版Siri进入iOS 27测试版，可检索个人信息并操作应用",
+      "summary_zh": "苹果新版Siri已于7月进入iOS 27消费者测试版。它支持连续自然对话，可检索照片、邮件、联系人、短信和日历等个人信息，也能调用网站和应用完成导航、播放媒体、编辑照片和起草邮件等操作，还可通过相机画面识别现实物体。苹果使用谷歌Gemini技术训练和改进自有模型，正式版预计随iOS 27于9月发布。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/08/03/apple-finally-fixed-siri-so-why-does-it-feel-anticlimactic"
+        }
+      ],
+      "relevance_score": 88,
+      "importance_score": 78
+    },
+    {
+      "source_item_ids": [
+        "cdc0d5a97f099b4d"
+      ],
+      "title_zh": "新型电力系统“十五五”规划发布，2030年非化石能源发电量占比目标为50%",
+      "summary_zh": "国家发改委、国家能源局发布《新型电力系统建设“十五五”规划》，以电源、电网、调节资源、负荷和市场协同为主线，力争到2030年初步建成新型电力系统，并把非化石能源发电量占比提高到50%。中信证券认为，特高压、配网智能化、储能、虚拟电厂、清洁电源和电力数字化等领域可能受益。",
+      "sources": [
+        {
+          "name": "36氪",
+          "url": "https://36kr.com/newsflashes/3924484441045377?f=rss"
+        }
+      ],
+      "relevance_score": 79,
+      "importance_score": 87
+    },
+    {
+      "source_item_ids": [
+        "df61669e95e4ae99"
+      ],
+      "title_zh": "苹果申诉英国第二项加密数据访问命令",
+      "summary_zh": "据《金融时报》报道，苹果已向英国调查权力法庭申诉政府发出的第二项加密数据访问命令。争议涉及开启高级数据保护功能、采用端到端加密的iCloud备份。英国曾在2025年提出类似要求，随后撤回；苹果此后取消了英国用户启用该保护功能的能力。第二项命令于2025年10月发出。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/08/03/apple-challenges-uk-governments-latest-demand-for-icloud-backdoor-report"
+        }
+      ],
+      "relevance_score": 72,
+      "importance_score": 79
+    },
+    {
+      "source_item_ids": [
+        "6af10e46a88c27ad"
+      ],
+      "title_zh": "Palantir季度营收增长93%，单季利润达11亿美元",
+      "summary_zh": "Palantir第二季度营收为19亿美元，同比增长93%；利润达到11亿美元。公司称，这一利润数字超过上年同期的季度总营收。首席执行官Alex Karp同时重申，企业不应让单一前沿模型公司控制其数据、提示词、编排逻辑和业务上下文。Palantir向企业和政府客户销售不绑定特定模型的AI与分析软件。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/08/03/after-killer-quarter-palantir-ceo-alex-karp-calls-ai-industry-marxist"
+        }
+      ],
+      "relevance_score": 78,
+      "importance_score": 77
+    },
+    {
+      "source_item_ids": [
+        "b702c96830d5c492"
+      ],
+      "title_zh": "三星将下架把智能电视用作住宅代理出口的应用",
+      "summary_zh": "挪威网络安全公司Mnemonic发现，部分三星智能电视应用含有住宅代理代码。用户同意后，这些应用可把电视及其家庭网络变成供外部流量使用的出口节点，其中包括三星应用商店曾推荐的一款游戏。三星回应称，已限制含代理功能的新应用注册，正在制定覆盖整个平台的禁令，并识别和移除商店中含有相关组件的现有应用。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/08/03/samsung-bans-smart-tv-apps-that-share-users-internet-connections-with-strangers"
+        }
+      ],
+      "relevance_score": 68,
+      "importance_score": 75
+    },
+    {
+      "source_item_ids": [
+        "795354bb1b5d0a32"
+      ],
+      "title_zh": "AWS允许Superblocks嵌入客户私有云，Agent应用纳入企业IT管理",
+      "summary_zh": "AWS与Superblocks签署多年联合营销协议，允许企业把后者的自然语言应用开发工具部署在自己的AWS私有云环境。生成的应用可在客户账户内使用Amazon Aurora数据库并接入Amazon Bedrock，数据无需发送到外部模型厂商或数据库，相关应用也可沿用企业已有的审计、加密、网络控制和IT管理机制。AWS还将协助向企业客户销售该产品。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/08/03/aws-is-helping-vibe-coding-startup-superblocks-and-the-implications-are-big"
+        }
+      ],
+      "relevance_score": 80,
+      "importance_score": 69
+    },
+    {
+      "source_item_ids": [
+        "1227e720c4e64272"
+      ],
+      "title_zh": "ChatGPT占美国众议院可识别AI工具支出的约九成",
+      "summary_zh": "美国众议院支出记录显示，截至2026年3月31日的一年内，众议院办公室、委员会和机构账户通过798笔交易为ChatGPT支出约10.06万美元，占可识别AI工具支出的约90%；Claude支出约1.32万美元。工作人员使用这些工具撰写备忘录、概括和分析法案、回复选民以及准备听证材料。统计不包括免费账户和捆绑在其他软件中的AI服务。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/08/03/congresss-favorite-ai-tool-chatgpt"
+        }
+      ],
+      "relevance_score": 74,
+      "importance_score": 66
+    },
+    {
+      "source_item_ids": [
+        "cfdf023a8542fd68"
+      ],
+      "title_zh": "Fitbit数据现可直接同步到Apple Health",
+      "summary_zh": "谷歌开始通过Google Health 5.05版本支持将Fitbit的运动记录、步数和健康指标直接同步到Apple Health。此前只能把Apple Health数据导入Google Health，反向同步需要第三方应用或其他变通办法。美国用户还可通过Smart Health Links生成网址或二维码，自行选择与医疗服务提供者或家人共享哪些医疗记录。",
+      "sources": [
+        {
+          "name": "The Verge",
+          "url": "https://www.theverge.com/gadgets/974778/google-health-fitbit-data-apple-health-syncing"
+        }
+      ],
+      "relevance_score": 59,
+      "importance_score": 56
+    },
+    {
+      "source_item_ids": [
+        "7ab1621ede756c68"
+      ],
+      "title_zh": "泄露文件称微软计划把Xbox 360游戏带到PC",
+      "summary_zh": "The Verge看到的一份开发者文件显示，微软计划允许开发者自行选择是否把Xbox 360游戏带到PC、下一代Project Helix主机、Xbox PC和掌机，预计在2027年至2028年逐步推出。文件还描述了实体光盘转数字授权机制：授权将同时绑定光盘和玩家账户，光盘转手后，授权也随之转移。微软尚未正式确认相关计划，原定测试时间也已经延后。",
+      "sources": [
+        {
+          "name": "The Verge",
+          "url": "https://www.theverge.com/games/974544/microsoft-xbox-360-games-pc-disc-digital-program"
+        }
+      ],
+      "relevance_score": 57,
+      "importance_score": 64
+    }
+  ],
+  "discarded": [
+    {
+      "source_item_ids": [
+        "e5ac528c415cfc95"
+      ],
+      "reason": "综合早报将大量互不相关事件混在同一候选中，不能形成清晰选题；其中“存储ETF纳入长鑫科技”仅为指数基金调仓，不是价格、订单、产能、资本开支或量产进展，其余较重要事件已有独立候选，故丢弃合集。",
+      "relevance_score": 75,
+      "importance_score": 61
+    },
+    {
+      "source_item_ids": [
+        "cdb52f488f1d0b64"
+      ],
+      "reason": "主要讨论自主AI攻击事件在现有美国法律下的责任推演，没有新增诉讼、监管决定或企业整改结果，偏法律评论，尚未形成会改变行业实践的实质节点。",
+      "relevance_score": 55,
+      "importance_score": 68
+    },
+    {
+      "source_item_ids": [
+        "20c0520a33191573"
+      ],
+      "reason": "YC小型创业公司的产品自荐，缺少客户规模、收入、部署量或独立评测，属于小公司发布和营销信息。",
+      "relevance_score": 46,
+      "importance_score": 29
+    },
+    {
+      "source_item_ids": [
+        "ca2e235418234d54"
+      ],
+      "reason": "项目展示通过逐层或逐专家加载在低显存设备运行超大模型，但未提供足以判断实用吞吐、延迟和生产采用的数据，偏垂直工程方案，产业和商业后果不清晰。",
+      "relevance_score": 69,
+      "importance_score": 51
+    },
+    {
+      "source_item_ids": [
+        "11f9506681e8d7c1"
+      ],
+      "reason": "核心是三星消费级SSD的电商折扣和购物推荐，单次促销不能代表NAND或企业级SSD价格趋势，属于营销导购内容。",
+      "relevance_score": 58,
+      "importance_score": 27
+    },
+    {
+      "source_item_ids": [
+        "faaffc6953e2c400"
+      ],
+      "reason": "消费电子趋势合集混合预约量、内测、待发布产品和折叠屏传闻，缺少统一的新事件与可核验产业后果，且包含外观和上市爆料，不宜包装成独立新闻。",
+      "relevance_score": 63,
+      "importance_score": 47
+    },
+    {
+      "source_item_ids": [
+        "9083593003a8b06d"
+      ],
+      "reason": "主体是核能创业公司的十亿美元融资，虽然提及英伟达合作和AI工厂计划，但量产能力与项目交付尚未验证，触及“小公司融资”回避项。",
+      "relevance_score": 54,
+      "importance_score": 60
+    },
+    {
+      "source_item_ids": [
+        "1f0f8a9966f045da"
+      ],
+      "reason": "虽披露户用储能安装量、新产品容量和部署速度，但新闻主线仍是创业公司十亿美元融资，触及“小公司融资”硬性回避项，且与AI数据中心的联系仅为宏观需求背景。",
+      "relevance_score": 65,
+      "importance_score": 67
+    }
+  ],
+  "merged_sources": [
+    {
+      "source_item_ids": [
+        "407ef9312d40759b",
+        "79041dd9624034d0"
+      ],
+      "reason": "两篇均报道千问办公开启公测及Qwen3.8接入，一篇侧重实际产品测试，一篇侧重企业工作流和组织级能力，属于同一发布事件。"
+    }
+  ]
+}
