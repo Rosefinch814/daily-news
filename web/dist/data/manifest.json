@@ -1,6 +1,22 @@
 {
-  "latest_issue_date": "2026-08-05",
+  "latest_issue_date": "2026-08-10",
   "issues": [
+    {
+      "date": "2026-08-10",
+      "date_cn": "2026 年 8 月 10 日 · 周一",
+      "section_slug": "tech",
+      "title": "Tourbillion News · Technology",
+      "path": "issues/2026-08-10.html",
+      "data_path": "data/issues/2026-08-10.json"
+    },
+    {
+      "date": "2026-08-06",
+      "date_cn": "2026 年 8 月 6 日 · 周四",
+      "section_slug": "tech",
+      "title": "Tourbillion News · Technology",
+      "path": "issues/2026-08-06.html",
+      "data_path": "data/issues/2026-08-06.json"
+    },
     {
       "date": "2026-08-05",
       "date_cn": "2026 年 8 月 5 日 · 周三",
