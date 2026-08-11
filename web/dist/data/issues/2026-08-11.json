@@ -1,0 +1,302 @@
+{
+  "id": "tech-2026-08-11",
+  "section_slug": "tech",
+  "publication_name": "我的日报·科技",
+  "issue_date": "2026-08-11",
+  "volume": 1,
+  "number": 33,
+  "date_cn": "2026 年 8 月 11 日 · 周二",
+  "output_path": "issues/2026-08-11.html",
+  "headlines": [
+    {
+      "source_item_ids": [
+        "427c54737814d656",
+        "75cddaf41405ce0f",
+        "447478477055186d"
+      ],
+      "kicker": "大模型 · 本地智能",
+      "title_zh": "Meta再押开放权重：300亿参数Muse Glimmer主打本地常驻Agent",
+      "summary_zh": "Meta发布300亿参数模型Muse Glimmer，并以Apache 2.0许可开放权重。模型默认支持12.8万token上下文，经过约4比特量化后，主体可压缩至20GB以内。它面向运行在单张消费级GPU上的本地常驻Agent，可处理工具调用、编码、长任务恢复和图文输入。Meta还承诺在未来数周开放性能更强的Muse Spark 1.2权重；扎克伯格也重新把开放模型，以及面向个人和小企业的超级智能，确立为公司路线。",
+      "read_body_zh": [
+        "Muse Glimmer由Meta超级智能实验室推出，权重已经在Hugging Face开放。模型从规模更大的Muse Spark蒸馏而来，完整精度下需要超过55GB内存。Meta称，约4比特量化可将语言模型压缩至20GB以内，同时为KV缓存、图像感知编码器和推测解码模型留出空间，使整套系统能在24GB或32GB内存配置中运行。",
+        "Meta围绕端到端Agent任务训练Muse Glimmer，覆盖函数调用、多步推理、失败后的诊断与重试、代码处理和交错图文输入，并支持100多种语言。训练分为预训练、中期训练和后训练三个阶段：先使用Muse Spark的输出进行蒸馏，再加入长上下文和Agent任务数据，最后进行监督微调、在策略蒸馏和强化学习。现有性能数据主要来自Meta自己的评测。",
+        "Muse Glimmer也是Meta调整AI战略的一部分。公司表示将重新聚焦开放权重大模型，并计划在数周内开放Muse Spark 1.2的权重。扎克伯格在同期长文中提出，以免费或尽可能低的价格向个人和小企业提供AI；他还主张美国减少对模型蒸馏和开放模型的限制，并要求前沿实验室在训练完成前向政府共享部分训练信息。"
+      ],
+      "pullquote": null,
+      "ai_impact": "Meta没有让Muse Glimmer直接与闭源前沿模型比拼API能力，而是用可在个人设备上运行的模型争夺本地Agent开发者。端侧运行能减少持续调用云模型的费用，也更适合处理文件、日程和消息等敏感数据。竞争重点因此会落到运行效率、工具支持和长任务可靠性上。如果Muse Spark系列也按计划开放，Meta可能重新成为开放模型的重要上游；但免费权重能否带来商业回报，仍取决于公司能否将其与硬件、应用分发和付费服务连接起来。",
+      "sources": [
+        {
+          "name": "Meta AI",
+          "url": "https://research.meta.ai/blog/introducing-muse-glimmer-open-agentic-model"
+        },
+        {
+          "name": "The Verge",
+          "url": "https://www.theverge.com/tech/977395/meta-mark-zuckerberg-superintelligent-ai-ramble"
+        },
+        {
+          "name": "Ars Technica",
+          "url": "https://arstechnica.com/ai/2026/08/with-new-open-models-meta-pitches-another-reboot-of-its-struggling-ai-strategy"
+        }
+      ],
+      "relevance_score": 92,
+      "importance_score": 88
+    },
+    {
+      "source_item_ids": [
+        "3f1ee2dd5624d590"
+      ],
+      "kicker": "AI安全 · 企业服务",
+      "title_zh": "OpenAI扩展Daybreak网络防御服务，新模型暂只向可信企业开放",
+      "summary_zh": "OpenAI扩展今年早些时候推出的网络防御服务Daybreak，将服务分为Blue和Red两档，并提供专门用于防御工作的前沿模型。Blue覆盖事件响应、恶意软件分析和补丁验证；权限更高的Red用于安全测试和漏洞研究，并独家提供基于GPT-5.6 Sol训练的GPT-5.6-Cyber。新模型目前只向经过审核的可信合作客户开放，首批伙伴包括埃森哲、IBM、CrowdStrike和Cloudflare等公司。",
+      "read_body_zh": [
+        "Daybreak把模型、工具和工作流程打包成面向企业防守团队的服务。OpenAI此次增设Blue和Red两个访问层级，获批客户可通过这两档服务使用受限的前沿网络安全模型。Blue被定位为多数防守团队的起点，覆盖事件响应、恶意软件分析和补丁有效性验证等日常工作。",
+        "Red提供用途更广、风险也更高的工具，客户可以调用专门为网络安全任务训练的模型，开展安全测试和漏洞研究。GPT-5.6-Cyber仅在Red层级提供。OpenAI称，该模型以GPT-5.6 Sol为基础，增强了部分专业网络安全任务的能力；报道没有给出完整评测结果、价格或正式开放时间表。",
+        "GPT-5.6-Cyber尚未向普通客户全面开放，OpenAI先将其交给可信合作伙伴使用。TechCrunch列出的伙伴包括埃森哲、IBM、CrowdStrike和Cloudflare等企业。OpenAI继续限制模型的使用范围，并警告AI可能加快网络攻击、扩大攻击规模，留给防守方准备的时间正在缩短。"
+      ],
+      "pullquote": null,
+      "ai_impact": "Daybreak表明，前沿模型厂商正把网络安全从通用助手的一项功能，拆成需要严格审核和权限控制的专业服务。企业购买的不只是安全建议，还包括将模型接入事件响应、漏洞验证和安全测试流程的能力；OpenAI则可以借此提高企业合同黏性，形成模型之外的工作流壁垒。网络安全具有明显的攻防两用属性，Red层级越强，客户审查、操作留痕和权限隔离就越关键。最终决定这项服务能否获得企业信任的，是实际防御效果，而不是对AI攻击威胁的描述。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/08/10/as-ai-led-attacks-multiply-openai-launches-a-new-cyber-model"
+        }
+      ],
+      "relevance_score": 89,
+      "importance_score": 84
+    },
+    {
+      "source_item_ids": [
+        "2e5b8060473cdb3a"
+      ],
+      "kicker": "平台监管 · 应用分发",
+      "title_zh": "谷歌Play商店首次上架竞争商店，Epic胜诉开始改变安卓分发",
+      "summary_zh": "谷歌已在美国Play商店上架游戏应用商店Aptoide。Epic反垄断诉讼的救济措施生效后，Aptoide成为首个由Google Play直接分发的第三方应用商店。美国用户可以像安装普通应用一样下载Aptoide，不必开启侧载或逐项确认风险警告。Aptoide目前的目录仍然有限，但其负责人称，公司可以接入约190万款应用和29.5万款游戏；开发者可以退出这项共享安排。",
+      "read_body_zh": [
+        "Epic在2023年的诉讼中胜诉后，法官James Donato要求谷歌采取多项补救措施，其中一项就是在Play商店内分发第三方应用商店。谷歌一度与Epic达成另一套和解方案：通过认证降低外部商店的安装阻力，但不让它们进入Google Play。双方后来认为法院可能不会批准该方案，遂撤回和解。",
+        "以游戏为主的Aptoide率先进入Play商店。美国用户可以直接从Google Play下载，并按照安装普通应用的流程完成操作；再通过Aptoide安装游戏时，也不必开启侧载或点击额外的风险提示。与过去从网页下载客户端相比，第三方商店接触普通安卓用户的步骤明显减少。",
+        "法院要求的其他补救措施还包括降低开发者费用、允许其他商店镜像Google Play应用，以及允许开发者使用替代支付系统。Aptoide目前的目录仍远小于Google Play，但其负责人称，公司已经获准接入共享目录中的约190万款应用和29.5万款游戏。开发者可以选择退出共享；国际市场则仍在等待谷歌推出注册应用商店计划。"
+      ],
+      "pullquote": null,
+      "ai_impact": "安卓应用分发权的变化已经从法院裁决进入用户可以直接感知的安装流程。第三方商店如果能借助Google Play获得第一批用户，就可以在费率、支付方式和内容运营上与谷歌竞争，开发者也会多一个分发渠道。不过，新入口并不等于有效竞争已经形成。Aptoide仍需扩大目录、建立安全信任，并为用户和开发者提供足够明确的商业利益。谷歌虽然让出部分分发权限，仍掌握安卓系统、搜索推荐和安全机制；它的平台权力更可能被逐步削弱，而不是一次性瓦解。",
+      "sources": [
+        {
+          "name": "Ars Technica",
+          "url": "https://arstechnica.com/gadgets/2026/08/third-party-app-stores-are-rolling-out-in-google-play-but-theres-only-one-right-now"
+        }
+      ],
+      "relevance_score": 77,
+      "importance_score": 86
+    },
+    {
+      "source_item_ids": [
+        "e7222e52d5a461b0"
+      ],
+      "kicker": "电池 · 供应链",
+      "title_zh": "美国国防部向Sila提供14亿美元贷款，本土硅碳负极工厂拟扩产五倍",
+      "summary_zh": "美国国防部向电池材料公司Sila提供14亿美元贷款，用于扩大其在华盛顿州摩西湖生产的硅碳负极材料。该工厂去年9月投产，现有年产能约可配套2吉瓦时电池，扩建目标是把规模提高五倍，供应超过10万辆电动汽车。Sila称，硅材料的储电能力可比石墨负极高20%至40%；公司已经与梅赛德斯和松下达成合作，此次贷款还可能帮助其进入国防供应链。",
+      "read_body_zh": [
+        "这笔贷款用于扩建Sila位于华盛顿州摩西湖的工厂。美国汽车和国防领域的电池采购方正在寻找中国以外的负极材料来源，而当前锂离子电池主要使用石墨负极，相关供应链由中国企业占据主导。Sila的工厂在美国生产硅碳材料，可减少进口关税和地缘政治因素带来的采购限制。",
+        "硅负极路线的主要卖点是提高能量密度。报道援引行业目标称，硅材料有望比石墨负极多储存20%至40%的电量，从而延长续航，或在电量不变时缩小电池尺寸、减轻重量。这些特性可用于电动汽车、无人机和其他对重量敏感的装备，但报道没有提供Sila产品在大规模装车后的长期性能数据。",
+        "摩西湖工厂当前的年产能约对应2吉瓦时电池，Sila计划将其扩大五倍，达到可供应超过10万辆电动汽车的规模。公司7月还融资3亿美元，累计从私人投资者处筹集超过15亿美元，并已获得梅赛德斯和松下订单。国防部同期还向钪矿、无稀土磁体和铝土矿项目提供贷款或股权投资。"
+      ],
+      "pullquote": null,
+      "ai_impact": "美国正在把电池供应链政策从整车和电芯继续推进到负极材料环节，并以国防贷款承担新材料扩产早期的资本风险。对Sila而言，政府资金、车企客户和潜在军工订单可以共同提高工厂利用率；对产业链而言，这会加快硅碳负极从高性能小众应用走向更大规模生产。不过，扩产五倍并不等于成本和良率已经成熟，后续更关键的信号是实际交付、循环寿命与单位成本。中国石墨供应链的规模优势短期内仍难被单个项目取代。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/08/10/sila-lands-1-4b-pentagon-loan-as-militaries-demand-more-batteries"
+        }
+      ],
+      "relevance_score": 70,
+      "importance_score": 83
+    }
+  ],
+  "briefs": [
+    {
+      "source_item_ids": [
+        "280b90a680786157"
+      ],
+      "title_zh": "45M参数的Needle 2把端侧Agent压进14MB文件，可在廉价手机和微控制器运行",
+      "summary_zh": "Cactus Compute开放Needle 2：模型含4500万参数，采用2比特压缩，文件大小14MB，完整会话约占28MB内存，支持工具调用、设备控制和结构化提取。发布方称，它可在树莓派5、低于200美元的手机及部分微控制器上运行，并通过置信度决定本地执行、重新询问或转交云端；模型与代码采用Apache 2.0许可，性能比较目前主要来自公司自测。",
+      "sources": [
+        {
+          "name": "Cactus Compute",
+          "url": "https://cactuscompute.com/needle"
+        }
+      ],
+      "relevance_score": 82,
+      "importance_score": 67
+    },
+    {
+      "source_item_ids": [
+        "139754089fafdb3a"
+      ],
+      "title_zh": "OpenAI致信得州州长，讨论如何负责任地建设AI基础设施",
+      "summary_zh": "OpenAI发布了一封致得州州长Greg Abbott的公开信，讨论如何在当地负责任地建设AI基础设施，显示数据中心扩张已经进入企业与州政府直接沟通的政策议程。本地候选文件只收录了公开信的标题和链接，没有抓取到正文，因此本条仅保留公开信已经发布及其议题，不涉及具体项目地点、投资金额、能源方案或社区承诺。",
+      "sources": [
+        {
+          "name": "OpenAI",
+          "url": "https://openai.com/index/responsible-ai-infrastructure-texas"
+        }
+      ],
+      "relevance_score": 76,
+      "importance_score": 63
+    },
+    {
+      "source_item_ids": [
+        "8e5177de09bdf614"
+      ],
+      "title_zh": "Docker推出AI Agent沙箱，用可丢弃的微型虚拟机隔离代码执行",
+      "summary_zh": "Docker发布面向代码Agent的本地沙箱工具。它用独立的微型虚拟机隔离宿主文件系统和网络，环境默认可以丢弃，同时允许Agent在沙箱内启动容器、安装软件和运行服务。该工具支持Codex、Claude Code、Gemini CLI和Copilot CLI等产品；企业治理版本还可以统一设置网络、文件系统和MCP访问规则，降低Agent获得高权限后的执行风险。",
+      "sources": [
+        {
+          "name": "Docker",
+          "url": "https://www.docker.com/products/docker-sandboxes"
+        }
+      ],
+      "relevance_score": 79,
+      "importance_score": 72
+    },
+    {
+      "source_item_ids": [
+        "cf0ba97678dfb523"
+      ],
+      "title_zh": "华为ADS 5 SE进入10万元级六座车，高阶功能按成本分档",
+      "summary_zh": "东风风行星海V6新增两款乾崑版，预售价分别为10.49万元和12.49万元，预计9月上市。车辆搭载不含激光雷达的华为乾崑ADS 5 SE，以摄像头、超声波雷达和毫米波雷达支持高速NCA、城区LCC+、智能泊车和主动安全。华为重点展示的城区NCA和车位到车位功能没有配备在这两款车上，体现了辅助驾驶进入平价车型时对硬件和功能的取舍。",
+      "sources": [
+        {
+          "name": "爱范儿",
+          "url": "https://www.ifanr.com/1674592"
+        }
+      ],
+      "relevance_score": 73,
+      "importance_score": 64
+    },
+    {
+      "source_item_ids": [
+        "18d02a633f65088b"
+      ],
+      "title_zh": "编程语言越简洁，代码Agent就越省钱吗？新评测给出复杂答案",
+      "summary_zh": "Dan Luu重新检验了“动态语言或更短的代码可以节省Agent令牌”的说法。他指出，早期测试大多使用极短任务，结果难以推广，部分评测还让程序走上了错误的执行路径。Luu让GPT-5.6 Sol根据规范实现完整的Zstandard解码器，同时比较成本和正确率。在中等推理强度下，动态语言相对集中在较优区间；提高推理强度后，结果变得混合，部分静态语言反而表现更好。",
+      "sources": [
+        {
+          "name": "Dan Luu",
+          "url": "http://danluu.com/pl-tokens"
+        }
+      ],
+      "relevance_score": 69,
+      "importance_score": 54
+    },
+    {
+      "source_item_ids": [
+        "a845621eefe7cc71"
+      ],
+      "title_zh": "OpenAI据报完成70亿美元员工股份回购，估值仍为8520亿美元",
+      "summary_zh": "据TechCrunch转述彭博报道，OpenAI从员工手中回购了价值70亿美元的股份，让持有公司股权的员工能在上市前变现。此次交易对OpenAI的估值为8520亿美元，与3月融资时相同。OpenAI已于6月秘密向美国证券交易委员会提交潜在上市文件；这次回购让公司无需立即IPO也能为员工提供流动性，其上市时间仍不确定。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/08/10/openai-reportedly-completed-a-7-billion-employee-tender-offer"
+        }
+      ],
+      "relevance_score": 82,
+      "importance_score": 79
+    },
+    {
+      "source_item_ids": [
+        "808ea94311da5e24"
+      ],
+      "title_zh": "YouTube明年提高创作者变现门槛，观看时长和Shorts播放量要求翻倍",
+      "summary_zh": "从2027年2月1日起，频道申请加入YouTube合作伙伴计划时，仍需至少拥有1000名订阅者，但过去一年的有效观看时长要求将从4000小时提高到8000小时；另一条路径是在90天内获得2000万次有效Shorts播放，也是现行要求的两倍。已经加入计划的创作者还需达到最低观看量或更新频率，并在2027年1月31日前接受新条款。",
+      "sources": [
+        {
+          "name": "The Verge",
+          "url": "https://www.theverge.com/streaming/977474/youtube-partner-program-new-requirements"
+        }
+      ],
+      "relevance_score": 46,
+      "importance_score": 72
+    },
+    {
+      "source_item_ids": [
+        "550805265e69e54e"
+      ],
+      "title_zh": "从AI摘要出错到网页档案消失，评论文章追问信息为何越来越难找",
+      "summary_zh": "《The Walrus》的一篇评论文章从谷歌AI摘要给出错误日落时间谈起，讨论搜索结果、原始网页和公共数字档案同时受损的问题。文章列举了企业在Reddit植入内容以影响AI答案、迪士尼删除FiveThirtyEight大部分档案，以及维基百科流量回落、互联网档案馆面临诉讼等案例，认为问题不只在于搜索排序变差，还在于原始信息的保存和检索能力正在衰退。",
+      "sources": [
+        {
+          "name": "The Walrus",
+          "url": "https://thewalrus.ca/google-search-is-dying"
+        }
+      ],
+      "relevance_score": 65,
+      "importance_score": 59
+    },
+    {
+      "source_item_ids": [
+        "83bf8e7e75923c8e"
+      ],
+      "title_zh": "Bose转向多品牌和技术授权，为AI可穿戴设备寻找位置",
+      "summary_zh": "Bose首席执行官Lila Snyder表示，公司已进入转型的第二阶段。除了继续销售自有音响和耳机，Bose还收购了McIntosh与Sonus faber，出售Bose Professional，并成立Audio Tech业务，把音频、语音和降噪技术授权给其他厂商。现有合作伙伴包括摩托罗拉和Xreal等公司。访谈也讨论了AI可穿戴设备可能改变耳机形态，但Bose尚未公布相应的新AI硬件或采用数据。",
+      "sources": [
+        {
+          "name": "The Verge",
+          "url": "https://www.theverge.com/podcast/975732/bose-ceo-lila-snyder-ai-wearables-licensing-headphones-audio"
+        }
+      ],
+      "relevance_score": 51,
+      "importance_score": 51
+    },
+    {
+      "source_item_ids": [
+        "9cc54c05f6666d6e"
+      ],
+      "title_zh": "阿维塔07L全系搭载华为ADS 5，Pro与Max采用不同硬件",
+      "summary_zh": "阿维塔07L推出三款纯电车型，售价为22.99万至27.99万元。入门版搭载华为ADS Pro增强版，另外两款升级为ADS Max和896线双光路激光雷达。全系可以使用高速NCA、城区LCC和泊车辅助；城区NCA、增强紧急转向等功能需要另购高阶包，价格分别为6000元和2.1万元。同一套辅助驾驶平台由此按照车型，在硬件和付费功能上分层。",
+      "sources": [
+        {
+          "name": "爱范儿",
+          "url": "https://www.ifanr.com/1674579"
+        }
+      ],
+      "relevance_score": 74,
+      "importance_score": 66
+    }
+  ],
+  "discarded": [
+    {
+      "source_item_ids": [
+        "9440c34e87bd7631"
+      ],
+      "reason": "与历史索引中2026-08-10已发布的亚马逊西得州AI园区配套大型燃气发电项目属于同一事件，本候选主要是换源转述，未提供足以构成新跟进的关键事实，避免重复入选。",
+      "relevance_score": 84,
+      "importance_score": 87
+    },
+    {
+      "source_item_ids": [
+        "683eaab6b4f1679f"
+      ],
+      "reason": "小型初创公司自述的GPU和AI服务器交易市场发布，正文以产品销售话术和设想为主，所列价格还是示意数据，缺少独立成交量、客户或真实价格发现证据，触及“小公司融资/纯营销稿”降权边界。",
+      "relevance_score": 75,
+      "importance_score": 43
+    },
+    {
+      "source_item_ids": [
+        "81c19cc04b3f74b0"
+      ],
+      "reason": "核心事实是基金向芯片制造初创公司追加投资，缺少量产能力、客户订单、工艺验证或供应链影响等实质进展，属于应回避的小公司融资新闻。",
+      "relevance_score": 68,
+      "importance_score": 57
+    }
+  ],
+  "merged_sources": [
+    {
+      "source_item_ids": [
+        "427c54737814d656",
+        "75cddaf41405ce0f",
+        "447478477055186d"
+      ],
+      "reason": "同一Meta战略发布事件：Muse Glimmer模型公告、扎克伯格战略宣言解读及开放权重路线综合报道互为补充。"
+    }
+  ]
+}
