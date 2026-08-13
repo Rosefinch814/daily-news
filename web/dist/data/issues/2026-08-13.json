@@ -1,0 +1,392 @@
+{
+  "id": "tech-2026-08-13",
+  "section_slug": "tech",
+  "publication_name": "我的日报·科技",
+  "issue_date": "2026-08-13",
+  "volume": 1,
+  "number": 35,
+  "date_cn": "2026 年 8 月 13 日 · 周四",
+  "output_path": "issues/2026-08-13.html",
+  "headlines": [
+    {
+      "source_item_ids": [
+        "d0c80693888fc3b9"
+      ],
+      "kicker": "大模型 · 发布",
+      "title_zh": "DeepSeek V4 Pro 正式版上线：价格不变，代码 Agent 跑分大幅提升",
+      "summary_zh": "DeepSeek 官网上线 V4 Pro 0813 正式版，现有 deepseek-v4-pro API 会自动切换至新模型。未缓存输入和输出的价格不变，仍为每百万 Token 3元和6元。官网尚未发布完整更新日志；网上首批流传的跑分显示，其软件工程和代码 Agent 成绩较预览版明显提高。爱范儿的多项实测也显示，模型可以自主规划、调用工具并完成复杂项目。",
+      "read_body_zh": [
+        "开发者无需更换模型名称，原有 deepseek-v4-pro API 会直接调用 0813 版本。DeepSeek 接口兼容 OpenAI 和 Anthropic 的 API 格式，可作为 Codex、Claude Code、OpenCode 等工具的后端。新版本暂未涨价，未缓存输入和输出仍分别为每百万 Token 3元和6元，均为 V4 Flash 的三倍。",
+        "DeepSeek 尚未公布 V4 Pro 正式版的完整更新日志。网上首批流传的结果显示，DeepSWE 得分从预览版的12.8升至62.7，DSBench-Hard 达到67.2，NL2Repo 则从38.5升至61.5。爱范儿称，新版在部分代码 Agent 项目中接近甚至超过 Fable 5，但在一些测试中仍略低于 Kimi K3。",
+        "爱范儿将模型接入 Workbuddy，测试了数据报表、网页制作、俄罗斯方块和椋鸟群模拟器等任务。报道称，模型能够梳理模糊要求，读取已有 Skill，再自行规划并分步完成项目。DeepSeek 此前在 V4 Flash 的官方说明中提到，即将发布 DeepSeek Harness，但具体功能、开放时间和适用范围仍未公布。"
+      ],
+      "pullquote": null,
+      "ai_impact": "DeepSeek 正在补齐低价模型之外的 Agent 执行能力。代码和工具调用能力增强后，较低的 API 价格可以降低开发型 Agent 的试错成本；如果后续 Harness 能统一管理权限、工具、流程和结果检查，竞争将不再只看单次模型输出，还要比较整套执行系统。不过，目前关键成绩主要来自早期跑分和单家媒体实测，模型在复杂任务中的稳定性、成功率和实际总成本仍需独立验证。",
+      "sources": [
+        {
+          "name": "爱范儿",
+          "url": "https://www.ifanr.com/1674965"
+        }
+      ],
+      "relevance_score": 96,
+      "importance_score": 86
+    },
+    {
+      "source_item_ids": [
+        "8caf750783fbf23f"
+      ],
+      "kicker": "特斯拉 · 制造",
+      "title_zh": "特斯拉拟在得州投资最高101亿美元建太阳能工厂，计划创造9700个岗位",
+      "summary_zh": "得州政府文件显示，特斯拉计划在休斯敦西南方向建设太阳能电池板工厂 Project Crystal Sun，投资最高可达101亿美元，并已申请税收激励。公司预计项目可创造约9700个全职岗位，目标今年动工、2028年建成、2029年投产。特斯拉仍在考察美国其他州，最终选址、年产能以及产品用于地面设施还是卫星都未确定。",
+      "read_body_zh": [
+        "特斯拉提交给得州的文件显示，Project Crystal Sun 拟建在休斯敦西南约45分钟车程处，投资最高可达101亿美元。公司已申请税收优惠以降低成本，同时还在比较美国其他州的候选地点。特斯拉会计人员估算，如果没有激励，该项目37年内可能产生约11亿美元房地产税。",
+        "文件列出的目标是2026年动工、2028年完工，并在2029年生产首批太阳能电池板。特斯拉预计工厂可创造约9700个全职岗位，但没有公开年产能。公司此前提出，到2028年在美国建设100吉瓦制造能力，得州项目将承担多大份额仍未披露。",
+        "特斯拉也没有说明这些电池板将用于地面发电设施还是卫星。公司首席执行官马斯克同时经营 SpaceX，并曾表达对轨道数据中心的兴趣，但本次申报文件未将工厂与任何具体太空项目绑定。由于特斯拉仍在比较多个州的选址方案，目前披露的是投资计划，并非已经敲定的建设项目。"
+      ],
+      "pullquote": null,
+      "ai_impact": "如果项目落地，特斯拉将进一步打通太阳能发电、储能与用能设备。近万名岗位和百亿美元级投资也意味着，州政府提供多少税收激励、供应链能否实现本土化以及工厂能否按期建成，都会直接影响项目回报。其产业意义最终取决于年产能和产品去向：用于地面电网，工厂将加入美国太阳能制造竞争；如果服务卫星或轨道数据中心，则可能与 SpaceX 的能源需求形成内部协同。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/08/12/tesla-wants-to-build-a-10b-solar-factory-in-texas"
+        }
+      ],
+      "relevance_score": 86,
+      "importance_score": 92
+    },
+    {
+      "source_item_ids": [
+        "da20a06299c07c52"
+      ],
+      "kicker": "AI基建 · 储能",
+      "title_zh": "Form Energy 融资7.5亿美元扩产，谷歌数据中心配套30GWh长时储能",
+      "summary_zh": "长时储能公司 Form Energy 完成7.5亿美元 G 轮融资，将扩大西弗吉尼亚州的铁空气电池产能。这种电池最长可连续放电100小时。谷歌正为明尼苏达州数据中心建设约30GWh的电池项目，成本约10亿美元；Crusoe 另计划采购12GWh。公司披露的商业项目积压量约80GWh，已增至今年早些时候的四倍，客户还包括 Xcel Energy 和 FuturEnergy Ireland。",
+      "read_body_zh": [
+        "Form Energy 的铁空气电池通过铁的氧化和还原完成充放电，最长可连续供电100小时。多数现有电池只能放电数小时，这项技术则用于填补电网持续数天的供电缺口。其主要材料是铁，不依赖价格更高的锂、钴和镍。公司称约80%的材料来自美国，其余来自欧洲和亚洲，但不包括中国。",
+        "谷歌正在明尼苏达州建设一座新数据中心，其中部分电力将由约30GWh的 Form Energy 电池项目提供，项目成本约10亿美元。AI 基础设施公司 Crusoe 在今年3月宣布采购12GWh电池；Xcel Energy 和 FuturEnergy Ireland 也在客户名单中。Form Energy 目前积压的商业项目约为80GWh，是今年早些时候的四倍。",
+        "本轮7.5亿美元融资由 T. Rowe Price 领投，红杉资本、富兰克林邓普顿、TPG Rise Climate、Breakthrough Energy Ventures 和 GE Vernova 等参与。资金将用于扩大西弗吉尼亚州的制造能力。报道还称，美国今年第一季度新增储能9.7GWh，同比增长32%，其中大多数电池只能维持数小时放电。"
+      ],
+      "pullquote": null,
+      "ai_impact": "AI 数据中心的持续高负荷用电，正在把算力投资传导至电网和储能制造。短时锂电池适合削峰，却难以覆盖可再生能源连续数天出力不足的情况；铁空气电池瞄准的正是这一缺口。谷歌和 Crusoe 的大额项目表明，长时储能正进入数据中心的基础设施采购清单，也可能减少企业为保证供电而长期依赖燃气机组的需求。接下来不仅要看订单规模，还要看量产成本、交付速度、循环效率和大型项目的实际运行表现。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/08/12/form-energy-raises-750m-to-build-more-100-hour-batteries-for-the-grid"
+        }
+      ],
+      "relevance_score": 92,
+      "importance_score": 89
+    },
+    {
+      "source_item_ids": [
+        "6cde0c1f4af13490"
+      ],
+      "kicker": "AI Agent · 合规",
+      "title_zh": "Manus 恢复独立运营，Meta 收购后数据需由用户手动迁移",
+      "summary_zh": "Manus 宣布恢复独立公司运营。受数据迁移和监管合规安排影响，用户需要备份 Meta 收购完成日之后产生的数据，并在服务恢复后重新上传。备份截止时间为新加坡时间8月23日8时，服务计划于8月25日恢复。Manus 强调，此次调整并非由黑客攻击或数据泄露引起；迁移期间用户将获免单，重新上线后还会获得补偿。",
+      "read_body_zh": [
+        "Manus 在致用户信中宣布，公司将恢复独立运营。为配合新的数据迁移和合规安排，2025年12月29日之后产生的数据需要由用户手动处理。用户须在新加坡时间8月23日8时前完成备份，待8月25日服务重新上线后再上传恢复；错过迁移窗口的数据可能无法继续保留。",
+        "Manus 表示，此次数据调整与黑客攻击或数据泄露无关。迁移期间，公司将为用户免单，并承诺在服务恢复后提供补偿。这封信主要说明了运营状态和数据处理流程，没有完整交代独立运营后的股权结构、Meta 与 Manus 的后续关系，以及原有交易将如何调整。",
+        "爱范儿回顾称，Meta 在2025年12月底以超过20亿美元收购 Manus，创始人肖弘随后进入 Meta 体系。报道援引此前消息称，这项跨境交易今年开始面临更严格的监管审查，双方随后重新划分业务、人员和数据。Manus 此次正式确认的是恢复独立运营，以及由合规安排触发的数据迁移。"
+      ],
+      "pullquote": null,
+      "ai_impact": "这次调整说明，AI 公司的跨境并购即使已经宣布完成，控制权、数据存放和知识产权仍可能因监管要求被重新切割。Agent 产品保存的不只是账户资料，还可能包括任务历史、文件和云端工作环境，因此迁移成本远高于普通应用。Manus 恢复独立运营后，能否保持服务连续性、模型与算力供应以及原有商业客户，将决定这次变化只是公司架构调整，还是会进一步影响产品竞争力和用户信任。",
+      "sources": [
+        {
+          "name": "爱范儿",
+          "url": "https://www.ifanr.com/1674998"
+        }
+      ],
+      "relevance_score": 84,
+      "importance_score": 86
+    },
+    {
+      "source_item_ids": [
+        "a874b2bc44b8787f"
+      ],
+      "kicker": "大模型 · 评测",
+      "title_zh": "Grok 4.6 跻身前沿模型：Agent 评测领先，API 价格不变",
+      "summary_zh": "Artificial Analysis 的评测显示，Grok 4.6 在 Intelligence Index 获得61分，比4.5提高5分，与 GPT-5.6 Sol 的最高配置同分，仅次于 Claude Opus 5 和 Claude Fable 5。该模型在终端、银行客服和长程知识工作测试中进入领先梯队。API 标价仍为每百万 Token 输入2美元、输出6美元，评测测得的平均单任务成本为0.84美元。",
+      "read_body_zh": [
+        "Grok 4.6 的 Intelligence Index 得分为61，比一个多月前发布的4.5版本提高5分，比4.3提高23分。该成绩与 GPT-5.6 Sol 的最高配置持平，低于63分的 Claude Opus 5和62分的 Claude Fable 5，并略高于 Kimi K3。模型的上下文窗口仍为50万 Token。",
+        "在 Agent 相关项目中，Grok 4.6 的 GDPval-AA v2 Elo 为1753，仅落后于 Claude Opus 5；其置信区间与 Claude Fable 5、Qwen3.8 Max 重叠。模型在银行多轮工具调用测试中取得50.7%，在 Terminal-Bench v2.1 中取得88.4%，均处于领先区间。",
+        "Grok 4.6 延续4.5版本的 API 标价：每百万 Token 输入2美元、输出6美元，缓存命中输入为0.5美元。Artificial Analysis 测得其平均单任务成本为0.84美元。在该机构的私有长程任务 AA-Briefcase 中，模型 Elo 为1577，完成任务平均约需53轮和5亿输入 Token。"
+      ],
+      "pullquote": null,
+      "ai_impact": "Grok 4.6 把前沿 Agent 能力与较低的 Token 单价放到了一起。对于代码、客服和知识工作等输出较长、调用轮次较多的任务，单价和完成任务所需轮数会共同决定总成本。如果评测中的效率能延续到真实业务，Grok 将迫使高价模型重新证明其质量溢价。不过，AA-Briefcase 是评测机构的私有基准，公开跑分也无法覆盖稳定性、安全性和工具调用失败率，企业仍需用自己的任务验证。",
+      "sources": [
+        {
+          "name": "Artificial Analysis",
+          "url": "https://artificialanalysis.ai/articles/grok-4-6-benchmarks-and-analysis"
+        }
+      ],
+      "relevance_score": 92,
+      "importance_score": 82
+    }
+  ],
+  "briefs": [
+    {
+      "source_item_ids": [
+        "85e1395cc4283c1e",
+        "26c0ec2fd2972a41"
+      ],
+      "title_zh": "谷歌发布 Pixel 11 全系、Pixel Tag 和 Pixel Watch 5，Gemini 深入设备功能",
+      "summary_zh": "谷歌在 Made by Google 2026 发布 Pixel 11 系列、Pixel Watch 5和首款自有追踪器 Pixel Tag。Pixel 11 起售价899美元，基础存储升至256GB；Pixel Tag 售价29美元。新机加入能处理口语化表达的 Rambler，并让 Gemini 调用摄像头进行搜索和翻译、替用户致电商家以及跨应用执行任务。Pro 机型还配有显示 Gemini 工作状态的 HiLight 灯环。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/08/12/google-unveils-pixel-11-lineup-new-airtag-rival-and-gemini-features-at-made-by-google-2026"
+        },
+        {
+          "name": "Ars Technica",
+          "url": "https://arstechnica.com/gadgets/2026/08/google-reveals-2026-hardware-lineup-pixel-11-pixel-watch-5-and-pixel-tag"
+        }
+      ],
+      "relevance_score": 84,
+      "importance_score": 78
+    },
+    {
+      "source_item_ids": [
+        "e8d9ce58d511a641",
+        "103dd78cc792d0da"
+      ],
+      "title_zh": "Gemini 应用月活超过10亿，63%的活跃用户使用语音输入",
+      "summary_zh": "谷歌称 Gemini 应用月活跃用户已超过10亿。统计只计算主动打开应用或网页并输入提示的用户，不包括搜索和 Workspace 等其他入口。63%的活跃用户会使用语音输入，Gemini 每天生成超过1.5亿张图片，iOS 活跃用户超过1亿。在 Gemini Live 用户中，20%会共享摄像头画面或屏幕；学习类请求中有38%包含附件。",
+      "sources": [
+        {
+          "name": "Ars Technica",
+          "url": "https://arstechnica.com/ai/2026/08/google-says-gemini-has-reached-1b-users-faster-than-any-other-google-product"
+        },
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/08/11/googles-gemini-app-surges-to-one-billion-users"
+        }
+      ],
+      "relevance_score": 92,
+      "importance_score": 74
+    },
+    {
+      "source_item_ids": [
+        "c2dc8a09412e9c35"
+      ],
+      "title_zh": "LiteLLM 遭供应链攻击，逾2500家机构的凭证可能泄露",
+      "summary_zh": "安全公司披露，攻击者今年3月通过 PyPI 官方位置分发受感染的 LiteLLM 版本，并在约40分钟内窃取数据。暴露内容包括云服务密钥、代码仓库令牌、SSH 密钥、Kubernetes 凭证、软件包发布权限和 AI 服务密钥，可能涉及微软、亚马逊、思科、三星和 Salesforce 等超过2500家机构。此次入侵与此前针对 Trivy 的供应链攻击有关。",
+      "sources": [
+        {
+          "name": "Ars Technica",
+          "url": "https://arstechnica.com/security/2026/08/terabytes-of-credentials-leaked-in-massive-supply-chain-attack"
+        }
+      ],
+      "relevance_score": 72,
+      "importance_score": 88
+    },
+    {
+      "source_item_ids": [
+        "9fdf5f2618e384e0"
+      ],
+      "title_zh": "大众在中国铺开 HS8 辅助驾驶，三家合资企业七款车将陆续搭载",
+      "summary_zh": "大众计划从第三季度起，将 HS8 全场景辅助驾驶方案铺至三家在华合资企业的七款车型。GAIA 2.0 负责处理数据和仿真，HS 基座模型训练通用驾驶能力，压缩后的车端模型则成为 HS8，再通过中国开发的 CEA 电子电气架构接入整车。首款搭载纯视觉版本的 ID. ERA 5S 预售价为11.59万至14.59万元。",
+      "sources": [
+        {
+          "name": "爱范儿",
+          "url": "https://www.ifanr.com/1674909"
+        }
+      ],
+      "relevance_score": 81,
+      "importance_score": 76
+    },
+    {
+      "source_item_ids": [
+        "f35b5352440e49d4"
+      ],
+      "title_zh": "Grok Bot 开放测试：云端电脑与多 Bot 协作瞄准全天候 Agent",
+      "summary_zh": "Grok Bot 开始向 SuperGrok Heavy、Cursor Ultra 和 Cursor Teams Premium 用户提供测试。产品可为 Bot 分配云端电脑，支持多个 Bot 共享上下文、相互通信和分工，并跨应用操作用户现有工具账户；目前覆盖 Windows、macOS、Linux 桌面端和 iOS。相关订阅价格较高，且产品尚未披露跨应用登录所采用的具体技术。",
+      "sources": [
+        {
+          "name": "爱范儿",
+          "url": "https://www.ifanr.com/1674851"
+        }
+      ],
+      "relevance_score": 89,
+      "importance_score": 78
+    },
+    {
+      "source_item_ids": [
+        "bffbfd370f015c92"
+      ],
+      "title_zh": "OpenAI 支持的 Thrive Holdings 融资20亿美元，将 AI 嵌入传统服务企业",
+      "summary_zh": "Thrive Holdings 以120亿美元估值融资20亿美元，用于收购传统服务企业并把 AI 接入其工作流程。公司平台已覆盖70多家企业；其税务 Agent 据称处理超过7000份申报，准确率98%，将准备时间缩短逾30%，IT业务的 AI 工具则把服务台问题解决速度提高36倍。新资金还将用于拓展实体资产审批与合规服务。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/08/12/openai-backed-thrive-holdings-raises-2b-to-bring-ai-to-the-enterprise"
+        }
+      ],
+      "relevance_score": 76,
+      "importance_score": 77
+    },
+    {
+      "source_item_ids": [
+        "bc0e1043ea74f7ce"
+      ],
+      "title_zh": "苹果供应商称发布节奏将调整：基础款 iPhone 18 或推迟至明年一季度",
+      "summary_zh": "《经济日报》报道，苹果供应商和硕高管在财报会上表示，iPhone 18 Pro 系列仍会在今年秋季推出，基础款 iPhone 18 则要等到明年第一季度。报道还称，存储和芯片短缺正在改变出货旺季，客户会重新分配有限的零部件，优先保障价格和利润率更高的机型。同期推出 iPhone 18e、新款 Air 和折叠机的说法仍属传闻。",
+      "sources": [
+        {
+          "name": "The Verge",
+          "url": "https://www.theverge.com/tech/979231/apple-base-iphone-18-launch-delayed"
+        }
+      ],
+      "relevance_score": 76,
+      "importance_score": 71
+    },
+    {
+      "source_item_ids": [
+        "ebc19ce6191a8e22"
+      ],
+      "title_zh": "Windows Defender 权限提升零日漏洞公开，微软仍在调查且尚无补丁",
+      "summary_zh": "安全研究人员公开了名为 ShieldBreak 的 Windows Defender 漏洞及概念验证程序。用户运行该程序后，低权限攻击者可取得系统级权限。研究人员称 Windows 10、Windows 11和 Windows Server 2025 均受影响，且利用漏洞时必须启用 Defender。另一名研究人员已验证漏洞可用；微软表示仍在调查，目前尚未发布补丁。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/08/12/after-microsoft-threatened-legal-action-a-security-researcher-publishes-a-new-windows-zero-day-bug"
+        }
+      ],
+      "relevance_score": 65,
+      "importance_score": 81
+    },
+    {
+      "source_item_ids": [
+        "d4a22fcdfe0973b7"
+      ],
+      "title_zh": "iOS 27 测试版按 iCloud+ 套餐限制家庭摄像头 AI 摘要",
+      "summary_zh": "iOS 27 beta 5 的家庭 App 出现 Apple Intelligence 使用限制：2TB iCloud+ 套餐可为5个摄像头生成 AI 摘要，12TB 套餐可覆盖15个。页面还提示，升级套餐可以获得更多使用量。苹果已在 WWDC 确认，部分依赖服务器模型的功能会设置每日上限，用户可通过更高档的 iCloud+ 增加额度；其他 AI 功能是否采用同类分档仍未公布。",
+      "sources": [
+        {
+          "name": "爱范儿",
+          "url": "https://www.ifanr.com/1674897"
+        }
+      ],
+      "relevance_score": 83,
+      "importance_score": 73
+    },
+    {
+      "source_item_ids": [
+        "5bcff1745877dc4a"
+      ],
+      "title_zh": "Twitch 默认允许亚马逊用主播内容训练生成式 AI，创作者需主动退出",
+      "summary_zh": "Twitch 将默认允许母公司亚马逊使用主播内容训练生成式 AI。创作者如不愿参与，需要在频道的安全与隐私设置中手动关闭。大量直播包含持续的视频和语音数据，这项调整引发创作者反对。Twitch 产品负责人承认，如果改成主动加入，几乎不会有人参加；他同时表示，自己不清楚亚马逊此前是否已经用过相关内容训练模型。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/08/12/amazon-will-train-on-twitch-streamers-content-by-default-unless-they-opt-out"
+        }
+      ],
+      "relevance_score": 66,
+      "importance_score": 75
+    },
+    {
+      "source_item_ids": [
+        "ca3ab45245eb556c"
+      ],
+      "title_zh": "Lovable 融资4亿美元，年化收入达到5亿美元",
+      "summary_zh": "欧洲 AI 编程平台 Lovable 完成4亿美元 C轮融资，估值133亿美元，由 Menlo Ventures 和 Scaleup Europe Fund 领投。公司称其6月年化收入已达到5亿美元，目前托管6000万个项目，每月吸引9亿次访问。随着后端需求增长，Lovable 已训练自有模型，并与 Google Cloud 签署多年协议，云服务使用量扩大至原来的五倍。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/08/12/lovable-confirms-new-13-3b-valuation-raises-another-400m"
+        }
+      ],
+      "relevance_score": 74,
+      "importance_score": 73
+    },
+    {
+      "source_item_ids": [
+        "2e9e6c7a12394bdb"
+      ],
+      "title_zh": "诺斯罗普在轨维修机器人将为老旧卫星永久安装推进舱",
+      "summary_zh": "诺斯罗普今年7月发射了一台任务机器人飞行器 MRV 和三个模块化推进舱 MEP，计划于2027年用机械臂把其中一个推进舱永久安装到2009年升空的 Optus 通信卫星上，使其有望再运行六年。不同于此前让整台飞行器长期停靠的方案，推进舱归卫星运营商所有，MRV 安装完成后可继续服务其他卫星，并具备在轨补充燃料的设计。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/08/12/northrops-robot-space-mechanic-is-a-new-way-to-keep-satellites-at-work-longer"
+        }
+      ],
+      "relevance_score": 49,
+      "importance_score": 71
+    },
+    {
+      "source_item_ids": [
+        "5ceca1e88f0ae2c7"
+      ],
+      "title_zh": "荣耀 Robot Phone 正式发布：机械云台与跨应用 Agent 进入量产手机",
+      "summary_zh": "荣耀发布 Robot Phone，机背的四自由度机械云台可以自动转向和追踪人物，并已接入相机、抖音直播和微信视频通话。手机搭载荣耀与阿里基于千问共同开发的端侧模型，YOYO 自动执行可连续完成超过100步的跨应用任务，系统能力还通过技能商店向开发者开放。两种存储版本售价分别为9999元和12999元，将于8月18日开售。",
+      "sources": [
+        {
+          "name": "爱范儿",
+          "url": "https://www.ifanr.com/1674938"
+        }
+      ],
+      "relevance_score": 69,
+      "importance_score": 66
+    }
+  ],
+  "discarded": [
+    {
+      "source_item_ids": [
+        "80b2fa9fdf4e0eaf"
+      ],
+      "reason": "昨日头条已用Anthropic原始来源报道黎曼假设相关结果及67.2%的核心进展，本候选只是同一事件的换源转述，没有足以形成新条目的新增事实。",
+      "relevance_score": 88,
+      "importance_score": 83
+    },
+    {
+      "source_item_ids": [
+        "5f0ebe559a33d078"
+      ],
+      "reason": "主要内容是三位AI学者在会议上讨论开放权重与监管的观点，没有新的产品发布、监管决定、采用数据或市场后果，事件性不足。",
+      "relevance_score": 70,
+      "importance_score": 59
+    },
+    {
+      "source_item_ids": [
+        "ac629bdf62e7b8d0"
+      ],
+      "reason": "来自YC小公司的自我发布，正文以自身方法、产品和商业模式宣传为主，实验结果缺少独立验证；虽然命中大量priority_signals，但优先信号只保证审阅，不能推翻小公司与营销内容的降权边界。",
+      "relevance_score": 64,
+      "importance_score": 43
+    },
+    {
+      "source_item_ids": [
+        "98bc3ce295b938db"
+      ],
+      "reason": "昨日速览已报道OpenAI前COO Brad Lightcap离职，本候选为同一事件的换源转述，没有披露其下一步去向等实质新增事实。",
+      "relevance_score": 79,
+      "importance_score": 71
+    },
+    {
+      "source_item_ids": [
+        "f1436015a7cabe7e"
+      ],
+      "reason": "候选只有项目标题和链接，补全文为空，无法核实功能边界、性能、开放方式及市场采用；视频与世界模型主题在缺少商业化和生态信号时应降低权重。",
+      "relevance_score": 58,
+      "importance_score": 45
+    }
+  ],
+  "merged_sources": [
+    {
+      "source_item_ids": [
+        "85e1395cc4283c1e",
+        "26c0ec2fd2972a41"
+      ],
+      "reason": "同一场Made by Google 2026发布会及同一批Pixel硬件和Gemini功能发布。"
+    },
+    {
+      "source_item_ids": [
+        "e8d9ce58d511a641",
+        "103dd78cc792d0da"
+      ],
+      "reason": "同一项Gemini应用月活用户达到10亿及其用户行为数据披露。"
+    }
+  ]
+}
