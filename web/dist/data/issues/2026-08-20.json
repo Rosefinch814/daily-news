@@ -1,0 +1,247 @@
+{
+  "id": "tech-2026-08-20",
+  "section_slug": "tech",
+  "publication_name": "我的日报·科技",
+  "issue_date": "2026-08-20",
+  "volume": 1,
+  "number": 39,
+  "date_cn": "2026 年 8 月 20 日 · 周四",
+  "output_path": "issues/2026-08-20.html",
+  "headlines": [
+    {
+      "source_item_ids": [
+        "b69ec32a19453512"
+      ],
+      "kicker": "自动驾驶 · 规模化",
+      "title_zh": "Waymo新一代低成本Robotaxi向三城所有乘客开放，2026年底累计进口量或达5000辆",
+      "summary_zh": "Waymo已在洛杉矶、凤凰城和旧金山向所有乘客开放新一代无人驾驶出租车Ojai，用户叫车时可能随机匹配到该车型。目前约有300辆Ojai进入商业车队，丹佛、拉斯维加斯和圣迭戈也计划在年内上线。Ojai采用Waymo第六代自动驾驶系统和极氪SEA-M平台，并配备Gemini车载助手。MoffettNathanson根据进口记录估算，到2026年底，Waymo累计引入美国的Ojai可能达到5000辆。",
+      "read_body_zh": [
+        "Ojai已进入Waymo在洛杉矶、凤凰城和旧金山的常规叫车服务，乘客下单后可能随机匹配到这款车。等车队规模足够大，Waymo计划让乘客在Ojai和现有捷豹I-Pace之间自行选择。目前商业车队约有300辆Ojai；Waymo的Robotaxi服务已覆盖美国11座城市。",
+        "Ojai搭载模块化的Waymo第六代自动驾驶系统，可适配多种车型；车体基于吉利旗下极氪为Robotaxi和配送车开发的SEA-M平台。基础车辆从中国进口时不带联网汽车技术，抵达美国后送往Waymo位于亚利桑那州的工厂，加装自动驾驶系统。美国对中国制造汽车征收的关税推高了每辆Ojai的成本。",
+        "MoffettNathanson通过货运单据追踪进口情况，估计Waymo正按2026年底累计引入5000辆Ojai的速度推进。这一数量将是现有捷豹车队规模的两倍以上；仅2026年7月，就有725辆Ojai进入美国。Waymo还计划在今年晚些时候将该车型投放到丹佛、拉斯维加斯和圣迭戈。"
+      ],
+      "pullquote": null,
+      "ai_impact": "Waymo正把竞争重点从车辆能否安全运行，推向单车成本、维护效率和车队扩张速度。第六代系统可适配多种车型，能让同一套自动驾驶研发投入覆盖更大的车队；极氪平台则用于降低车辆制造和高频运营成本，但中国制造车辆的进口关税会抵消部分优势。若5000辆的估算兑现，更多车辆会带来更密集的订单和运营数据。届时更关键的指标将是单车利用率、远程支持成本，以及新城市能否盈利。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/08/19/waymos-cheaper-next-gen-robotaxi-is-now-open-to-all-riders-in-these-three-cities"
+        }
+      ],
+      "relevance_score": 90,
+      "importance_score": 86
+    },
+    {
+      "source_item_ids": [
+        "c5d669f302ce3fdb"
+      ],
+      "kicker": "车载AI · 发布",
+      "title_zh": "特斯拉中国车机首次接入第三方大模型：豆包与DeepSeek分工服务四款车型",
+      "summary_zh": "8月19日，火山引擎宣布豆包大模型已在特斯拉中国车机上线，正向车主分批推送。这是特斯拉进入中国市场以来首次在车机内接入第三方大模型。豆包以独立应用呈现，支持实时资讯、连续对话和多种音色；整套语音服务由豆包与DeepSeek Chat协同，豆包负责基础车控和车主手册查询，DeepSeek Chat负责闲聊与资讯服务。首批覆盖Model 3、Model Y、Model S和Model X。",
+      "read_body_zh": [
+        "车主可从车机的应用启动器打开豆包，也可长按方向盘右侧滚轮唤醒语音交互。功能正在分批推送，用户可以连续对话、查询实时资讯或闲聊。报道将这次更新称为特斯拉进入中国市场以来，首次在车机系统中集成第三方大模型。",
+        "官方使用条款显示，车机语音服务由两个模型分工处理。豆包执行基础车控命令和车主手册查询，DeepSeek Chat处理开放式闲聊和资讯服务。豆包还提供多款语音音色，用户不借助手机也能在车内完成交互。",
+        "本次推送覆盖四款主力车型：Model 3、Model Y、Model S和Model X。搭载AMD芯片的车辆优先适配，车辆系统需升级到2026.14.13或更高版本。火山引擎已公布上线安排，报道未给出首批覆盖车辆数量和全量推送时间。"
+      ],
+      "pullquote": null,
+      "ai_impact": "特斯拉把本地模型接入自己控制的车机入口和车辆权限层，而不是把中国车载AI全部收进自研体系。豆包处理车控和手册查询，DeepSeek负责开放对话和资讯，车企可以按任务分别优化可靠性、实时性和交互体验，也能减少对单一模型的依赖。模型公司因此进入高频车载终端，但用户关系、权限和功能编排仍由特斯拉掌握。后续竞争要看调用是否稳定、车控是否准确，以及适配能否持续扩大，而不只是聊天表现。",
+      "sources": [
+        {
+          "name": "爱范儿",
+          "url": "https://www.ifanr.com/1675698"
+        }
+      ],
+      "relevance_score": 94,
+      "importance_score": 81
+    },
+    {
+      "source_item_ids": [
+        "20e92ef595193f23"
+      ],
+      "kicker": "AI产品 · 教育",
+      "title_zh": "谷歌为Search和Gemini发布互动模拟、定制测验等AI学习工具",
+      "summary_zh": "谷歌为Search和Gemini推出一组新的AI学习功能。Search可根据问题生成互动图示、模拟工具和定制测验，还能把用户上传的PDF、文档、幻灯片或手写笔记整理成学习材料；Lens将在未来几周加入拍照讲题。Gemini新增可在后台完成的多步骤研究报告，用户收到报告后可通过Gemini Live继续语音讨论，还能按提示生成可操作的3D模拟。Gemini应用也将设置统一的学习工具中心。",
+      "read_body_zh": [
+        "Search中的AI Overview和AI Mode现在能根据查询生成互动视觉内容。比如搜索pH值，用户可先查看基础图示，再让系统把不同柑橘类水果标到刻度上。Search还可按学科和备考目标生成互动测验，覆盖科学、数学、人文和外语等领域。",
+        "未来几周，Google Lens将上线新的互动学习功能。学生拍下正在解答的问题后，AI可以解释概念、指出可能的错误，并在卡住时给出提示。Search也能读取用户上传的PDF、文档、幻灯片和课堂笔记照片，把关键概念整理成一页学习材料。",
+        "Gemini Live支持多步骤研究：任务发起后，用户可以关闭对话或先做其他事情，报告完成时会收到通知，随后可用语音讨论结果并继续追问。Gemini还能按提示生成可旋转、缩放的3D模拟，并在回答中加入表格和网格。新的学习中心会把学习笔记、闪卡和练习测验集中到一起。"
+      ],
+      "pullquote": null,
+      "ai_impact": "谷歌把搜索、资料整理、概念讲解、练习和研究讨论接到同一套产品里，AI不再只回答问题，而是开始组织完整的学习过程。它的优势来自Search、Lens和Gemini的协同：用户不用另开教育应用，就能把网页、图片和个人资料放进同一流程。这会挤压以题库、闪卡和AI讲题为核心的教育工具。竞争门槛也会从能否生成新形式，转向内容是否准确、练习是否有效，以及学习结果能否改善。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/08/19/google-launches-new-study-tools-for-students-across-search-and-gemini"
+        }
+      ],
+      "relevance_score": 88,
+      "importance_score": 78
+    }
+  ],
+  "briefs": [
+    {
+      "source_item_ids": [
+        "9b02143918abccb4"
+      ],
+      "title_zh": "TerraPower年内将公布首个数据中心核电项目，以储能缓冲AI负载波动",
+      "summary_zh": "比尔·盖茨创办的核能公司TerraPower计划在年内公布首个数据中心项目，客户身份尚未披露。项目预计2027年开工，将成为该公司的第二座电站。345兆瓦的Natrium设计让反应堆保持稳定运行，把多余热量储存起来；数据中心用电突然上升时，再释放热量驱动汽轮机发电，从而减少AI算力负载剧烈波动对电源设备的冲击。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/08/19/terrapowers-nuclear-reactor-has-a-secret-weapon-for-powering-ai-data-centers"
+        }
+      ],
+      "relevance_score": 88,
+      "importance_score": 76
+    },
+    {
+      "source_item_ids": [
+        "4808134948232ebf"
+      ],
+      "title_zh": "OpenAI预览跨会话安全监测：不留存客户数据，也不直接查看对话",
+      "summary_zh": "OpenAI正在向部分客户预览Private Safety Processing。该自动化系统会跨多个会话检查输入和输出，识别被拆散到多轮对话中的潜在恶意行为，同时不留存客户数据，也不由人工直接查看对话。触发后，系统只向OpenAI发送范围有限的风险信号；如果OpenAI认为需要采取措施，就会联系客户补充背景，客户可自行决定是否提供具体数据。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/08/19/openai-seeks-to-one-up-anthropic-with-new-customer-privacy-protections"
+        }
+      ],
+      "relevance_score": 80,
+      "importance_score": 72
+    },
+    {
+      "source_item_ids": [
+        "fc79e023d7ae952d"
+      ],
+      "title_zh": "Stripe确认收购OpenRouter，交易价格据报约75亿美元",
+      "summary_zh": "Stripe已确认收购模型路由平台OpenRouter，但未公布价格。《纽约时报》援引消息人士称，交易金额约为75亿美元；OpenRouter今年5月的估值还是13亿美元。OpenRouter表示，交易预计数周后完成，完成后仍将独立运营，产品、使命和现有承诺不变。TechCrunch分析称，这笔收购可能帮助Stripe从支付业务延伸到模型调用和AI支出管理。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/08/19/stripe-didnt-really-buy-openrouter-because-of-the-singularity"
+        }
+      ],
+      "relevance_score": 72,
+      "importance_score": 75
+    },
+    {
+      "source_item_ids": [
+        "00d73afd0fc5ce46"
+      ],
+      "title_zh": "亚马逊计划2026年底前将Prime Air扩至近500座美国城市",
+      "summary_zh": "亚马逊计划到2026年底把Prime Air无人机配送扩展到近500座美国城市，覆盖范围约为当前的六倍，并将先在11个地点上线。公司称，今年已用无人机配送数十万件包裹，最快30分钟送达。Prime Air依据美国联邦航空管理局Part 135商业航空承运规则运营，可配送大多数不超过5磅的商品。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/08/19/amazons-prime-air-is-taking-off-in-nearly-500-u-s-cities"
+        }
+      ],
+      "relevance_score": 58,
+      "importance_score": 74
+    },
+    {
+      "source_item_ids": [
+        "6c1e92450f48b253"
+      ],
+      "title_zh": "Meta推出Mac版独立AI应用，可结合屏幕内容工作并连接办公和广告数据",
+      "summary_zh": "Meta推出独立的Mac端AI应用。用户可以共享窗口，让助手根据屏幕内容给出建议、回答问题或生成内容，也能在不同应用中使用语音听写。新版助手还可连接Google Workspace、Instagram和Facebook账号以及Meta广告活动，分析帖子表现，制作演示文稿、文档和表格，并执行每周生成运营报告等周期性任务。",
+      "sources": [
+        {
+          "name": "The Verge",
+          "url": "https://www.theverge.com/tech/982270/meta-ai-mac-app"
+        }
+      ],
+      "relevance_score": 65,
+      "importance_score": 60
+    },
+    {
+      "source_item_ids": [
+        "492957ecd29204e6"
+      ],
+      "title_zh": "亚马逊向美国所有兼容Fire TV免费推送Alexa+，不要求Prime会员",
+      "summary_zh": "亚马逊将向美国所有兼容的Fire TV设备自动推送Alexa+，用户无需下载应用或注册；非Prime会员也不用再支付此前每月19.99美元的费用。Alexa+可在电视上进行对话式内容搜索、提供AI推荐和控制智能家居，还能调取Ring摄像头画面。亚马逊称，使用Alexa+的Fire TV用户与助手对话的次数接近原版Alexa的两倍。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/08/19/amazon-makes-its-ai-powered-alexa-free-on-fire-tv-no-prime-required"
+        }
+      ],
+      "relevance_score": 61,
+      "importance_score": 59
+    },
+    {
+      "source_item_ids": [
+        "bd00d96baa2fa3c6"
+      ],
+      "title_zh": "美国多项调查显示AI忧虑升温，数据中心项目开始提高社区补偿",
+      "summary_zh": "皮尤研究中心的调查显示，52%的美国受访者对AI在日常生活中越来越普及感到担忧多于兴奋，2021年这一比例为37%；另一项5月调查中，超过70%的受访者认为AI发展过快。与此同时，为推进美国各地的数据中心项目，科技公司开始向社区承诺就业保障、清洁水投资等条件；路易斯安那州一项方案还包括向教师发放5万美元奖金。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/08/19/ai-was-supposed-to-win-people-over-by-now-it-hasnt"
+        }
+      ],
+      "relevance_score": 49,
+      "importance_score": 64
+    },
+    {
+      "source_item_ids": [
+        "7c8b61c1e7711431"
+      ],
+      "title_zh": "OpenAI技术故障误撤部分研究者的高权限网络安全模型访问",
+      "summary_zh": "多名安全研究者发现，自己失去了OpenAI“网络安全可信访问”计划中的Daybreak Blue权限。OpenAI确认，一项技术问题影响了数量有限的用户，并要求他们重新申请、完成身份验证。该权限向审核通过的防御研究者开放限制较少的前沿模型，用于漏洞发现、代码审查和恶意软件分析。TechCrunch采访的五名受影响者都居住在美国和欧洲以外。",
+      "sources": [
+        {
+          "name": "TechCrunch",
+          "url": "https://techcrunch.com/2026/08/19/researchers-complain-that-openai-revoked-their-access-to-limited-cyber-program"
+        }
+      ],
+      "relevance_score": 57,
+      "importance_score": 49
+    }
+  ],
+  "discarded": [
+    {
+      "source_item_ids": [
+        "92198fa5678d7842",
+        "b484d3713ca88f2d"
+      ],
+      "reason": "两篇均围绕OpenAI在Hugging Face越权事件后暂停前沿强化学习并升级隔离、监控和对齐措施；该事件已是2026-08-19头条，候选主要为换源复述或评论分析，没有足以构成跟进的新增事实。",
+      "relevance_score": 80,
+      "importance_score": 82
+    },
+    {
+      "source_item_ids": [
+        "7abde74a45891501"
+      ],
+      "reason": "主体是获得3000万美元A轮融资的小型创业公司及播客推广，拟在CME推出的算力期货仍待监管批准，尚未形成真实交易或行业定价影响，触及“小公司融资”回避边界。",
+      "relevance_score": 84,
+      "importance_score": 63
+    },
+    {
+      "source_item_ids": [
+        "eb0bdc23136b8016"
+      ],
+      "reason": "正文抓取失败且内容为空，仅有论文标题和Hacker News热度数据，无法核验研究方法、测量结果及其对数据中心选址或监管的实际含义。",
+      "relevance_score": 70,
+      "importance_score": 55
+    },
+    {
+      "source_item_ids": [
+        "44c2d5db8bf95c5a"
+      ],
+      "reason": "虽然包含Jane Street测试并购买首套集群的产品信号，但文章主事件仍是AI芯片初创公司一个月内再次融资、估值翻倍，属于硬性降低权重的小公司融资新闻，且规模交付能力尚未验证。",
+      "relevance_score": 82,
+      "importance_score": 70
+    }
+  ],
+  "merged_sources": [
+    {
+      "source_item_ids": [
+        "92198fa5678d7842",
+        "b484d3713ca88f2d"
+      ],
+      "reason": "同为OpenAI在Hugging Face越权事件后暂停前沿强化学习并升级安全控制的报道。"
+    }
+  ]
+}
